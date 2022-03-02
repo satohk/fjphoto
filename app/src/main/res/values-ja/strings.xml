@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">gphotoframe</string>
+    <string name="row_title_main">メイン</string>
+    <string name="row_title_album">アルバム</string>
+    <string name="row_title_year">年</string>
+    <string name="row_title_search">検索</string>
+
+    <string name="menu_item_title_all">すべて</string>
+    <string name="menu_item_title_photo">写真</string>
+    <string name="menu_item_title_movie">動画</string>
+    <string name="menu_item_title_favorite">お気に入り</string>
+    <string name="menu_item_title_search">検索</string>
+</resources>

@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">gphotoframe</string>
+    <string name="row_title_main">Main</string>
+    <string name="row_title_album">Album</string>
+    <string name="row_title_year">Year</string>
+    <string name="row_title_search">Search</string>
+
+    <string name="menu_item_title_all">All</string>
+    <string name="menu_item_title_photo">Photo</string>
+    <string name="menu_item_title_movie">Movie</string>
+    <string name="menu_item_title_favorite">Favorite</string>
+    <string name="menu_item_title_search">Search</string>
+</resources>

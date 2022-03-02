@@ -1,0 +1,4 @@
+<resources>
+    <style name="Theme.Gphotoframe" parent="@style/Theme.Leanback" />
+<!--    <style name="Theme.Gphotoframe" parent="@style/Theme.AppCompat.NoActionBar" />-->
+</resources>
