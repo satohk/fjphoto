@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,19 +22,23 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MenuBarItemAdapter internal constructor(private val _listener: ItemClickListener,
-                                              private val _viewModel: MenuBarViewModel) :
+class MenuBarItemAdapter internal constructor(private val _viewModel: MenuBarViewModel) :
     ListAdapter<MenuBarItem, MenuBarItemAdapter.MenuBarItemViewHolder>(MenuBarItem.DIFF_UTIL) {
+
+    var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
+    var onClick: ((view:View?, position:Int) -> Unit)? = null
+    var onFocus: ((view:View?, position:Int) -> Unit)? = null
 
     // inflates the cell layout from xml when needed
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MenuBarItemViewHolder {
         val view = MenuBarItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return MenuBarItemViewHolder(view, _listener)
+        return MenuBarItemViewHolder(view)
     }
 
     // binds the data
     override fun onBindViewHolder(holder: MenuBarItemViewHolder, position: Int) {
         val item:MenuBarItem = getItem(position)
+        holder.adapterPosition = position
 
         val iconId = when(item.itemType){
             MenuBarItemType.SHOW_ALL -> R.drawable.all_media_icon
@@ -75,68 +80,43 @@ class MenuBarItemAdapter internal constructor(private val _listener: ItemClickLi
         GlobalScope.launch(Dispatchers.Main){
             var bmp: Bitmap?
             withContext(Dispatchers.IO) {
-                bmp = _viewModel.loadIcon(item, 128, 128)
+                bmp = _viewModel.loadIcon(item, 96, 96)
             }
-            Log.d("debug", bmp.toString())
+            Log.d("debug", "loaded bmp :width=%d, height=%d".format(bmp?.width, bmp?.height))
             if(bmp != null){
-                bmp = centerCropBitmap(bmp!!)
                 val drawable = BitmapDrawable(bmp)
                 holder.binding.button.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
                 holder.binding.button.setCompoundDrawablePadding(20)
             }
         }
+
+        holder.onClick = this.onClick
+        holder.onKeyDown = this.onKeyDown
+        holder.onFocus = this.onFocus
     }
 
-    private fun centerCropBitmap(bitmap: Bitmap): Bitmap {
-        if (bitmap.width == bitmap.height) {
-            return bitmap
-        }
-        if (bitmap.width > bitmap.height) {
-            val leftOffset = (bitmap.width - bitmap.height) / 2
-            return Bitmap.createBitmap(
-                bitmap,
-                leftOffset,
-                0,
-                bitmap.height,
-                bitmap.height,
-                null,
-                true
-            )
-        }
-        val topOffset = (bitmap.height - bitmap.width) / 2
-        return Bitmap.createBitmap(
-            bitmap,
-            0,
-            topOffset,
-            bitmap.width,
-            bitmap.width,
-            null,
-            true
-        )
-    }
+    fun chaneFocus(position:Int) {
 
-    // parent activity will implement this method to respond to click events
-    interface ItemClickListener {
-        fun onItemClick(view: View?, position: Int)
     }
-
 
     // stores and recycles views as they are scrolled off screen
-    class MenuBarItemViewHolder internal constructor(binding: MenuBarItemBinding, listener: MenuBarItemAdapter.ItemClickListener)
-        : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
+    class MenuBarItemViewHolder internal constructor(binding: MenuBarItemBinding)
+        : RecyclerView.ViewHolder(binding.root) {
 
-        private val _listener: MenuBarItemAdapter.ItemClickListener
+        var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
+        var onClick: ((view:View?, position:Int) -> Unit)? = null
+        var onFocus: ((view:View?, position:Int) -> Unit)? = null
         private val _binding: MenuBarItemBinding
         internal val binding: MenuBarItemBinding get() = _binding
         internal var adapterPosition: Int = 0
 
-        override fun onClick(view: View?) {
-            if (_listener != null) _listener!!.onItemClick(view, adapterPosition)
-        }
-
         init {
             val buttonView = itemView.findViewById<TextView>(R.id.button)
-            buttonView.setOnClickListener(this)
+
+            buttonView.setOnClickListener { view ->
+                onClick?.invoke(view, adapterPosition)
+            }
+
             buttonView.setOnFocusChangeListener { view, focused ->
                 if(view is TextView) {
                     val context = binding.root.context
@@ -147,6 +127,7 @@ class MenuBarItemAdapter internal constructor(private val _listener: ItemClickLi
                             context.theme
                         ))
                         //view.setBackgroundColor(Color.WHITE)
+                        onFocus?.invoke(view, adapterPosition)
                     } else {
                         view.setTextColor(
                             resource.getColor(
@@ -158,7 +139,11 @@ class MenuBarItemAdapter internal constructor(private val _listener: ItemClickLi
                     }
                 }
             }
-            _listener = listener
+
+            buttonView.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
+                return@setOnKeyListener onKeyDown?.invoke(view, adapterPosition, keyEvent) == true
+            }
+
             _binding = binding
         }
     }

@@ -4,14 +4,14 @@
         android:layout_height="match_parent">
 
         <FrameLayout
+            android:id="@+id/side_menu_container"
+            android:layout_width="@dimen/menu_bar_width"
+            android:layout_height="match_parent"/>
+
+        <FrameLayout
             android:id="@+id/grid"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginLeft="@dimen/photo_grid_offset"/>
-
-        <FrameLayout
-            android:id="@+id/side_menu_container"
-            android:layout_width="@dimen/menu_bar_width"
-            android:layout_height="match_parent"/>
 
 </FrameLayout>

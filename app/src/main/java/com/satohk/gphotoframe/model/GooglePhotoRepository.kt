@@ -2,6 +2,7 @@ package com.satohk.gphotoframe.model
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import java.time.ZonedDateTime
 import okhttp3.*
 import kotlinx.serialization.*
@@ -21,7 +22,12 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
 
         while(true){
             val pageTokenStr = if (pageToken == null)  "" else "&pageToken=%s".format(pageToken)
-            val res = httpGet("https://photoslibrary.googleapis.com/v1/albums?pageSize=%d%s".format(pageSize, pageTokenStr))
+            val url = "https://photoslibrary.googleapis.com/v1/albums?pageSize=%d%s".format(pageSize, pageTokenStr)
+            val res = httpGet(url)
+            if(!res.isSuccessful){
+                Log.i("http", "response is not ok . %s, %s".format(url, res.toString()))
+                break
+            }
             val resBody = jsonDec.decodeFromString<AlbumsResponse>(res.body?.string()!!)
             for(album in resBody.albums){
                 albums.add(
@@ -65,9 +71,14 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
         val requestBody = format.encodeToString(searchParam)
         val url = "https://photoslibrary.googleapis.com/v1/mediaItems:search"
 
-        val responseBodyStr = httpPost(url, requestBody)
-        val response = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)
-        val result: List<PhotoMetadata> = response.mediaItems.map{
+        val response = httpPost(url, requestBody)
+        if(!response.isSuccessful){
+            Log.i("http", "response is not ok . %s, %s".format(url, response.toString()))
+            return listOf()
+        }
+        val responseBodyStr = response.body?.string()!!
+        val responseDecoded = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)
+        val result: List<PhotoMetadata> = responseDecoded.mediaItems.map{
             PhotoMetadata(
                 ZonedDateTime.parse(it.mediaMetadata!!.creationTime),
                 it.id,
@@ -77,16 +88,24 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
         return result
     }
 
-    override suspend fun getPhotoBitmap(photo:PhotoMetadata, width:Int?, height:Int?): Bitmap? {
-        val res = httpGet(makeImageUrl(photo.url, width, height))
+    override suspend fun getPhotoBitmap(photo:PhotoMetadata, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {
+        val res = httpGet(makeImageUrl(photo.url, width, height, cropFlag))
+        if(!res.isSuccessful){
+            Log.i("http", "response is not ok . %s, %s".format(photo.url, res.toString()))
+            return null
+        }
         val body = res.body?.bytes()!!
         val bmp = BitmapFactory.decodeByteArray(body, 0, body.size)
         return bmp
     }
 
-    override suspend fun getAlbumCoverPhoto(album:Album, width:Int?, height:Int?): Bitmap? {
+    override suspend fun getAlbumCoverPhoto(album:Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {
         if(album.coverPhotoUrl != null){
-            val res = httpGet(makeImageUrl(album.coverPhotoUrl, width, height))
+            val res = httpGet(makeImageUrl(album.coverPhotoUrl, width, height, cropFlag))
+            if(!res.isSuccessful){
+                Log.i("http", "response is not ok . %s, %s".format(album.coverPhotoUrl, res.toString()))
+                return null
+            }
             val body = res.body?.bytes()!!
             val bmp = BitmapFactory.decodeByteArray(body, 0, body.size)
             return bmp
@@ -96,25 +115,27 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
         }
     }
 
-    private fun makeImageUrl(baseUrl:String, width:Int?, height:Int?):String{
+    private fun makeImageUrl(baseUrl:String, width:Int?, height:Int?, cropFlag:Boolean?):String{
         var url = baseUrl
         if(width != null){
-            url = url + "=w%d-h%d".format(width, height)
+            url += "=w%d-h%d".format(width, height)
+        }
+        if(cropFlag != null && cropFlag == true){
+            url += "-c"
         }
         return url
     }
 
-    private fun httpGet(url : String): Response {
+    private fun httpGet(url: String): Response {
         val client = OkHttpClient()
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $accessToken")
             .build()
-        val response = client.newCall(request).execute()
-        return response
+        return client.newCall(request).execute()
     }
 
-    private fun httpPost(url : String, requestBody: String): String {
+    private fun httpPost(url: String, requestBody: String): Response {
         val client = OkHttpClient()
         val postBody =
             requestBody.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
@@ -124,7 +145,6 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
                 .addHeader("Authorization", "Bearer $accessToken")
                 .post(postBody)
                 .build()
-        val response = client.newCall(request).execute()
-        return response.body?.string()!!
+        return client.newCall(request).execute()
     }
 }

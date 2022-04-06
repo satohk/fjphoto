@@ -27,7 +27,7 @@ class PhotoAdapter internal constructor(private val _listener: ItemClickListener
         holder.adapterPosition = position
         Picasso.get()
             .load(url)
-            .placeholder(R.drawable.photo_icon)
+            .placeholder(R.drawable.default_background)
             .into(holder.binding.imageView)
     }
 

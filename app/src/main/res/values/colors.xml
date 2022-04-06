@@ -6,7 +6,7 @@
     <color name="selected_background">#ffaa3f</color>
     <color name="default_background">#000000</color>
 
-    <color name="menu_bar_background">#00000000</color>
+    <color name="menu_bar_background">#AA000000</color>
     <color name="menu_bar_item_background_highlight">#AA0096a6</color>
     <color name="menu_bar_item_background">#00000000</color>
 

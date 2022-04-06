@@ -30,8 +30,9 @@ class MenuBarViewModel : ViewModel() {
 
     val itemList: List<MenuBarItem>
         get() = _allItemList[_selectedMenuType]!!
-    val selectedItemIndex: Int
+    var selectedItemIndex: Int
         get() = _selectedItemIndex[_selectedMenuType]!!
+        set(value) { _selectedItemIndex[_selectedMenuType] = value}
 
     init{
         _allItemList[MenuType.TOP] = listOf(
@@ -74,7 +75,8 @@ class MenuBarViewModel : ViewModel() {
             return _accountState.photoRepository.value!!.getAlbumCoverPhoto(
                 menuBarItem.album,
                 width,
-                height
+                height,
+                true
             )
         }
         else{

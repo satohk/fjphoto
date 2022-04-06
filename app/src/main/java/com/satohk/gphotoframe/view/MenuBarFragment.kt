@@ -2,6 +2,7 @@ package com.satohk.gphotoframe.view
 
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.ViewGroup
 import com.satohk.gphotoframe.*
 
@@ -9,8 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.*
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.satohk.gphotoframe.viewmodel.MenuBarViewModel
@@ -21,9 +20,12 @@ import kotlinx.coroutines.launch
 /**
  * Loads a grid of cards with movies to browse.
  */
-class MenuBarFragment() : Fragment(), MenuBarItemAdapter.ItemClickListener {
+class MenuBarFragment() : Fragment() {
     private lateinit var _adapter: MenuBarItemAdapter
+    private lateinit var _recyclerView: RecyclerView
     private val _viewModel by activityViewModels<MenuBarViewModel>()
+    var onSelectMenuItem: ((MenuBarViewModel.MenuBarItem) -> Unit)? = null
+    var onBack: (() -> Unit)? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,14 +40,34 @@ class MenuBarFragment() : Fragment(), MenuBarItemAdapter.ItemClickListener {
             _viewModel.selectedMenuType = menuType
         }
 
-
         // set up menubar
-        val recyclerView = view.findViewById<RecyclerView>(R.id.menu_bar)
+        _recyclerView = view.findViewById<RecyclerView>(R.id.menu_bar)
         val numberOfColumns = 1
-        recyclerView.layoutManager =
+        _recyclerView.layoutManager =
             GridLayoutManager(requireContext(), numberOfColumns)
-        _adapter = MenuBarItemAdapter(this, _viewModel)
-        recyclerView.adapter = _adapter
+        _adapter = MenuBarItemAdapter(this._viewModel)
+
+        _adapter.onClick = fun(_:View?, position:Int):Unit{
+            Log.d("click",  position.toString())
+            onSelectMenuItem?.invoke(_viewModel.itemList[position])
+        }
+
+        _adapter.onFocus = fun(_:View?, position:Int):Unit {
+            Log.d("onFocus",  position.toString())
+            _viewModel.selectedItemIndex = position
+        }
+
+        _adapter.onKeyDown = fun(_:View?, position:Int, keyEvent: KeyEvent):Boolean{
+            Log.d("keydown", keyEvent.toString())
+            if(keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT){
+                onSelectMenuItem?.invoke(_viewModel.itemList[position])
+            }
+            else if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT){
+                onBack?.invoke()
+            }
+            return false
+        }
+        _recyclerView.adapter = _adapter
         _adapter.submitList(_viewModel.itemList)
 
         lifecycleScope.launch {
@@ -59,13 +81,9 @@ class MenuBarFragment() : Fragment(), MenuBarItemAdapter.ItemClickListener {
         return view
     }
 
-    override fun onItemClick(view: View?, position: Int) {
-        Log.i(
-            "TAG",
-            "You clicked number " + position
-                .toString() + ", which is at cell position " + position
-        )
-        val action = PhotoGridWithMenuFragmentDirections.actionMenuFragmentSelf(MenuBarViewModel.MenuType.ALBUM_LIST)
-        findNavController().navigate(action)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d("onFocus",  _viewModel.selectedItemIndex.toString())
+        //_recyclerView.findViewHolderForAdapterPosition(_viewModel.selectedItemIndex)?.itemView?.requestFocus()
+        _recyclerView.findViewHolderForAdapterPosition(1)?.itemView?.requestFocus()
     }
 }
