@@ -10,15 +10,21 @@ import com.satohk.gphotoframe.R
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel.PhotoGridItem
 import com.satohk.gphotoframe.databinding.GridItemBinding
 import android.net.Uri
+import android.util.Log
+import android.view.KeyEvent
 import com.squareup.picasso.Picasso
 
-class PhotoAdapter internal constructor(private val _listener: ItemClickListener) :
+class PhotoAdapter :
     ListAdapter<PhotoGridItem, PhotoAdapter.PhotoViewHolder>(PhotoGridItem.DIFF_UTIL) {
+
+    var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
+    var onClick: ((view:View?, position:Int) -> Unit)? = null
+    var onFocus: ((view:View?, position:Int) -> Unit)? = null
 
     // inflates the cell layout from xml when needed
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val view = GridItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PhotoViewHolder(view, _listener)
+        return PhotoViewHolder(view)
     }
 
     // binds the data
@@ -29,37 +35,47 @@ class PhotoAdapter internal constructor(private val _listener: ItemClickListener
             .load(url)
             .placeholder(R.drawable.default_background)
             .into(holder.binding.imageView)
-    }
 
-    // parent activity will implement this method to respond to click events
-    interface ItemClickListener {
-        fun onItemClick(view: View?, position: Int)
+        holder.onClick = this.onClick
+        holder.onKeyDown = this.onKeyDown
+        holder.onFocus = this.onFocus
     }
 
     // stores and recycles views as they are scrolled off screen
-    class PhotoViewHolder internal constructor(binding: GridItemBinding, listener: PhotoAdapter.ItemClickListener)
-        : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
+    class PhotoViewHolder internal constructor(binding: GridItemBinding)
+        : RecyclerView.ViewHolder(binding.root) {
 
-        private val _listener: PhotoAdapter.ItemClickListener
+        var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
+        var onClick: ((view:View?, position:Int) -> Unit)? = null
+        var onFocus: ((view:View?, position:Int) -> Unit)? = null
+
         private val _binding: GridItemBinding
         internal val binding: GridItemBinding get() = _binding
         internal var adapterPosition: Int = 0
 
-        override fun onClick(view: View?) {
-            if (_listener != null) _listener!!.onItemClick(view, adapterPosition)
-        }
-
         init {
-            itemView.setOnClickListener(this)
+            itemView.setOnClickListener { view ->
+                onClick?.invoke(view, adapterPosition)
+            }
             itemView.setOnFocusChangeListener { view, b ->
                 if(b){
                     view.setBackgroundColor(Color.WHITE)
+                    Log.d("setonfocuschange", adapterPosition.toString())
                 }
                 else{
                     view.setBackgroundResource(R.color.default_background)
                 }
             }
-            _listener = listener
+            itemView.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
+                if(keyEvent.action == KeyEvent.ACTION_DOWN) {
+                    return@setOnKeyListener onKeyDown?.invoke(
+                        view,
+                        adapterPosition,
+                        keyEvent
+                    ) == true
+                }
+                return@setOnKeyListener false
+            }
             _binding = binding
         }
     }

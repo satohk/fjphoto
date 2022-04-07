@@ -95,10 +95,6 @@ class MenuBarItemAdapter internal constructor(private val _viewModel: MenuBarVie
         holder.onFocus = this.onFocus
     }
 
-    fun chaneFocus(position:Int) {
-
-    }
-
     // stores and recycles views as they are scrolled off screen
     class MenuBarItemViewHolder internal constructor(binding: MenuBarItemBinding)
         : RecyclerView.ViewHolder(binding.root) {
@@ -107,7 +103,7 @@ class MenuBarItemAdapter internal constructor(private val _viewModel: MenuBarVie
         var onClick: ((view:View?, position:Int) -> Unit)? = null
         var onFocus: ((view:View?, position:Int) -> Unit)? = null
         private val _binding: MenuBarItemBinding
-        internal val binding: MenuBarItemBinding get() = _binding
+        val binding: MenuBarItemBinding get() = _binding
         internal var adapterPosition: Int = 0
 
         init {

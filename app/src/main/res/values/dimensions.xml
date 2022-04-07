@@ -2,7 +2,7 @@
 <resources>
     <dimen
         name="photo_grid_offset"
-        >100dp</dimen>
+        >0dp</dimen>
     <dimen
         name="menu_bar_width"
         >200dp</dimen>

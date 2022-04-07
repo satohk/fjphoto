@@ -8,6 +8,7 @@ import com.satohk.gphotoframe.*
 
 import android.view.LayoutInflater
 import android.view.View
+import androidx.core.view.get
 import androidx.fragment.app.*
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -31,10 +32,15 @@ class MenuBarFragment() : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(
+        return inflater.inflate(
             R.layout.fragment_menu_bar,
             null
         )
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         if(arguments != null) {
             val menuType = requireArguments().getSerializable("menuType")!! as MenuBarViewModel.MenuType
             _viewModel.selectedMenuType = menuType
@@ -53,7 +59,7 @@ class MenuBarFragment() : Fragment() {
         }
 
         _adapter.onFocus = fun(_:View?, position:Int):Unit {
-            Log.d("onFocus",  position.toString())
+            Log.d("menu onFocus",  position.toString())
             _viewModel.selectedItemIndex = position
         }
 
@@ -74,16 +80,20 @@ class MenuBarFragment() : Fragment() {
             if(_viewModel.selectedMenuType == MenuBarViewModel.MenuType.ALBUM_LIST) {
                 _viewModel.albumListLoaded.collect() {
                     _adapter.submitList(_viewModel.itemList)
+                    restoreLastFocus()
                 }
             }
         }
 
-        return view
+        restoreLastFocus()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        Log.d("onFocus",  _viewModel.selectedItemIndex.toString())
-        //_recyclerView.findViewHolderForAdapterPosition(_viewModel.selectedItemIndex)?.itemView?.requestFocus()
-        _recyclerView.findViewHolderForAdapterPosition(1)?.itemView?.requestFocus()
+    fun restoreLastFocus(){
+        Log.d("restoreLastFocus", _viewModel?.selectedItemIndex.toString())
+        if(_recyclerView != null) {
+            val holder = _recyclerView.findViewHolderForAdapterPosition(_viewModel.selectedItemIndex)
+                as MenuBarItemAdapter.MenuBarItemViewHolder?
+            holder?.binding?.root?.requestFocus()
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.satohk.gphotoframe.view
 
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.ViewGroup
 import com.satohk.gphotoframe.*
 import androidx.recyclerview.widget.GridLayoutManager
@@ -20,25 +21,49 @@ import kotlinx.coroutines.flow.collect
 /**
  * Loads a grid of cards with movies to browse.
  */
-class PhotoGridFragment() : Fragment(), PhotoAdapter.ItemClickListener {
+class PhotoGridFragment() : Fragment() {
     private lateinit var _adapter: PhotoAdapter
     private val _viewModel by activityViewModels<PhotoGridViewModel>()
     private lateinit var _recyclerView: RecyclerView
+    private val _numberOfColumns = 6
+    var onBack: (() -> Unit)? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_photo_grid, null)
+        return inflater.inflate(R.layout.fragment_photo_grid, null)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         // set up the RecyclerView
         _recyclerView = view.findViewById<RecyclerView>(R.id.photo_grid)
-        val numberOfColumns = 6
         _recyclerView.layoutManager =
-            GridLayoutManager(requireContext(), numberOfColumns)
-        _adapter = PhotoAdapter(this)
+            GridLayoutManager(requireContext(), _numberOfColumns)
+        _adapter = PhotoAdapter()
         _adapter.submitList(ArrayList(_viewModel.urlList.value))
         _adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
+
+        // event handler
+        _adapter.onClick = fun(_:View?, position:Int):Unit{
+            Log.i(
+                "TAG",
+                "You clicked number " + position
+                    .toString() + ", which is at cell position " + position
+            )
+        }
+        _adapter.onKeyDown = fun(view:View?, position:Int, keyEvent: KeyEvent):Boolean{
+            if(view != null) {
+                Log.i("keydown", view?.x.toString())
+                if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && (view.x < 10.0f)) {
+                    onBack?.invoke()
+                }
+            }
+            return false
+        }
+
         _recyclerView.adapter = _adapter
 
         lifecycleScope.launch {
@@ -46,15 +71,5 @@ class PhotoGridFragment() : Fragment(), PhotoAdapter.ItemClickListener {
                 _adapter.submitList(ArrayList(_viewModel.urlList.value))
             }
         }
-
-        return view
-    }
-
-    override fun onItemClick(view: View?, position: Int) {
-        Log.i(
-            "TAG",
-            "You clicked number " + position
-                .toString() + ", which is at cell position " + position
-        )
     }
 }

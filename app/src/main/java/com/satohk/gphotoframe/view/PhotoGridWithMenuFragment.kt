@@ -1,5 +1,6 @@
 package com.satohk.gphotoframe.view
 
+import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
@@ -11,7 +12,6 @@ import android.widget.FrameLayout
 import androidx.fragment.app.*
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.recyclerview.widget.RecyclerView
 import com.satohk.gphotoframe.viewmodel.MenuBarViewModel
 
 
@@ -20,26 +20,29 @@ import com.satohk.gphotoframe.viewmodel.MenuBarViewModel
  */
 class PhotoGridWithMenuFragment() : Fragment() {
     private val _args: PhotoGridWithMenuFragmentArgs by navArgs()
+    private var _menuBar:MenuBarFragment? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(
-            if(_args.focusMenu){ R.layout.fragment_photo_grid_with_menu }
-            else{ R.layout.fragment_photo_grid_with_menu_small },
+        return inflater.inflate(
+            R.layout.fragment_photo_grid_with_menu,
             null
         )
+    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val menuBar = MenuBarFragment()
+        val grid = PhotoGridFragment()
 
         // set menuBar
-        val menuBar = MenuBarFragment()
         val bundle = Bundle()
         bundle.putSerializable("menuType", _args.menuType)
         menuBar.arguments = bundle
 
-        menuBar.onSelectMenuItem = {item:MenuBarViewModel.MenuBarItem ->
-            Log.d("debug", item.toString())
-
+        menuBar.onSelectMenuItem = { item:MenuBarViewModel.MenuBarItem ->
             when(item.itemType){
                 MenuBarViewModel.MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> {
                     val action = PhotoGridWithMenuFragmentDirections.actionPhotoGridWithMenuFragmentSelf(
@@ -49,58 +52,62 @@ class PhotoGridWithMenuFragment() : Fragment() {
                     findNavController().navigate(action)
                 }
                 MenuBarViewModel.MenuBarItem.MenuBarItemType.SEARCH -> {
-
                 }
                 else -> {
-                    val action = PhotoGridWithMenuFragmentDirections.actionPhotoGridWithMenuFragmentSelf(
-                        _args.menuType,
-                        false
-                    )
-                    findNavController().navigate(action)
+                    changeFocus(view, false, true)
                 }
             }
-        }
-        // set menubar width
-        if(!_args.focusMenu){
-            menuBar
         }
 
         menuBar.onBack = {
             Log.d("onBack", "onback")
         }
 
-        parentFragmentManager.beginTransaction()
-            .add(R.id.side_menu_container, menuBar)
-            .commit()
-
         // set gridView
-        val grid = PhotoGridFragment()
-        parentFragmentManager.beginTransaction()
-            .add(R.id.grid, grid)
+        grid.onBack = {
+            changeFocus(view, true, true)
+        }
+
+        childFragmentManager.beginTransaction()
+            .replace(R.id.side_menu_container, menuBar)
+            .replace(R.id.grid, grid)
             .commit()
 
-        changeFocus(view, _args.focusMenu)
-
-        view.c
-
-        return view
+        _menuBar = menuBar
     }
 
-    private fun changeFocus(view:View, focusMenuBar: Boolean){
+    override fun onResume() {
+        super.onResume()
+        Log.d("onresume", this.context.toString())
+        Log.d("onresume", _menuBar!!.context.toString())
+        Log.d("onresume menuber", _menuBar.toString())
+
+        changeFocus(this.requireView(), _args.focusMenu, false)
+    }
+
+    private fun changeFocus(view:View, focusMenuBar: Boolean, animation:Boolean){
         val menuBarContainer = view.findViewById<FrameLayout>(R.id.side_menu_container)
         val gridContainer = view.findViewById<FrameLayout>(R.id.grid)
 
-        if(focusMenuBar) {
+        // change focus
+        if (focusMenuBar) {
             menuBarContainer.focusable = View.NOT_FOCUSABLE
             menuBarContainer.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
             gridContainer.focusable = View.NOT_FOCUSABLE
             gridContainer.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
-        }
-        else{
+            _menuBar?.restoreLastFocus()
+        } else {
             menuBarContainer.focusable = View.NOT_FOCUSABLE
             menuBarContainer.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
             gridContainer.focusable = View.NOT_FOCUSABLE
             gridContainer.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
+        }
+
+        // show/hide menubar
+        val alpha = if (focusMenuBar) {1f} else {0f}
+        ObjectAnimator.ofFloat(menuBarContainer, "alpha", alpha).apply {
+            duration = if (animation) {200} else {0}
+            start()
         }
     }
 }
