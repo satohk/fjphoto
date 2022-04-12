@@ -14,6 +14,7 @@ import android.view.View
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 
@@ -42,8 +43,7 @@ class PhotoGridFragment() : Fragment() {
         _recyclerView = view.findViewById<RecyclerView>(R.id.photo_grid)
         _recyclerView.layoutManager =
             GridLayoutManager(requireContext(), _numberOfColumns)
-        _adapter = PhotoAdapter()
-        _adapter.submitList(ArrayList(_viewModel.urlList.value))
+        _adapter = PhotoAdapter(_viewModel.itemList.value, _viewModel)
         _adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
 
         // event handler
@@ -53,6 +53,12 @@ class PhotoGridFragment() : Fragment() {
                 "You clicked number " + position
                     .toString() + ", which is at cell position " + position
             )
+        }
+        _adapter.onFocus = fun(_:View?, position:Int):Unit {
+            Log.d("menu onFocus",  position.toString())
+            if(position >= _viewModel.loadedDataSize.value - 10) {
+                loadNextImages()
+            }
         }
         _adapter.onKeyDown = fun(view:View?, position:Int, keyEvent: KeyEvent):Boolean{
             if(view != null) {
@@ -68,8 +74,20 @@ class PhotoGridFragment() : Fragment() {
 
         lifecycleScope.launch {
             _viewModel.loadedDataSize.collect(){
-                _adapter.submitList(ArrayList(_viewModel.urlList.value))
+                val allDataSize = _viewModel.loadedDataSize.value
+                val itemCount = _viewModel.lastLoadedDataSize
+                Log.d("loadedDataSize", allDataSize.toString())
+                _adapter.notifyItemRangeInserted(allDataSize - itemCount, itemCount)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadNextImages()
+    }
+
+    private fun loadNextImages(){
+        _viewModel.loadNextImageList()
     }
 }

@@ -105,19 +105,5 @@ class MenuBarViewModel : ViewModel() {
             SETTING,
             ALBUM_ITEM
         }
-        companion object {
-            /* DiffUtilの定義 */
-            val DIFF_UTIL = object: DiffUtil.ItemCallback<MenuBarItem>() {
-                override fun areItemsTheSame(oldItem: MenuBarItem, newItem: MenuBarItem)
-                        : Boolean {
-                    return oldItem.itemType == newItem.itemType && oldItem.itemId == newItem.itemId
-                }
-
-                override fun areContentsTheSame(oldItem: MenuBarItem, newItem: MenuBarItem)
-                        : Boolean {
-                    return oldItem == newItem
-                }
-            }
-        }
     }
 }

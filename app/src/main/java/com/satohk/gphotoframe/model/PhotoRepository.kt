@@ -21,7 +21,8 @@ data class Album(
 
 interface PhotoRepository{
     suspend fun getAlbumList():List<Album>
-    suspend fun getPhotoList(pageSize:Int, pageToken:String?, album:Album?, category:PhotoCategory?, startDate:ZonedDateTime?, endDate:ZonedDateTime?):List<PhotoMetadata>
+    suspend fun getPhotoList(pageSize:Int, pageToken:String?, album:Album?, category:PhotoCategory?,
+                             startDate:ZonedDateTime?, endDate:ZonedDateTime?):Pair<List<PhotoMetadata>,String>
     suspend fun getPhotoBitmap(photo:PhotoMetadata, width:Int?, height:Int?, cropFlag:Boolean?):Bitmap?
     suspend fun getAlbumCoverPhoto(album:Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap?
 }

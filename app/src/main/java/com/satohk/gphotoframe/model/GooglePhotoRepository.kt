@@ -43,7 +43,9 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
         return albums
     }
 
-    override suspend fun getPhotoList(pageSize:Int, pageToken:String?, album:Album?, category:PhotoCategory?, startDate:ZonedDateTime?, endDate:ZonedDateTime?):List<PhotoMetadata>{
+    override suspend fun getPhotoList(pageSize:Int, pageToken:String?, album:Album?,
+                                      category:PhotoCategory?, startDate:ZonedDateTime?,
+                                      endDate:ZonedDateTime?):Pair<List<PhotoMetadata>,String>{
         val dateFilter =
             if(startDate !== null && endDate !== null)
                 ParamDateFilter(
@@ -74,10 +76,11 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
         val response = httpPost(url, requestBody)
         if(!response.isSuccessful){
             Log.i("http", "response is not ok . %s, %s".format(url, response.toString()))
-            return listOf()
+            return Pair(listOf(), "")
         }
         val responseBodyStr = response.body?.string()!!
         val responseDecoded = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)
+        val resultNextPageToken = responseDecoded.nextPageToken
         val result: List<PhotoMetadata> = responseDecoded.mediaItems.map{
             PhotoMetadata(
                 ZonedDateTime.parse(it.mediaMetadata!!.creationTime),
@@ -85,18 +88,22 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
                 it.baseUrl
             )
         }
-        return result
+        return Pair(result, resultNextPageToken)
     }
 
-    override suspend fun getPhotoBitmap(photo:PhotoMetadata, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {
+    override suspend fun getPhotoBitmap(
+        photo: PhotoMetadata,
+        width: Int?,
+        height: Int?,
+        cropFlag: Boolean?
+    ): Bitmap? {
         val res = httpGet(makeImageUrl(photo.url, width, height, cropFlag))
-        if(!res.isSuccessful){
+        if (!res.isSuccessful) {
             Log.i("http", "response is not ok . %s, %s".format(photo.url, res.toString()))
             return null
         }
         val body = res.body?.bytes()!!
-        val bmp = BitmapFactory.decodeByteArray(body, 0, body.size)
-        return bmp
+        return BitmapFactory.decodeByteArray(body, 0, body.size)
     }
 
     override suspend fun getAlbumCoverPhoto(album:Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {

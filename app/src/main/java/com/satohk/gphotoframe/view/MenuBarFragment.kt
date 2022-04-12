@@ -51,7 +51,7 @@ class MenuBarFragment() : Fragment() {
         val numberOfColumns = 1
         _recyclerView.layoutManager =
             GridLayoutManager(requireContext(), numberOfColumns)
-        _adapter = MenuBarItemAdapter(this._viewModel)
+        _adapter = MenuBarItemAdapter(this._viewModel.itemList, this._viewModel)
 
         _adapter.onClick = fun(_:View?, position:Int):Unit{
             Log.d("click",  position.toString())
@@ -74,12 +74,11 @@ class MenuBarFragment() : Fragment() {
             return false
         }
         _recyclerView.adapter = _adapter
-        _adapter.submitList(_viewModel.itemList)
 
         lifecycleScope.launch {
             if(_viewModel.selectedMenuType == MenuBarViewModel.MenuType.ALBUM_LIST) {
                 _viewModel.albumListLoaded.collect() {
-                    _adapter.submitList(_viewModel.itemList)
+                    _adapter.notifyDataSetChanged()
                     restoreLastFocus()
                 }
             }

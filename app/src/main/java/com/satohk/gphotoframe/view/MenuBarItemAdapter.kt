@@ -22,8 +22,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MenuBarItemAdapter internal constructor(private val _viewModel: MenuBarViewModel) :
-    ListAdapter<MenuBarItem, MenuBarItemAdapter.MenuBarItemViewHolder>(MenuBarItem.DIFF_UTIL) {
+class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarViewModel.MenuBarItem>,
+                                              private val _viewModel: MenuBarViewModel) :
+    RecyclerView.Adapter<MenuBarItemAdapter.MenuBarItemViewHolder>() {
 
     var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
     var onClick: ((view:View?, position:Int) -> Unit)? = null
@@ -37,7 +38,7 @@ class MenuBarItemAdapter internal constructor(private val _viewModel: MenuBarVie
 
     // binds the data
     override fun onBindViewHolder(holder: MenuBarItemViewHolder, position: Int) {
-        val item:MenuBarItem = getItem(position)
+        val item:MenuBarItem = _list[position]
         holder.adapterPosition = position
 
         val iconId = when(item.itemType){
@@ -73,7 +74,7 @@ class MenuBarItemAdapter internal constructor(private val _viewModel: MenuBarVie
             holder.binding.button.text = resource.getString(captionId)
         }
         else{
-            holder.binding.button.text = getItem(position).caption
+            holder.binding.button.text = _list[position].caption
         }
 
         // load album cover icon
@@ -93,6 +94,10 @@ class MenuBarItemAdapter internal constructor(private val _viewModel: MenuBarVie
         holder.onClick = this.onClick
         holder.onKeyDown = this.onKeyDown
         holder.onFocus = this.onFocus
+    }
+
+    override fun getItemCount(): Int {
+        return _list.size
     }
 
     // stores and recycles views as they are scrolled off screen

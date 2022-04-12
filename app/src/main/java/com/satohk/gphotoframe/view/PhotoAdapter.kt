@@ -1,5 +1,6 @@
 package com.satohk.gphotoframe.view
 
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -9,13 +10,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.satohk.gphotoframe.R
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel.PhotoGridItem
 import com.satohk.gphotoframe.databinding.GridItemBinding
-import android.net.Uri
 import android.util.Log
 import android.view.KeyEvent
-import com.squareup.picasso.Picasso
+import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
+import kotlinx.coroutines.*
 
-class PhotoAdapter :
-    ListAdapter<PhotoGridItem, PhotoAdapter.PhotoViewHolder>(PhotoGridItem.DIFF_UTIL) {
+class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewModel.PhotoGridItem>,
+                                        private val _viewModel: PhotoGridViewModel):
+    RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
 
     var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
     var onClick: ((view:View?, position:Int) -> Unit)? = null
@@ -29,16 +31,28 @@ class PhotoAdapter :
 
     // binds the data
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
-        val url: Uri = getItem(position).uri
+        val item: PhotoGridItem = _list[position]
         holder.adapterPosition = position
-        Picasso.get()
-            .load(url)
-            .placeholder(R.drawable.default_background)
-            .into(holder.binding.imageView)
-
         holder.onClick = this.onClick
         holder.onKeyDown = this.onKeyDown
         holder.onFocus = this.onFocus
+        holder.binding.imageView.setImageResource(R.drawable.default_background)
+
+        // load image
+        GlobalScope.launch(Dispatchers.Main){
+            var bmp: Bitmap?
+            Log.d("debug", "url=%s".format(item.photoMetaData.url))
+            withContext(Dispatchers.IO) {
+                bmp = _viewModel.loadThumbnail(item, holder.binding.imageView.width, holder.binding.imageView.height)
+            }
+            if(bmp != null){
+                holder.binding.imageView.setImageBitmap(bmp)
+            }
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return _list.size
     }
 
     // stores and recycles views as they are scrolled off screen
@@ -58,9 +72,10 @@ class PhotoAdapter :
                 onClick?.invoke(view, adapterPosition)
             }
             itemView.setOnFocusChangeListener { view, b ->
-                if(b){
+                if(b) {
                     view.setBackgroundColor(Color.WHITE)
                     Log.d("setonfocuschange", adapterPosition.toString())
+                    onFocus?.invoke(view, adapterPosition)
                 }
                 else{
                     view.setBackgroundResource(R.color.default_background)
