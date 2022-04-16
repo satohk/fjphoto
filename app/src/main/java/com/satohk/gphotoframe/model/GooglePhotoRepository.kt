@@ -3,15 +3,22 @@ package com.satohk.gphotoframe.model
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.ZonedDateTime
 import okhttp3.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.net.ConnectException
 
 
-class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
+class GooglePhotoRepository(
+    private val accessToken:String,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    ) : PhotoRepository{
     private val jsonDec = Json{ignoreUnknownKeys=true}
 
     override suspend fun getAlbumList():List<Album> {
@@ -19,25 +26,33 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
         var pageToken:String? = null
 
         val albums: MutableList<Album> = mutableListOf()
+        var exitLoop = false
 
-        while(true){
+        while(!exitLoop){
             val pageTokenStr = if (pageToken == null)  "" else "&pageToken=%s".format(pageToken)
             val url = "https://photoslibrary.googleapis.com/v1/albums?pageSize=%d%s".format(pageSize, pageTokenStr)
             val res = httpGet(url)
-            if(!res.isSuccessful){
-                Log.i("http", "response is not ok . %s, %s".format(url, res.toString()))
-                break
+
+            if(res.isSuccessful){
+                val resBody = jsonDec.decodeFromString<AlbumsResponse>(res.body?.string()!!)
+                for(album in resBody.albums){
+                    albums.add(
+                        Album(album.id, album.title, album.coverPhotoBaseUrl)
+                    )
+                }
+                if(resBody.nextPageToken == null){
+                    exitLoop = true
+                }
+                else {
+                    pageToken = resBody.nextPageToken
+                }
             }
-            val resBody = jsonDec.decodeFromString<AlbumsResponse>(res.body?.string()!!)
-            for(album in resBody.albums){
-                albums.add(
-                    Album(album.id, album.title, album.coverPhotoBaseUrl)
-                )
+            else{
+                exitLoop = true
             }
-            if(resBody.nextPageToken == null){
-                break
-            }
-            pageToken = resBody.nextPageToken
+
+            res.body?.close()
+            res.close()
         }
 
         return albums
@@ -76,6 +91,8 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
         val response = httpPost(url, requestBody)
         if(!response.isSuccessful){
             Log.i("http", "response is not ok . %s, %s".format(url, response.toString()))
+            response.body?.close()
+            response.close()
             return Pair(listOf(), "")
         }
         val responseBodyStr = response.body?.string()!!
@@ -88,6 +105,8 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
                 it.baseUrl
             )
         }
+        response.body?.close()
+        response.close()
         return Pair(result, resultNextPageToken)
     }
 
@@ -97,13 +116,27 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
         height: Int?,
         cropFlag: Boolean?
     ): Bitmap? {
-        val res = httpGet(makeImageUrl(photo.url, width, height, cropFlag))
-        if (!res.isSuccessful) {
-            Log.i("http", "response is not ok . %s, %s".format(photo.url, res.toString()))
-            return null
+        return withContext(ioDispatcher) {
+            Log.d("getPhotoBitmap", "w%d, h%d".format(width, height))
+            try {
+                val res = httpGet(makeImageUrl(photo.url, width, height, cropFlag))
+                if (!res.isSuccessful) {
+                    Log.i("http", "response is not ok . %s, %s".format(photo.url, res.toString()))
+                    res.close()
+                    res.body?.close()
+                    return@withContext null
+                }
+
+                val body = res.body?.bytes()!!
+                val bmp = BitmapFactory.decodeByteArray(body, 0, body.size)
+                res.close()
+                res.body?.close()
+                return@withContext bmp            }
+            catch(e: ConnectException){
+                Log.e("getPhotoBitmap", e.toString())
+                return@withContext null
+            }
         }
-        val body = res.body?.bytes()!!
-        return BitmapFactory.decodeByteArray(body, 0, body.size)
     }
 
     override suspend fun getAlbumCoverPhoto(album:Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {
@@ -111,9 +144,13 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
             val res = httpGet(makeImageUrl(album.coverPhotoUrl, width, height, cropFlag))
             if(!res.isSuccessful){
                 Log.i("http", "response is not ok . %s, %s".format(album.coverPhotoUrl, res.toString()))
+                res.body?.close()
+                res.close()
                 return null
             }
             val body = res.body?.bytes()!!
+            res.body?.close()
+            res.close()
             val bmp = BitmapFactory.decodeByteArray(body, 0, body.size)
             return bmp
         }
@@ -133,25 +170,32 @@ class GooglePhotoRepository(private val accessToken:String) : PhotoRepository{
         return url
     }
 
-    private fun httpGet(url: String): Response {
+    private suspend fun httpGet(url: String): Response {
         val client = OkHttpClient()
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $accessToken")
             .build()
-        return client.newCall(request).execute()
+        var response: Response? = null
+        withContext(ioDispatcher) {
+            response = client.newCall(request).execute()
+        }
+        return response!!
     }
 
-    private fun httpPost(url: String, requestBody: String): Response {
+    private suspend fun httpPost(url: String, requestBody: String): Response {
         val client = OkHttpClient()
         val postBody =
             requestBody.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
         val request =
-            Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer $accessToken")
-                .post(postBody)
-                .build()
-        return client.newCall(request).execute()
+            Request.Builder().url(url)
+                                .addHeader("Authorization", "Bearer $accessToken")
+                                .post(postBody)
+                                .build()
+        var response: Response? = null
+        withContext(ioDispatcher) {
+            response = client.newCall(request).execute()
+        }
+        return response!!
     }
 }

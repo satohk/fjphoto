@@ -45,7 +45,7 @@ class MenuBarViewModel : ViewModel() {
         _allItemList[MenuType.ALBUM_LIST] = listOf()
         _allItemList[MenuType.YEAR_LIST] = listOf()
 
-        viewModelScope.launch(Dispatchers.IO)  {
+        viewModelScope.launch {
             _accountState.photoRepository.collect() {
                 if(_accountState.photoRepository.value != null) {
                     val albumList = _accountState.photoRepository.value!!.getAlbumList()

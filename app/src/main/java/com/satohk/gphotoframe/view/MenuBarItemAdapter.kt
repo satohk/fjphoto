@@ -79,10 +79,7 @@ class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarView
 
         // load album cover icon
         GlobalScope.launch(Dispatchers.Main){
-            var bmp: Bitmap?
-            withContext(Dispatchers.IO) {
-                bmp = _viewModel.loadIcon(item, 96, 96)
-            }
+            val bmp  = _viewModel.loadIcon(item, 96, 96)
             Log.d("debug", "loaded bmp :width=%d, height=%d".format(bmp?.width, bmp?.height))
             if(bmp != null){
                 val drawable = BitmapDrawable(bmp)

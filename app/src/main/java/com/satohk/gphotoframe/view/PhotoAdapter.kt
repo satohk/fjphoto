@@ -23,31 +23,26 @@ class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewMod
     var onClick: ((view:View?, position:Int) -> Unit)? = null
     var onFocus: ((view:View?, position:Int) -> Unit)? = null
 
+    var viewHolders: MutableList<PhotoViewHolder> = mutableListOf()
+        private set
+
     // inflates the cell layout from xml when needed
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val view = GridItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PhotoViewHolder(view)
+        val viewHolder = PhotoViewHolder(view)
+        viewHolders.add(viewHolder)
+        return viewHolder
     }
 
     // binds the data
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
-        val item: PhotoGridItem = _list[position]
-        holder.adapterPosition = position
+        holder._position = position
         holder.onClick = this.onClick
         holder.onKeyDown = this.onKeyDown
         holder.onFocus = this.onFocus
         holder.binding.imageView.setImageResource(R.drawable.default_background)
-
-        // load image
-        GlobalScope.launch(Dispatchers.Main){
-            var bmp: Bitmap?
-            Log.d("debug", "url=%s".format(item.photoMetaData.url))
-            withContext(Dispatchers.IO) {
-                bmp = _viewModel.loadThumbnail(item, holder.binding.imageView.width, holder.binding.imageView.height)
-            }
-            if(bmp != null){
-                holder.binding.imageView.setImageBitmap(bmp)
-            }
+        _viewModel.loadThumbnail(_list[position], 256, 256){
+            holder.setImage(it)
         }
     }
 
@@ -63,19 +58,19 @@ class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewMod
         var onClick: ((view:View?, position:Int) -> Unit)? = null
         var onFocus: ((view:View?, position:Int) -> Unit)? = null
 
+        internal var _position: Int = 0
         private val _binding: GridItemBinding
         internal val binding: GridItemBinding get() = _binding
-        internal var adapterPosition: Int = 0
 
         init {
             itemView.setOnClickListener { view ->
-                onClick?.invoke(view, adapterPosition)
+                onClick?.invoke(view, _position)
             }
             itemView.setOnFocusChangeListener { view, b ->
                 if(b) {
                     view.setBackgroundColor(Color.WHITE)
-                    Log.d("setonfocuschange", adapterPosition.toString())
-                    onFocus?.invoke(view, adapterPosition)
+                    Log.d("setonfocuschange", _position.toString())
+                    onFocus?.invoke(view, _position)
                 }
                 else{
                     view.setBackgroundResource(R.color.default_background)
@@ -85,13 +80,19 @@ class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewMod
                 if(keyEvent.action == KeyEvent.ACTION_DOWN) {
                     return@setOnKeyListener onKeyDown?.invoke(
                         view,
-                        adapterPosition,
+                        _position,
                         keyEvent
                     ) == true
                 }
                 return@setOnKeyListener false
             }
             _binding = binding
+        }
+
+        fun setImage(bitmap: Bitmap?){
+            if(bitmap != null) {
+                binding.imageView.setImageBitmap(bitmap)
+            }
         }
     }
 }

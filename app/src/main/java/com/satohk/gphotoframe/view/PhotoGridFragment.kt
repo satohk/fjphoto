@@ -23,9 +23,10 @@ import kotlinx.coroutines.flow.collect
  * Loads a grid of cards with movies to browse.
  */
 class PhotoGridFragment() : Fragment() {
-    private lateinit var _adapter: PhotoAdapter
     private val _viewModel by activityViewModels<PhotoGridViewModel>()
     private lateinit var _recyclerView: RecyclerView
+    private lateinit var _adapter: PhotoAdapter
+    private lateinit var _layoutManager: GridLayoutManager
     private val _numberOfColumns = 6
     var onBack: (() -> Unit)? = null
 
@@ -41,23 +42,23 @@ class PhotoGridFragment() : Fragment() {
 
         // set up the RecyclerView
         _recyclerView = view.findViewById<RecyclerView>(R.id.photo_grid)
-        _recyclerView.layoutManager =
-            GridLayoutManager(requireContext(), _numberOfColumns)
+        _layoutManager = GridLayoutManager(requireContext(), _numberOfColumns)
+        _recyclerView.layoutManager =_layoutManager
         _adapter = PhotoAdapter(_viewModel.itemList.value, _viewModel)
         _adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
 
         // event handler
-        _adapter.onClick = fun(_:View?, position:Int):Unit{
+        _adapter.onClick = fun(_:View?, position:Int){
             Log.i(
                 "TAG",
                 "You clicked number " + position
                     .toString() + ", which is at cell position " + position
             )
         }
-        _adapter.onFocus = fun(_:View?, position:Int):Unit {
+        _adapter.onFocus = fun(_:View?, position:Int) {
             Log.d("menu onFocus",  position.toString())
             if(position >= _viewModel.loadedDataSize.value - 10) {
-                loadNextImages()
+                _viewModel.loadNextImageList()
             }
         }
         _adapter.onKeyDown = fun(view:View?, position:Int, keyEvent: KeyEvent):Boolean{
@@ -78,16 +79,13 @@ class PhotoGridFragment() : Fragment() {
                 val itemCount = _viewModel.lastLoadedDataSize
                 Log.d("loadedDataSize", allDataSize.toString())
                 _adapter.notifyItemRangeInserted(allDataSize - itemCount, itemCount)
+
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        loadNextImages()
-    }
-
-    private fun loadNextImages(){
         _viewModel.loadNextImageList()
     }
 }
