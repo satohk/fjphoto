@@ -8,7 +8,6 @@ import com.satohk.gphotoframe.*
 
 import android.view.LayoutInflater
 import android.view.View
-import androidx.core.view.get
 import androidx.fragment.app.*
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -51,11 +50,11 @@ class MenuBarFragment() : Fragment() {
         val numberOfColumns = 1
         _recyclerView.layoutManager =
             GridLayoutManager(requireContext(), numberOfColumns)
-        _adapter = MenuBarItemAdapter(this._viewModel.itemList, this._viewModel)
+        _adapter = MenuBarItemAdapter(this._viewModel.itemList.value, this._viewModel)
 
         _adapter.onClick = fun(_:View?, position:Int):Unit{
             Log.d("click",  position.toString())
-            onSelectMenuItem?.invoke(_viewModel.itemList[position])
+            onSelectMenuItem?.invoke(_viewModel.itemList.value[position])
         }
 
         _adapter.onFocus = fun(_:View?, position:Int):Unit {
@@ -66,7 +65,7 @@ class MenuBarFragment() : Fragment() {
         _adapter.onKeyDown = fun(_:View?, position:Int, keyEvent: KeyEvent):Boolean{
             Log.d("keydown", keyEvent.toString())
             if(keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT){
-                onSelectMenuItem?.invoke(_viewModel.itemList[position])
+                onSelectMenuItem?.invoke(_viewModel.itemList.value[position])
             }
             else if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT){
                 onBack?.invoke()
@@ -76,11 +75,9 @@ class MenuBarFragment() : Fragment() {
         _recyclerView.adapter = _adapter
 
         lifecycleScope.launch {
-            if(_viewModel.selectedMenuType == MenuBarViewModel.MenuType.ALBUM_LIST) {
-                _viewModel.albumListLoaded.collect() {
-                    _adapter.notifyDataSetChanged()
-                    restoreLastFocus()
-                }
+            _viewModel.itemList.collect() {
+                _adapter.notifyDataSetChanged()
+                restoreLastFocus()
             }
         }
 

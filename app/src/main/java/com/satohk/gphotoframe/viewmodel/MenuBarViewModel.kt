@@ -1,18 +1,13 @@
 package com.satohk.gphotoframe.viewmodel
 
 import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.recyclerview.widget.DiffUtil
 import com.satohk.gphotoframe.model.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.inject
 
 
@@ -23,13 +18,15 @@ class MenuBarViewModel : ViewModel() {
     private var _selectedMenuType: MenuType = MenuType.TOP
     var selectedMenuType: MenuType
         get() = _selectedMenuType
-        set(value){ _selectedMenuType = value }
+        set(value){
+            _selectedMenuType = value
+            if(_allItemList[_selectedMenuType] != null) {
+                _itemList.value = _allItemList[_selectedMenuType]!!
+            }
+        }
 
-    private val _albumListLoaded = MutableStateFlow<Boolean>(false)
-    val albumListLoaded: StateFlow<Boolean> get() = _albumListLoaded
-
-    val itemList: List<MenuBarItem>
-        get() = _allItemList[_selectedMenuType]!!
+    private val _itemList = MutableStateFlow(listOf<MenuBarItem>())
+    val itemList: StateFlow<List<MenuBarItem>> get() = _itemList
     var selectedItemIndex: Int
         get() = _selectedItemIndex[_selectedMenuType]!!
         set(value) { _selectedItemIndex[_selectedMenuType] = value}
@@ -58,11 +55,12 @@ class MenuBarViewModel : ViewModel() {
                             album
                         )
                     }
-                    _albumListLoaded.emit(true)
+
+                    if(_selectedMenuType == MenuType.ALBUM_LIST) {
+                        _itemList.emit(_allItemList[_selectedMenuType]!!)
+                    }
                 }
             }
-
-            _albumListLoaded.emit(true)
         }
 
         for(menuType in MenuType.values()){
@@ -70,17 +68,19 @@ class MenuBarViewModel : ViewModel() {
         }
     }
 
-    suspend fun loadIcon(menuBarItem: MenuBarItem, width:Int?, height:Int?): Bitmap?{
-        if(_accountState.photoRepository.value != null && menuBarItem.album != null) {
-            return _accountState.photoRepository.value!!.getAlbumCoverPhoto(
-                menuBarItem.album,
-                width,
-                height,
-                true
-            )
-        }
-        else{
-            return null
+    fun loadIcon(menuBarItem: MenuBarItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit) {
+        if(_accountState.photoRepository.value != null) {
+            viewModelScope.launch {
+                if (_accountState.photoRepository.value != null && menuBarItem.album != null) {
+                    val bmp = _accountState.photoRepository.value!!.getAlbumCoverPhoto(
+                        menuBarItem.album,
+                        width,
+                        height,
+                        true
+                    )
+                    callback.invoke(bmp)
+                }
+            }
         }
     }
 

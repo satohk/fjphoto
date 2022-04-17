@@ -35,39 +35,10 @@ class PhotoGridViewModel : ViewModel() {
     private var _endDate: ZonedDateTime? = null
     private var _isLoading: Boolean = false
 
-    data class ThumnailLoadQueueItem(
-        val photoGridItem: PhotoGridItem,
-        val width: Int?,
-        val height:Int?,
-        val callback: (bmp:Bitmap?)->Unit
-    )
-    private val _thumbnailLoadQueue = ArrayDeque(listOf<ThumnailLoadQueueItem>())
-
     private val _loadedDataSize = MutableStateFlow<Int>(0)
     val loadedDataSize: StateFlow<Int> get() = _loadedDataSize
     var lastLoadedDataSize: Int = 0
         private set
-
-    init{
-        viewModelScope.launch {
-            while(true) {
-                if(_thumbnailLoadQueue.size >= 1){
-                    val item = _thumbnailLoadQueue.first()
-                    if (_accountState.photoRepository.value != null) {
-                        val bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
-                            item.photoGridItem.photoMetaData,
-                            item.width,
-                            item.height,
-                            true
-                        )
-                        item.callback.invoke(bmp)
-                    }
-                    _thumbnailLoadQueue.removeFirst()
-                }
-                delay(100)
-            }
-        }
-    }
 
     fun loadNextImageList() {
         if(_accountState.photoRepository.value != null && !_isLoading) {
@@ -91,9 +62,6 @@ class PhotoGridViewModel : ViewModel() {
     }
 
     fun loadThumbnail(photoGridItem: PhotoGridItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit) {
-//        _thumbnailLoadQueue.add(
-//            ThumnailLoadQueueItem(photoGridItem, width, height, callback)
-//        )
         if(_accountState.photoRepository.value != null) {
             viewModelScope.launch {
                 val bmp = _accountState.photoRepository.value!!.getPhotoBitmap(

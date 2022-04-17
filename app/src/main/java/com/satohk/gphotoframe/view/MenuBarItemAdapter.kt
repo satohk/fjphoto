@@ -77,12 +77,10 @@ class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarView
             holder.binding.button.text = _list[position].caption
         }
 
-        // load album cover icon
-        GlobalScope.launch(Dispatchers.Main){
-            val bmp  = _viewModel.loadIcon(item, 96, 96)
-            Log.d("debug", "loaded bmp :width=%d, height=%d".format(bmp?.width, bmp?.height))
-            if(bmp != null){
-                val drawable = BitmapDrawable(bmp)
+        _viewModel.loadIcon(item, 96, 96){
+            if(it != null){
+                Log.d("debug", "loaded bmp :width=%d, height=%d".format(it?.width, it?.height))
+                val drawable = BitmapDrawable(it)
                 holder.binding.button.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
                 holder.binding.button.setCompoundDrawablePadding(20)
             }
