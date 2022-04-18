@@ -9,26 +9,20 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.satohk.gphotoframe.R
-import com.satohk.gphotoframe.viewmodel.MenuBarViewModel
-import com.satohk.gphotoframe.viewmodel.MenuBarViewModel.MenuBarItem
-import com.satohk.gphotoframe.viewmodel.MenuBarViewModel.MenuBarItem.MenuBarItemType
 import com.satohk.gphotoframe.databinding.MenuBarItemBinding
 import android.widget.TextView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.satohk.gphotoframe.viewmodel.MenuBarItem
 
-class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarViewModel.MenuBarItem>,
-                                              private val _viewModel: MenuBarViewModel) :
+
+class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarItem>) :
     RecyclerView.Adapter<MenuBarItemAdapter.MenuBarItemViewHolder>() {
 
     var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
     var onClick: ((view:View?, position:Int) -> Unit)? = null
     var onFocus: ((view:View?, position:Int) -> Unit)? = null
+    var loadIcon: ((menuBarItem: MenuBarItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit)->Unit)? = null
 
     // inflates the cell layout from xml when needed
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MenuBarItemViewHolder {
@@ -38,27 +32,27 @@ class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarView
 
     // binds the data
     override fun onBindViewHolder(holder: MenuBarItemViewHolder, position: Int) {
-        val item:MenuBarItem = _list[position]
+        val item: MenuBarItem = _list[position]
         holder.adapterPosition = position
 
         val iconId = when(item.itemType){
-            MenuBarItemType.SHOW_ALL -> R.drawable.all_media_icon
-            MenuBarItemType.SHOW_PHOTO -> R.drawable.photo_icon
-            MenuBarItemType.SHOW_MOVIE -> R.drawable.movie_icon
-            MenuBarItemType.SHOW_ALBUM_LIST -> R.drawable.all_media_icon
-            MenuBarItemType.SEARCH -> R.drawable.search_icon
-            MenuBarItemType.SETTING -> R.drawable.search_icon
-            MenuBarItemType.ALBUM_ITEM -> R.drawable.all_media_icon
+            MenuBarItem.MenuBarItemType.SHOW_ALL -> R.drawable.all_media_icon
+            MenuBarItem.MenuBarItemType.SHOW_PHOTO -> R.drawable.photo_icon
+            MenuBarItem.MenuBarItemType.SHOW_MOVIE -> R.drawable.movie_icon
+            MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> R.drawable.all_media_icon
+            MenuBarItem.MenuBarItemType.SEARCH -> R.drawable.search_icon
+            MenuBarItem.MenuBarItemType.SETTING -> R.drawable.search_icon
+            MenuBarItem.MenuBarItemType.ALBUM_ITEM -> R.drawable.all_media_icon
             else -> 0
         }
         val captionId = when(item.itemType){
-            MenuBarItemType.SHOW_ALL -> R.string.menu_item_title_all
-            MenuBarItemType.SHOW_PHOTO -> R.string.menu_item_title_photo
-            MenuBarItemType.SHOW_MOVIE -> R.string.menu_item_title_movie
-            MenuBarItemType.SHOW_ALBUM_LIST -> R.string.row_title_album
-            MenuBarItemType.SEARCH -> R.string.menu_item_title_search
-            MenuBarItemType.SETTING-> R.string.menu_item_title_search
-            MenuBarItemType.ALBUM_ITEM -> 0
+            MenuBarItem.MenuBarItemType.SHOW_ALL -> R.string.menu_item_title_all
+            MenuBarItem.MenuBarItemType.SHOW_PHOTO -> R.string.menu_item_title_photo
+            MenuBarItem.MenuBarItemType.SHOW_MOVIE -> R.string.menu_item_title_movie
+            MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> R.string.row_title_album
+            MenuBarItem.MenuBarItemType.SEARCH -> R.string.menu_item_title_search
+            MenuBarItem.MenuBarItemType.SETTING-> R.string.menu_item_title_search
+            MenuBarItem.MenuBarItemType.ALBUM_ITEM -> 0
         }
         val context = holder.binding.root.context
         val resource = context.resources!!
@@ -73,11 +67,14 @@ class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarView
         if(captionId != 0) {
             holder.binding.button.text = resource.getString(captionId)
         }
+        else if(_list[position].album != null){
+            holder.binding.button.text = _list[position].album?.name
+        }
         else{
-            holder.binding.button.text = _list[position].caption
+            holder.binding.button.text = "null"
         }
 
-        _viewModel.loadIcon(item, 96, 96){
+        loadIcon?.invoke(item, 96, 96){
             if(it != null){
                 Log.d("debug", "loaded bmp :width=%d, height=%d".format(it?.width, it?.height))
                 val drawable = BitmapDrawable(it)

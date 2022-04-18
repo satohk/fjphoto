@@ -1,5 +1,6 @@
 package com.satohk.gphotoframe.view
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -13,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import com.satohk.gphotoframe.viewmodel.MenuBarItem
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,10 +43,10 @@ class PhotoGridFragment() : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // set up the RecyclerView
-        _recyclerView = view.findViewById<RecyclerView>(R.id.photo_grid)
+        _recyclerView = view.findViewById(R.id.photo_grid)
         _layoutManager = GridLayoutManager(requireContext(), _numberOfColumns)
         _recyclerView.layoutManager =_layoutManager
-        _adapter = PhotoAdapter(_viewModel.itemList.value, _viewModel)
+        _adapter = PhotoAdapter(_viewModel.itemList.value)
         _adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
 
         // event handler
@@ -69,6 +71,10 @@ class PhotoGridFragment() : Fragment() {
                 }
             }
             return false
+        }
+
+        _adapter.loadThumbnail = fun(photoGridItem: PhotoGridViewModel.PhotoGridItem, width:Int?, height:Int?, callback:(bmp: Bitmap?)->Unit) {
+            _viewModel.loadThumbnail(photoGridItem, width, height, callback)
         }
 
         _recyclerView.adapter = _adapter

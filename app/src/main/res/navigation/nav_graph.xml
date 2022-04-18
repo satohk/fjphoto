@@ -17,7 +17,7 @@
             app:popExitAnim="@android:anim/fade_out"></action>
         <argument
             android:name="menuType"
-            app:argType="com.satohk.gphotoframe.viewmodel.MenuBarViewModel$MenuType"
+            app:argType="com.satohk.gphotoframe.viewmodel.MenuBarType"
             android:defaultValue="TOP" />
         <argument
             android:name="focusMenu"

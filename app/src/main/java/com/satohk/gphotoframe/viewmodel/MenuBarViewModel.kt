@@ -13,57 +13,58 @@ import org.koin.java.KoinJavaComponent.inject
 
 class MenuBarViewModel : ViewModel() {
     private val _accountState: AccountState by inject(AccountState::class.java)
-    private val _allItemList = mutableMapOf<MenuType, List<MenuBarItem>>()
-    private val _selectedItemIndex = mutableMapOf<MenuType, Int>()
-    private var _selectedMenuType: MenuType = MenuType.TOP
-    var selectedMenuType: MenuType
-        get() = _selectedMenuType
+    private val _allItemList = mutableMapOf<MenuBarType, List<MenuBarItem>>()
+    private val _selectedItemIndex = mutableMapOf<MenuBarType, Int>()
+    private var _selectedMenuBarType: MenuBarType = MenuBarType.TOP
+    var selectedMenuBarType: MenuBarType
+        get() = _selectedMenuBarType
         set(value){
-            _selectedMenuType = value
-            if(_allItemList[_selectedMenuType] != null) {
-                _itemList.value = _allItemList[_selectedMenuType]!!
+            _selectedMenuBarType = value
+            if(_allItemList[_selectedMenuBarType] != null) {
+                _itemList.value = _allItemList[_selectedMenuBarType]!!
             }
         }
 
     private val _itemList = MutableStateFlow(listOf<MenuBarItem>())
     val itemList: StateFlow<List<MenuBarItem>> get() = _itemList
     var selectedItemIndex: Int
-        get() = _selectedItemIndex[_selectedMenuType]!!
-        set(value) { _selectedItemIndex[_selectedMenuType] = value}
+        get() = _selectedItemIndex[_selectedMenuBarType]!!
+        set(value) { _selectedItemIndex[_selectedMenuBarType] = value}
+    val selectedItem: MenuBarItem
+        get() = itemList.value[selectedItemIndex]
 
     init{
-        _allItemList[MenuType.TOP] = listOf(
-            MenuBarItem(MenuBarItem.MenuBarItemType.SHOW_ALL),
-            MenuBarItem(MenuBarItem.MenuBarItemType.SHOW_PHOTO),
-            MenuBarItem(MenuBarItem.MenuBarItemType.SHOW_MOVIE),
+        _allItemList[MenuBarType.TOP] = listOf(
+            MenuBarItem(MenuBarItem.MenuBarItemType.SHOW_ALL, searchQuery=SearchQuery(mediaType=SearchQuery.MediaType.ALL)),
+            MenuBarItem(MenuBarItem.MenuBarItemType.SHOW_PHOTO, searchQuery=SearchQuery(mediaType=SearchQuery.MediaType.PHOTO)),
+            MenuBarItem(MenuBarItem.MenuBarItemType.SHOW_MOVIE, searchQuery=SearchQuery(mediaType=SearchQuery.MediaType.VIDEO)),
             MenuBarItem(MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST),
             MenuBarItem(MenuBarItem.MenuBarItemType.SETTING),
         )
-        _allItemList[MenuType.ALBUM_LIST] = listOf()
-        _allItemList[MenuType.YEAR_LIST] = listOf()
+        _allItemList[MenuBarType.ALBUM_LIST] = listOf()
+        _allItemList[MenuBarType.YEAR_LIST] = listOf()
 
         viewModelScope.launch {
             _accountState.photoRepository.collect() {
                 if(_accountState.photoRepository.value != null) {
                     val albumList = _accountState.photoRepository.value!!.getAlbumList()
 
-                    _allItemList[MenuType.ALBUM_LIST] = albumList.map { album ->
+                    _allItemList[MenuBarType.ALBUM_LIST] = albumList.map { album ->
                         MenuBarItem(
                             MenuBarItem.MenuBarItemType.ALBUM_ITEM,
-                            album.id,
-                            album.name,
-                            album
+                            album,
+                            SearchQuery(album=album)
                         )
                     }
 
-                    if(_selectedMenuType == MenuType.ALBUM_LIST) {
-                        _itemList.emit(_allItemList[_selectedMenuType]!!)
+                    if(_selectedMenuBarType == MenuBarType.ALBUM_LIST) {
+                        _itemList.emit(_allItemList[_selectedMenuBarType]!!)
                     }
                 }
             }
         }
 
-        for(menuType in MenuType.values()){
+        for(menuType in MenuBarType.values()){
             _selectedItemIndex[menuType] = 0
         }
     }
@@ -81,29 +82,6 @@ class MenuBarViewModel : ViewModel() {
                     callback.invoke(bmp)
                 }
             }
-        }
-    }
-
-    enum class MenuType{
-        TOP,
-        ALBUM_LIST,
-        YEAR_LIST
-    }
-
-    data class MenuBarItem(
-        val itemType: MenuBarItemType,
-        val itemId: String? = null,
-        val caption: String? = null,
-        val album: Album? = null
-    ) {
-        enum class MenuBarItemType{
-            SHOW_ALL,
-            SHOW_PHOTO,
-            SHOW_MOVIE,
-            SHOW_ALBUM_LIST,
-            SEARCH,
-            SETTING,
-            ALBUM_ITEM
         }
     }
 }

@@ -12,6 +12,8 @@ import android.widget.FrameLayout
 import androidx.fragment.app.*
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.satohk.gphotoframe.viewmodel.MenuBarItem
+import com.satohk.gphotoframe.viewmodel.MenuBarType
 import com.satohk.gphotoframe.viewmodel.MenuBarViewModel
 
 
@@ -42,16 +44,16 @@ class PhotoGridWithMenuFragment() : Fragment() {
         bundle.putSerializable("menuType", _args.menuType)
         menuBar.arguments = bundle
 
-        menuBar.onSelectMenuItem = { item:MenuBarViewModel.MenuBarItem ->
+        menuBar.onSelectMenuItem = { item: MenuBarItem ->
             when(item.itemType){
-                MenuBarViewModel.MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> {
+                MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> {
                     val action = PhotoGridWithMenuFragmentDirections.actionPhotoGridWithMenuFragmentSelf(
-                        MenuBarViewModel.MenuType.ALBUM_LIST,
+                        MenuBarType.ALBUM_LIST,
                         true
                     )
                     findNavController().navigate(action)
                 }
-                MenuBarViewModel.MenuBarItem.MenuBarItemType.SEARCH -> {
+                MenuBarItem.MenuBarItemType.SEARCH -> {
                 }
                 else -> {
                     changeFocus(view, false, true)

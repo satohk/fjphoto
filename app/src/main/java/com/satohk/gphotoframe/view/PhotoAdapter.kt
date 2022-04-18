@@ -12,16 +12,17 @@ import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel.PhotoGridItem
 import com.satohk.gphotoframe.databinding.GridItemBinding
 import android.util.Log
 import android.view.KeyEvent
+import com.satohk.gphotoframe.viewmodel.MenuBarItem
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
 import kotlinx.coroutines.*
 
-class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewModel.PhotoGridItem>,
-                                        private val _viewModel: PhotoGridViewModel):
+class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewModel.PhotoGridItem>):
     RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
 
     var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
     var onClick: ((view:View?, position:Int) -> Unit)? = null
     var onFocus: ((view:View?, position:Int) -> Unit)? = null
+    var loadThumbnail: ((photoGridItem: PhotoGridItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit)->Unit)? = null
 
     var viewHolders: MutableList<PhotoViewHolder> = mutableListOf()
         private set
@@ -41,7 +42,7 @@ class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewMod
         holder.onKeyDown = this.onKeyDown
         holder.onFocus = this.onFocus
         holder.binding.imageView.setImageResource(R.drawable.default_background)
-        _viewModel.loadThumbnail(_list[position], 256, 256){
+        loadThumbnail?.invoke(_list[position], 256, 256){
             holder.setImage(it)
         }
     }
