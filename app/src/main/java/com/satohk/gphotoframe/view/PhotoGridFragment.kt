@@ -14,9 +14,7 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import com.satohk.gphotoframe.viewmodel.MenuBarItem
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 

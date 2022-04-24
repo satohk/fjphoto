@@ -28,6 +28,7 @@ class MenuBarFragment() : Fragment() {
     private lateinit var _recyclerView: RecyclerView
     private val _viewModel by activityViewModels<MenuBarViewModel>()
     var onSelectMenuItem: ((MenuBarItem) -> Unit)? = null
+    var onFocusMenuItem: ((MenuBarItem) -> Unit)? = null
     var onBack: (() -> Unit)? = null
 
     override fun onCreateView(
@@ -63,6 +64,7 @@ class MenuBarFragment() : Fragment() {
         _adapter.onFocus = fun(_:View?, position:Int):Unit {
             Log.d("menu onFocus",  position.toString())
             _viewModel.selectedItemIndex = position
+            onFocusMenuItem?.invoke(_viewModel.selectedItem)
         }
 
         _adapter.onKeyDown = fun(_:View?, position:Int, keyEvent: KeyEvent):Boolean{

@@ -2,26 +2,26 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/photoGridWithMenuFragment">
+    app:startDestination="@id/photoGridWithSidebarFragment">
 
     <fragment
-        android:id="@+id/photoGridWithMenuFragment"
-        android:name="com.satohk.gphotoframe.view.PhotoGridWithMenuFragment"
+        android:id="@+id/photoGridWithSidebarFragment"
+        android:name="com.satohk.gphotoframe.view.PhotoGridWithSidebarFragment"
         android:label="MainFragment" >
         <action
-            android:id="@+id/action_photoGridWithMenuFragment_self"
-            app:destination="@id/photoGridWithMenuFragment"
+            android:id="@+id/action_photoGridWithSidebarFragment_self"
+            app:destination="@id/photoGridWithSidebarFragment"
             app:enterAnim="@android:anim/fade_in"
             app:exitAnim="@android:anim/fade_out"
             app:popEnterAnim="@android:anim/fade_in"
             app:popExitAnim="@android:anim/fade_out"></action>
         <argument
-            android:name="menuType"
+            android:name="sideBarType"
+            app:argType="com.satohk.gphotoframe.viewmodel.SideBarType"
+            android:defaultValue="MENUBAR" />
+        <argument
+            android:name="menuBarType"
             app:argType="com.satohk.gphotoframe.viewmodel.MenuBarType"
             android:defaultValue="TOP" />
-        <argument
-            android:name="focusMenu"
-            app:argType="boolean"
-            android:defaultValue="true" />
     </fragment>
 </navigation>
