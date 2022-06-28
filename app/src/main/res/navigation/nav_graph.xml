@@ -14,14 +14,10 @@
             app:enterAnim="@android:anim/fade_in"
             app:exitAnim="@android:anim/fade_out"
             app:popEnterAnim="@android:anim/fade_in"
-            app:popExitAnim="@android:anim/fade_out"></action>
+            app:popExitAnim="@android:anim/fade_out" />
         <argument
             android:name="sideBarType"
             app:argType="com.satohk.gphotoframe.viewmodel.SideBarType"
-            android:defaultValue="MENUBAR" />
-        <argument
-            android:name="menuBarType"
-            app:argType="com.satohk.gphotoframe.viewmodel.MenuBarType"
             android:defaultValue="TOP" />
     </fragment>
 </navigation>

@@ -58,27 +58,32 @@ class GooglePhotoRepository(
         return albums
     }
 
-    override suspend fun getPhotoList(pageSize:Int, pageToken:String?, album:Album?,
-                                      category:PhotoCategory?, startDate:ZonedDateTime?,
-                                      endDate:ZonedDateTime?):Pair<List<PhotoMetadata>,String>{
+    override suspend fun getPhotoList(pageSize:Int, pageToken:String?, searchQuery:SearchQuery?):Pair<List<PhotoMetadata>,String>{
         val dateFilter =
-            if(startDate !== null && endDate !== null)
+            if(searchQuery?.startDate !== null && searchQuery?.endDate !== null)
                 ParamDateFilter(
                     ranges=listOf(ParamDateRange(
-                        startDate=ParamDate(startDate),
-                        endDate=ParamDate(endDate)
+                        startDate=ParamDate(searchQuery.startDate),
+                        endDate=ParamDate(searchQuery.endDate)
                     )))
             else null
         val conditionFilter =
-            if(category !== null)
-                ParamContentFilter(includedContentCategories=category)
+            if(searchQuery?.photoCategory !== null)
+                ParamContentFilter(includedContentCategories=searchQuery?.photoCategory)
             else null
+        val mediaTypeFilter: ParamMediaTypeFilter? =
+            when(searchQuery?.mediaType){
+                MediaType.ALL -> ParamMediaTypeFilter(ParamMediaType.ALL_MEDIA)
+                MediaType.PHOTO -> ParamMediaTypeFilter(ParamMediaType.PHOTO)
+                MediaType.VIDEO -> ParamMediaTypeFilter(ParamMediaType.VIDEO)
+                else -> null
+            }
         val filters =
-            if(dateFilter !== null || conditionFilter !== null)
-                ParamFilters(dateFilter=dateFilter, contentFilter=conditionFilter)
+            if(dateFilter !== null || conditionFilter !== null || mediaTypeFilter !== null)
+                ParamFilters(dateFilter=dateFilter, contentFilter=conditionFilter, mediaTypeFilter=mediaTypeFilter)
             else null
         val searchParam = SearchParam(
-            albumId=album?.id,
+            albumId=searchQuery?.album?.id,
             pageSize=pageSize,
             pageToken=pageToken,
             filters=filters
@@ -184,6 +189,7 @@ class GooglePhotoRepository(
     }
 
     private suspend fun httpPost(url: String, requestBody: String): Response {
+        Log.d("httpPost", url + "/" + requestBody)
         val client = OkHttpClient()
         val postBody =
             requestBody.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())

@@ -16,22 +16,30 @@ import android.widget.TextView
 import com.satohk.gphotoframe.viewmodel.MenuBarItem
 
 
-class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarItem>) :
+class MenuBarItemAdapter:
     RecyclerView.Adapter<MenuBarItemAdapter.MenuBarItemViewHolder>() {
+
+    private var _list: List<MenuBarItem> = listOf()
 
     var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
     var onClick: ((view:View?, position:Int) -> Unit)? = null
     var onFocus: ((view:View?, position:Int) -> Unit)? = null
     var loadIcon: ((menuBarItem: MenuBarItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit)->Unit)? = null
 
+    internal fun setList(list: List<MenuBarItem>){
+        _list = list
+    }
+
     // inflates the cell layout from xml when needed
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MenuBarItemViewHolder {
+        Log.d("MenuBarItemAdapter", "onCreateViewHolder")
         val view = MenuBarItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MenuBarItemViewHolder(view)
     }
 
     // binds the data
     override fun onBindViewHolder(holder: MenuBarItemViewHolder, position: Int) {
+        Log.d("MenuBarItemAdapter", "onBindViewHolder")
         val item: MenuBarItem = _list[position]
         holder.adapterPosition = position
 
@@ -93,8 +101,8 @@ class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarItem
     }
 
     // stores and recycles views as they are scrolled off screen
-    class MenuBarItemViewHolder internal constructor(binding: MenuBarItemBinding)
-        : RecyclerView.ViewHolder(binding.root) {
+    class MenuBarItemViewHolder internal constructor(bindingArg: MenuBarItemBinding)
+        : RecyclerView.ViewHolder(bindingArg.root) {
 
         var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
         var onClick: ((view:View?, position:Int) -> Unit)? = null
@@ -119,7 +127,6 @@ class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarItem
                             R.color.menu_bar_item_foreground_highlight,
                             context.theme
                         ))
-                        //view.setBackgroundColor(Color.WHITE)
                         onFocus?.invoke(view, adapterPosition)
                     } else {
                         view.setTextColor(
@@ -128,7 +135,6 @@ class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarItem
                                 context.theme
                             )
                         )
-                        //view.setBackgroundResource(R.color.default_background)
                     }
                 }
             }
@@ -137,7 +143,7 @@ class MenuBarItemAdapter internal constructor(private val _list:List<MenuBarItem
                 return@setOnKeyListener onKeyDown?.invoke(view, adapterPosition, keyEvent) == true
             }
 
-            _binding = binding
+            _binding = bindingArg
         }
     }
 }

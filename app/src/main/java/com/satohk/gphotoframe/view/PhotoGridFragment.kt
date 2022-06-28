@@ -4,16 +4,17 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
-import android.view.ViewGroup
 import com.satohk.gphotoframe.*
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.fragment.app.Fragment
 
-import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.satohk.gphotoframe.viewmodel.GridContents
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
@@ -22,20 +23,13 @@ import kotlinx.coroutines.flow.collect
 /**
  * Loads a grid of cards with movies to browse.
  */
-class PhotoGridFragment() : Fragment() {
+class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
     private val _viewModel by activityViewModels<PhotoGridViewModel>()
     private lateinit var _recyclerView: RecyclerView
     private lateinit var _adapter: PhotoAdapter
     private lateinit var _layoutManager: GridLayoutManager
     private val _numberOfColumns = 6
     var onBack: (() -> Unit)? = null
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_photo_grid, null)
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -44,7 +38,7 @@ class PhotoGridFragment() : Fragment() {
         _recyclerView = view.findViewById(R.id.photo_grid)
         _layoutManager = GridLayoutManager(requireContext(), _numberOfColumns)
         _recyclerView.layoutManager =_layoutManager
-        _adapter = PhotoAdapter(_viewModel.itemList.value)
+        _adapter = PhotoAdapter(_viewModel.itemList)
         _adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
 
         // event handler
@@ -57,7 +51,7 @@ class PhotoGridFragment() : Fragment() {
         }
         _adapter.onFocus = fun(_:View?, position:Int) {
             Log.d("menu onFocus",  position.toString())
-            if(position >= _viewModel.loadedDataSize.value - 10) {
+            if(position >= _viewModel.dataSize.value - 12) {
                 _viewModel.loadNextImageList()
             }
         }
@@ -77,19 +71,20 @@ class PhotoGridFragment() : Fragment() {
 
         _recyclerView.adapter = _adapter
 
-        lifecycleScope.launch {
-            _viewModel.loadedDataSize.collect(){
-                val allDataSize = _viewModel.loadedDataSize.value
-                val itemCount = _viewModel.lastLoadedDataSize
-                Log.d("loadedDataSize", allDataSize.toString())
-                _adapter.notifyItemRangeInserted(allDataSize - itemCount, itemCount)
-
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                _viewModel.dataSize.collect {
+                    if(_viewModel.dataSize.value == 0){
+                        _adapter.notifyItemRangeRemoved(0, _viewModel.lastDataSize)
+                    }
+                    else {
+                        _adapter.notifyItemRangeInserted(
+                            _viewModel.lastDataSize,
+                            _viewModel.dataSize.value - _viewModel.lastDataSize
+                        )
+                    }
+                }
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        _viewModel.loadNextImageList()
     }
 }

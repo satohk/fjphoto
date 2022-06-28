@@ -1,73 +1,130 @@
 package com.satohk.gphotoframe.viewmodel
 
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.satohk.gphotoframe.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 
 
+data class MenuBarItem(
+    val itemType: MenuBarItemType,
+    val action: SideBarAction,
+    val album: Album? = null,
+) {
+    enum class MenuBarItemType{
+        SHOW_ALL,
+        SHOW_PHOTO,
+        SHOW_MOVIE,
+        SHOW_ALBUM_LIST,
+        SEARCH,
+        SETTING,
+        ALBUM_ITEM
+    }
+}
+
 class MenuBarViewModel : ViewModel() {
     private val _accountState: AccountState by inject(AccountState::class.java)
-    private val _allItemList = mutableMapOf<MenuBarType, List<MenuBarItem>>()
-    private val _selectedItemIndex = mutableMapOf<MenuBarType, Int>()
-    private var _selectedMenuBarType: MenuBarType = MenuBarType.TOP
-    var selectedMenuBarType: MenuBarType
-        get() = _selectedMenuBarType
-        set(value){
-            _selectedMenuBarType = value
-            if(_allItemList[_selectedMenuBarType] != null) {
-                _itemList.value = _allItemList[_selectedMenuBarType]!!
-            }
-        }
-
     private val _itemList = MutableStateFlow(listOf<MenuBarItem>())
     val itemList: StateFlow<List<MenuBarItem>> get() = _itemList
-    var selectedItemIndex: Int
-        get() = _selectedItemIndex[_selectedMenuBarType]!!
-        set(value) { _selectedItemIndex[_selectedMenuBarType] = value}
-    val selectedItem: MenuBarItem
-        get() = itemList.value[selectedItemIndex]
 
-    init{
-        _allItemList[MenuBarType.TOP] = listOf(
-            MenuBarItem(MenuBarItem.MenuBarItemType.SHOW_ALL, searchQuery=SearchQuery(mediaType=SearchQuery.MediaType.ALL)),
-            MenuBarItem(MenuBarItem.MenuBarItemType.SHOW_PHOTO, searchQuery=SearchQuery(mediaType=SearchQuery.MediaType.PHOTO)),
-            MenuBarItem(MenuBarItem.MenuBarItemType.SHOW_MOVIE, searchQuery=SearchQuery(mediaType=SearchQuery.MediaType.VIDEO)),
-            MenuBarItem(MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST),
-            MenuBarItem(MenuBarItem.MenuBarItemType.SETTING),
-        )
-        _allItemList[MenuBarType.ALBUM_LIST] = listOf()
-        _allItemList[MenuBarType.YEAR_LIST] = listOf()
+    private val _sideBarAction: MutableStateFlow<SideBarAction?> = MutableStateFlow(null)
+    val sideBarAction: StateFlow<SideBarAction?> get() = _sideBarAction
 
+    var lastFocusIndex: Int = 0
+        private set
+
+    fun initItemList(sideBarType: SideBarType) {
+        _itemList.value = listOf()
         viewModelScope.launch {
-            _accountState.photoRepository.collect() {
-                if(_accountState.photoRepository.value != null) {
-                    val albumList = _accountState.photoRepository.value!!.getAlbumList()
+            when (sideBarType) {
+                SideBarType.TOP -> {
+                    _itemList.emit(
+                        listOf(
+                            MenuBarItem(
+                                MenuBarItem.MenuBarItemType.SHOW_ALL,
+                                SideBarAction(SideBarActionType.ENTER_GRID,
+                                            gridContents=GridContents())
+                            ),
+                            MenuBarItem(
+                                MenuBarItem.MenuBarItemType.SHOW_PHOTO,
+                                SideBarAction(SideBarActionType.ENTER_GRID,
+                                    gridContents=GridContents(searchQuery=SearchQuery(mediaType=MediaType.PHOTO)))
+                            ),
+                            MenuBarItem(
+                                MenuBarItem.MenuBarItemType.SHOW_MOVIE,
+                                SideBarAction(SideBarActionType.ENTER_GRID,
+                                    gridContents=GridContents(searchQuery=SearchQuery(mediaType=MediaType.VIDEO)))
+                            ),
+                            MenuBarItem(
+                                MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST,
+                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
+                                    sideBarType=SideBarType.ALBUM_LIST)
+                            ),
+                            MenuBarItem(
+                                MenuBarItem.MenuBarItemType.SETTING,
+                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
+                                    sideBarType=SideBarType.SETTING)
+                            ),
+                        )
+                    )
+                }
+                SideBarType.ALBUM_LIST -> {
+                    if (_accountState.photoRepository.value != null) {
+                        val albumList = _accountState.photoRepository.value!!.getAlbumList()
 
-                    _allItemList[MenuBarType.ALBUM_LIST] = albumList.map { album ->
-                        MenuBarItem(
-                            MenuBarItem.MenuBarItemType.ALBUM_ITEM,
-                            album,
-                            SearchQuery(album=album)
+                        _itemList.emit(
+                            albumList.map { album ->
+                                MenuBarItem(
+                                    MenuBarItem.MenuBarItemType.ALBUM_ITEM,
+                                    SideBarAction(SideBarActionType.ENTER_GRID,
+                                        gridContents=GridContents()),
+                                    album=album
+                                )
+                            }
                         )
                     }
-
-                    if(_selectedMenuBarType == MenuBarType.ALBUM_LIST) {
-                        _itemList.emit(_allItemList[_selectedMenuBarType]!!)
+                    else{
+                        Log.d("loadNextImageList", "_accountState.photoRepository.value is null")
                     }
                 }
             }
         }
+    }
 
-        for(menuType in MenuBarType.values()){
-            _selectedItemIndex[menuType] = 0
+    fun onClickMenuItem(itemIndex: Int) {
+        viewModelScope.launch {
+            _sideBarAction.emit(_itemList.value[itemIndex].action)
         }
     }
+
+    fun onFocusMenuItem(itemIndex: Int) {
+        lastFocusIndex = itemIndex
+
+        val action = _itemList.value[itemIndex].action
+        if(action.actionType == SideBarActionType.ENTER_GRID) {
+            // グリッドの表示を更新するボタンにフォーカスしたときは、グリッドの表示を変更
+            val focusAction = SideBarAction(
+                SideBarActionType.CHANGE_GRID,
+                gridContents=action.gridContents
+            )
+
+            viewModelScope.launch {
+                _sideBarAction.emit(focusAction)
+            }
+        }
+    }
+
+    fun onBack() {
+        viewModelScope.launch {
+            _sideBarAction.emit(SideBarAction(SideBarActionType.BACK))
+        }
+    }
+
 
     fun loadIcon(menuBarItem: MenuBarItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit) {
         if(_accountState.photoRepository.value != null) {

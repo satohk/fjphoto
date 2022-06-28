@@ -6,11 +6,13 @@ import android.util.Log
 import android.view.ViewGroup
 import com.satohk.gphotoframe.*
 
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.*
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.satohk.gphotoframe.viewmodel.*
@@ -21,68 +23,76 @@ import kotlinx.coroutines.launch
 /**
  * Loads a grid of cards with movies to browse.
  */
-class PhotoGridWithSidebarFragment() : Fragment() {
+class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_with_menu) {
     private val _viewModel by activityViewModels<PhotoGridWithSidebarViewModel>()
-    private val _args: PhotoGridWithSidebarFragmentArgs by navArgs()
+    private val _gridViewModel by activityViewModels<PhotoGridViewModel>()
+    private val _menuBarViewModel by activityViewModels<MenuBarViewModel>()
     private var _menuBar:MenuBarFragment? = null
+    private var _grid :PhotoGridFragment? = null
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(
-            R.layout.fragment_photo_grid_with_menu,
-            null
-        )
-    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("PhotoGridWidthSidebarFragment", "onViewCreated")
 
         val menuBar = MenuBarFragment()
-        val grid = PhotoGridFragment()
-
-        // set menuBar
-        val bundle = Bundle()
-        bundle.putSerializable("menuType", _args.menuBarType)
-        menuBar.arguments = bundle
-
-        menuBar.onSelectMenuItem = { _viewModel.onSelectMenuItem(it) }
-        menuBar.onFocusMenuItem = { _viewModel.onFocusMenuItem(it) }
-        menuBar.onBack = { Log.d("onBack", "onback") }
-        grid.onBack = { _viewModel.onBackFromGrid() }
-
         childFragmentManager.beginTransaction()
             .replace(R.id.side_menu_container, menuBar)
-            .replace(R.id.grid, grid)
             .commit()
-
         _menuBar = menuBar
 
-        lifecycleScope.launch {
-            _viewModel.menuBarFocused.collect {
-                if(_menuBar != null && _menuBar!!.isAdded) {
-                    changeFocus(view, _viewModel.menuBarFocused.value, true)
-                }
-            }
-        }
-        lifecycleScope.launch {
-            _viewModel.sideBarType.collect {
-                if(_menuBar != null && _menuBar!!.isAdded) {
-                    val action = PhotoGridWithSidebarFragmentDirections.actionPhotoGridWithSidebarFragmentSelf(
-                        _viewModel.sideBarType.value.sideBarType,
-                        _viewModel.sideBarType.value.menuBarType
-                    )
-                    findNavController().navigate(action)
-                }
-            }
-        }
-        lifecycleScope.launch {
-            _viewModel.searchQuery.collect {
-                if(_menuBar != null && _menuBar!!.isAdded) {
+        val grid = PhotoGridFragment()
+        grid.onBack = { _viewModel.onBackFromGrid() }
+        childFragmentManager.beginTransaction()
+            .replace(R.id.grid, grid)
+            .commitAllowingStateLoss()
 
+        Log.d("lifecycleScope", "viewLifecycleOwner.lifecycleScope.launch")
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+                launch {
+                    Log.d("lifecycleScope", "_viewModel.menuBarFocused.collect")
+                    _viewModel.sideBarFocused.collect {
+                        changeFocus(
+                            this@PhotoGridWithSidebarFragment.requireView(),
+                            _viewModel.sideBarFocused.value,
+                            true
+                        )
+                    }
+                }
+                launch{
+                    Log.d("lifecycleScope", "_viewModel.sideBarType.collect")
+                    _viewModel.sideBarType.collect {
+                        _menuBarViewModel.initItemList(_viewModel.sideBarType.value)
+                    }
+                }
+                launch{
+                    Log.d("lifecycleScope", "_viewModel.gridContents.collect ")
+                    _viewModel.gridContents.collect {
+                        Log.d("_viewModel.gridContents.collect", it.toString())
+                        _gridViewModel.setGridContents(it)
+                    }
+                }
+                launch{
+                    _menuBarViewModel.sideBarAction.collect {
+                        if (it != null) {
+                            _viewModel.onSidebarAction(it)
+                        }
+                    }
                 }
             }
         }
+
+        //backボタンの処理を追加
+        val callback: OnBackPressedCallback =
+            object : OnBackPressedCallback(true)
+            {
+                override fun handleOnBackPressed() {
+                    Log.d("onBackPressedDispatcher", "back button pressed")
+                    //findNavController().popBackStack()
+                }
+            }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
     override fun onResume() {
@@ -91,7 +101,7 @@ class PhotoGridWithSidebarFragment() : Fragment() {
         Log.d("onresume", _menuBar!!.context.toString())
         Log.d("onresume menuber", _menuBar.toString())
 
-        changeFocus(this.requireView(), _viewModel.menuBarFocused.value, false)
+        changeFocus(this.requireView(), _viewModel.sideBarFocused.value, false)
     }
 
     private fun changeFocus(view:View, focusMenuBar: Boolean, animation:Boolean){

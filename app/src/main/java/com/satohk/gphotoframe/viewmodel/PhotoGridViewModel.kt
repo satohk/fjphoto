@@ -1,60 +1,71 @@
 package com.satohk.gphotoframe.viewmodel
 
 import android.graphics.Bitmap
-import android.net.Uri
 import android.util.Log
-import android.view.KeyEvent
-import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DiffUtil
 import com.satohk.gphotoframe.model.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import okhttp3.Dispatcher
 import org.koin.java.KoinJavaComponent.inject
-import java.time.ZonedDateTime
 
 
-class PhotoGridViewModel : ViewModel() {
+class PhotoGridViewModel() : ViewModel() {
     private val _accountState: AccountState by inject(AccountState::class.java)
+    private var _gridContents: GridContents? = null
 
-    private val _itemList = MutableStateFlow(mutableListOf<PhotoGridItem>())
-    val itemList: StateFlow<List<PhotoGridItem>> get() = _itemList
+    private val _itemList = mutableListOf<PhotoGridItem>()
+    val itemList:List<PhotoGridItem> get(){return _itemList}
 
     private val _readPageSize = 50
 
-    private var _album: Album? = null
     private var _pageToken: String? = null
-    private var _photoCategory: PhotoCategory? = null
-    private var _startDate: ZonedDateTime? = null
-    private var _endDate: ZonedDateTime? = null
-    private var _isLoading: Boolean = false
 
-    private val _loadedDataSize = MutableStateFlow<Int>(0)
-    val loadedDataSize: StateFlow<Int> get() = _loadedDataSize
-    var lastLoadedDataSize: Int = 0
+    private val _dataSize = MutableStateFlow<Int>(0)
+    val dataSize: StateFlow<Int> get() = _dataSize
+    var lastDataSize: Int = 0
         private set
 
-    fun loadNextImageList() {
-        if(_accountState.photoRepository.value != null && !_isLoading) {
-            _isLoading = true
+    private var _dataLoadJob: Job? = null
+
+    fun setGridContents(gridContents: GridContents){
+        if(_accountState.photoRepository.value != null && gridContents != _gridContents) {
             viewModelScope.launch {
+                // stop dataload job
+                _dataLoadJob?.cancel()
+                _dataLoadJob?.join()
+                _dataLoadJob = null
+
+                _gridContents = gridContents
+                _pageToken = null
+                _itemList.clear()
+                lastDataSize = dataSize.value
+                _dataLoadJob = null
+                _dataSize.emit(0)
+                loadNextImageList()
+            }
+        }
+    }
+
+    fun loadNextImageList() {
+        if((_accountState.photoRepository.value != null) && (_dataLoadJob == null) && (_gridContents != null)){
+            _dataLoadJob = viewModelScope.launch {
                 val result = _accountState.photoRepository.value!!.getPhotoList(
-                    _readPageSize, _pageToken, _album,
-                    _photoCategory, _startDate, _endDate
+                    _readPageSize, _pageToken, _gridContents!!.searchQuery
                 )
                 val photoMetaList = result.first
                 _pageToken = result.second
-                _itemList.value.addAll(photoMetaList.map { PhotoGridItem(it) })
-                lastLoadedDataSize = photoMetaList.size
-                _loadedDataSize.value += photoMetaList.size
-                _isLoading = false
+                _itemList.addAll(photoMetaList.map { PhotoGridItem(it) })
+                lastDataSize = _dataSize.value
+                _dataSize.emit(_dataSize.value + photoMetaList.size)
+                _dataLoadJob = null
+
+                Log.d("loadNextImageList", photoMetaList.size.toString())
             }
+            Log.d("loadNextImageList launched", "")
         }
         else{
             Log.d("loadNextImageList", "_accountState.photoRepository.value is null")

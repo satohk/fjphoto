@@ -72,10 +72,25 @@ internal data class ParamContentFilter(
 )
 
 @Serializable
+internal enum class ParamMediaType{
+    ALL_MEDIA,
+    VIDEO,
+    PHOTO
+}
+
+@Serializable
+internal data class ParamMediaTypeFilter(
+    val mediaTypes: List<ParamMediaType>? = null,
+){
+    constructor(mediaType: ParamMediaType) : this(listOf(mediaType)){
+    }
+}
+
+@Serializable
 internal data class ParamFilters(
     val dateFilter: ParamDateFilter? = null,
     val contentFilter: ParamContentFilter? = null,
-//  val mediaTypeFilter: ParamMediaTypeFilter,
+    val mediaTypeFilter: ParamMediaTypeFilter? = null,
 //  val featureFilter: ParamFeatureFilter,
 //  val includeArchivedMedia: Boolean,
 //  val excludeNonAppCreatedData: Boolean

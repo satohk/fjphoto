@@ -4,18 +4,16 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
-import android.view.ViewGroup
 import com.satohk.gphotoframe.*
 
-import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.*
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.satohk.gphotoframe.viewmodel.MenuBarItem
-import com.satohk.gphotoframe.viewmodel.MenuBarType
-import com.satohk.gphotoframe.viewmodel.MenuBarViewModel
+import com.satohk.gphotoframe.viewmodel.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -23,30 +21,18 @@ import kotlinx.coroutines.launch
 /**
  * Loads a grid of cards with movies to browse.
  */
-class MenuBarFragment() : Fragment() {
+class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar) {
     private lateinit var _adapter: MenuBarItemAdapter
     private lateinit var _recyclerView: RecyclerView
     private val _viewModel by activityViewModels<MenuBarViewModel>()
-    var onSelectMenuItem: ((MenuBarItem) -> Unit)? = null
-    var onFocusMenuItem: ((MenuBarItem) -> Unit)? = null
-    var onBack: (() -> Unit)? = null
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(
-            R.layout.fragment_menu_bar,
-            null
-        )
-    }
+    private var _sideBarType: SideBarType = SideBarType.TOP
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("MenuBarFragment", "onViewCreated")
 
         if(arguments != null) {
-            val menuType = requireArguments().getSerializable("menuType")!! as MenuBarType
-            _viewModel.selectedMenuBarType = menuType
+            _sideBarType = requireArguments().getSerializable("sideBarType")!! as SideBarType
         }
 
         // set up menubar
@@ -54,26 +40,26 @@ class MenuBarFragment() : Fragment() {
         val numberOfColumns = 1
         _recyclerView.layoutManager =
             GridLayoutManager(requireContext(), numberOfColumns)
-        _adapter = MenuBarItemAdapter(this._viewModel.itemList.value)
+        Log.d("MenuBarFragment", this._viewModel.itemList.value.toString())
+        _adapter = MenuBarItemAdapter()
 
         _adapter.onClick = fun(_:View?, position:Int):Unit{
             Log.d("click",  position.toString())
-            onSelectMenuItem?.invoke(_viewModel.selectedItem)
+            _viewModel.onClickMenuItem(position)
         }
 
         _adapter.onFocus = fun(_:View?, position:Int):Unit {
             Log.d("menu onFocus",  position.toString())
-            _viewModel.selectedItemIndex = position
-            onFocusMenuItem?.invoke(_viewModel.selectedItem)
+            _viewModel.onFocusMenuItem(position)
         }
 
         _adapter.onKeyDown = fun(_:View?, position:Int, keyEvent: KeyEvent):Boolean{
             Log.d("keydown", keyEvent.toString())
             if(keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT){
-                onSelectMenuItem?.invoke(_viewModel.selectedItem)
+                _viewModel.onClickMenuItem(position)
             }
             else if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT){
-                onBack?.invoke()
+                _viewModel.onBack()
             }
             return false
         }
@@ -84,21 +70,36 @@ class MenuBarFragment() : Fragment() {
 
         _recyclerView.adapter = _adapter
 
-        lifecycleScope.launch {
-            _viewModel.itemList.collect() {
-                _adapter.notifyDataSetChanged()
-                restoreLastFocus()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                Log.d("lifecycleScope", "_viewModel.itemList.collect")
+                _viewModel.itemList.collect() {
+                    _adapter.setList(_viewModel.itemList.value)
+                    _adapter.notifyDataSetChanged()
+                    if(_viewModel.itemList.value.size > 0) {
+                        setFocus(0)
+                        _viewModel.onFocusMenuItem(0)
+                    }
+                }
             }
         }
 
-        restoreLastFocus()
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        _viewModel.initItemList(_sideBarType)
     }
 
     fun restoreLastFocus(){
-        Log.d("restoreLastFocus", _viewModel?.selectedItemIndex.toString())
+        setFocus(_viewModel.lastFocusIndex)
+    }
+
+    private fun setFocus(index: Int){
         if(_recyclerView != null) {
-            val holder = _recyclerView.findViewHolderForAdapterPosition(_viewModel.selectedItemIndex)
-                as MenuBarItemAdapter.MenuBarItemViewHolder?
+            val holder = _recyclerView.findViewHolderForAdapterPosition(index)
+                    as MenuBarItemAdapter.MenuBarItemViewHolder?
             holder?.binding?.root?.requestFocus()
         }
     }

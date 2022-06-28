@@ -9,44 +9,44 @@ import kotlinx.coroutines.launch
 
 
 class PhotoGridWithSidebarViewModel : ViewModel() {
-    private val _sideBarType = MutableStateFlow(SideBarMenuBarType(SideBarType.MENUBAR, MenuBarType.TOP))
-    val sideBarType: StateFlow<SideBarMenuBarType> get() = _sideBarType
-    private var _searchQuery:MutableStateFlow<SearchQuery?> = MutableStateFlow(SearchQuery())
-    val searchQuery: StateFlow<SearchQuery?> get() = _searchQuery
-    private var _menuBarFocused = MutableStateFlow(true)
-    val menuBarFocused: StateFlow<Boolean> get() = _menuBarFocused
+    private val _sideBarType = MutableStateFlow(SideBarType.TOP)
+    val sideBarType: StateFlow<SideBarType> get() = _sideBarType
+    private var _gridContents:MutableStateFlow<GridContents> = MutableStateFlow(GridContents(
+        SearchQuery()
+    ))
+    val gridContents: StateFlow<GridContents> get() = _gridContents
+    private var _sideBarFocused = MutableStateFlow(true)
+    val sideBarFocused: StateFlow<Boolean> get() = _sideBarFocused
 
-    fun onSelectMenuItem(menuBarItem: MenuBarItem){
+    fun setSidebarType(sideBarType: SideBarType){
         viewModelScope.launch {
-            when (menuBarItem.itemType) {
-                MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> {
-                    _sideBarType.emit(SideBarMenuBarType(SideBarType.MENUBAR, MenuBarType.ALBUM_LIST))
-                }
-                MenuBarItem.MenuBarItemType.SEARCH -> {
-                    _sideBarType.emit(SideBarMenuBarType(SideBarType.SEARCH, MenuBarType.NONE))
-                }
-                MenuBarItem.MenuBarItemType.SETTING -> {
-                    _sideBarType.emit(SideBarMenuBarType(SideBarType.SETTING, MenuBarType.NONE))
-                }
-                else -> {
-                    // menubarのアイテムをセレクトしたときはグリッドにフォーカスを移す
-                    _menuBarFocused.emit(false)
-                }
-            }
+            _sideBarType.emit(sideBarType)
         }
     }
 
-    fun onFocusMenuItem(menuBarItem: MenuBarItem){
+    fun onSidebarAction(sideBarAction: SideBarAction){
         viewModelScope.launch {
-            if(menuBarItem.searchQuery != null){
-                _searchQuery.emit(menuBarItem.searchQuery)
+            when (sideBarAction.actionType) {
+                SideBarActionType.CHANGE_SIDEBAR -> {
+                    _sideBarType.emit(sideBarAction.sideBarType!!)
+                }
+                SideBarActionType.BACK -> {
+                    // TBD back
+                }
+                SideBarActionType.CHANGE_GRID -> {
+                    _gridContents.emit(sideBarAction.gridContents!!)
+                }
+                SideBarActionType.ENTER_GRID -> {
+                    _gridContents.emit(sideBarAction.gridContents!!)
+                    _sideBarFocused.emit(false)
+                }
             }
         }
     }
 
     fun onBackFromGrid(){
         viewModelScope.launch {
-            _menuBarFocused.emit(true)
+            _sideBarFocused.emit(true)
         }
     }
 }
