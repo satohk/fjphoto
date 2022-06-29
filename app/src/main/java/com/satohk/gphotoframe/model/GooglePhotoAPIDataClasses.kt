@@ -153,5 +153,5 @@ internal data class MediaItem(
 @Serializable
 internal data class MediaItemsResponse(
     val mediaItems: List<MediaItem>,
-    val nextPageToken: String
+    val nextPageToken: String? = null
 )

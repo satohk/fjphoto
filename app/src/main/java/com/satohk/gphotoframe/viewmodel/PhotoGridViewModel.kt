@@ -6,10 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DiffUtil
 import com.satohk.gphotoframe.model.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.inject
 
 
@@ -75,13 +77,18 @@ class PhotoGridViewModel() : ViewModel() {
     fun loadThumbnail(photoGridItem: PhotoGridItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit) {
         if(_accountState.photoRepository.value != null) {
             viewModelScope.launch {
-                val bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
-                    photoGridItem.photoMetaData,
-                    width,
-                    height,
-                    true
-                )
-                callback.invoke(bmp)
+                var bmp: Bitmap? = null
+                withContext(Dispatchers.IO) {
+                    bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
+                        photoGridItem.photoMetaData,
+                        width,
+                        height,
+                        true
+                    )
+                }
+                if(bmp != null) {
+                    callback.invoke(bmp)
+                }
             }
         }
     }

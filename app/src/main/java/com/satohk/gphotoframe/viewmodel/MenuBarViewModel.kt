@@ -82,7 +82,7 @@ class MenuBarViewModel : ViewModel() {
                                 MenuBarItem(
                                     MenuBarItem.MenuBarItemType.ALBUM_ITEM,
                                     SideBarAction(SideBarActionType.ENTER_GRID,
-                                        gridContents=GridContents()),
+                                        gridContents=GridContents(searchQuery = SearchQuery(album=album))),
                                     album=album
                                 )
                             }

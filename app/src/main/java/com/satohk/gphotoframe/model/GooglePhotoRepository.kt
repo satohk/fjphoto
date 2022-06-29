@@ -58,7 +58,7 @@ class GooglePhotoRepository(
         return albums
     }
 
-    override suspend fun getPhotoList(pageSize:Int, pageToken:String?, searchQuery:SearchQuery?):Pair<List<PhotoMetadata>,String>{
+    override suspend fun getPhotoList(pageSize:Int, pageToken:String?, searchQuery:SearchQuery?):Pair<List<PhotoMetadata>,String?>{
         val dateFilter =
             if(searchQuery?.startDate !== null && searchQuery?.endDate !== null)
                 ParamDateFilter(
@@ -78,8 +78,9 @@ class GooglePhotoRepository(
                 MediaType.VIDEO -> ParamMediaTypeFilter(ParamMediaType.VIDEO)
                 else -> null
             }
+        // albumと他のフィルタを同時に指定することはできない
         val filters =
-            if(dateFilter !== null || conditionFilter !== null || mediaTypeFilter !== null)
+            if(searchQuery?.album == null && (dateFilter !== null || conditionFilter !== null || mediaTypeFilter !== null))
                 ParamFilters(dateFilter=dateFilter, contentFilter=conditionFilter, mediaTypeFilter=mediaTypeFilter)
             else null
         val searchParam = SearchParam(
