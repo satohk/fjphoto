@@ -7,4 +7,14 @@
             android:id="@+id/photo_grid"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignParentTop="false"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true" />
+
 </RelativeLayout>

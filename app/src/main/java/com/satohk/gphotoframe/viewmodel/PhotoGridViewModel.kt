@@ -18,20 +18,20 @@ import org.koin.java.KoinJavaComponent.inject
 class PhotoGridViewModel() : ViewModel() {
     private val _accountState: AccountState by inject(AccountState::class.java)
     private var _gridContents: GridContents? = null
-
-    private val _itemList = mutableListOf<PhotoGridItem>()
-    val itemList:List<PhotoGridItem> get(){return _itemList}
-
-    private val _readPageSize = 50
-
+    private val _readPageSize = 60
     private var _pageToken: String? = null
-
-    private val _dataSize = MutableStateFlow<Int>(0)
-    val dataSize: StateFlow<Int> get() = _dataSize
+    private var _dataLoadJob: Job? = null
     var lastDataSize: Int = 0
         private set
 
-    private var _dataLoadJob: Job? = null
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> get() = _loading
+    private val _itemList = mutableListOf<PhotoGridItem>()
+    val itemList:List<PhotoGridItem> get(){return _itemList}
+    private val _dataSize = MutableStateFlow<Int>(0)
+    val dataSize: StateFlow<Int> get() = _dataSize
+
+
 
     fun setGridContents(gridContents: GridContents){
         if(_accountState.photoRepository.value != null && gridContents != _gridContents) {
@@ -47,6 +47,7 @@ class PhotoGridViewModel() : ViewModel() {
                 lastDataSize = dataSize.value
                 _dataLoadJob = null
                 _dataSize.emit(0)
+                _loading.emit(false)
                 loadNextImageList()
             }
         }
@@ -55,6 +56,7 @@ class PhotoGridViewModel() : ViewModel() {
     fun loadNextImageList() {
         if((_accountState.photoRepository.value != null) && (_dataLoadJob == null) && (_gridContents != null)){
             _dataLoadJob = viewModelScope.launch {
+                _loading.emit(true)
                 val result = _accountState.photoRepository.value!!.getPhotoList(
                     _readPageSize, _pageToken, _gridContents!!.searchQuery
                 )
@@ -64,7 +66,7 @@ class PhotoGridViewModel() : ViewModel() {
                 lastDataSize = _dataSize.value
                 _dataSize.emit(_dataSize.value + photoMetaList.size)
                 _dataLoadJob = null
-
+                _loading.emit(false)
                 Log.d("loadNextImageList", photoMetaList.size.toString())
             }
             Log.d("loadNextImageList launched", "")

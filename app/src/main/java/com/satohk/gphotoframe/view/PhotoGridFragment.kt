@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.fragment.app.Fragment
 
 import android.view.View
+import android.widget.ProgressBar
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -73,15 +74,21 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                _viewModel.dataSize.collect {
-                    if(_viewModel.dataSize.value == 0){
-                        _adapter.notifyItemRangeRemoved(0, _viewModel.lastDataSize)
+                launch {
+                    _viewModel.dataSize.collect {
+                        if (_viewModel.dataSize.value == 0) {
+                            _adapter.notifyItemRangeRemoved(0, _viewModel.lastDataSize)
+                        } else {
+                            _adapter.notifyItemRangeInserted(
+                                _viewModel.lastDataSize,
+                                _viewModel.dataSize.value - _viewModel.lastDataSize
+                            )
+                        }
                     }
-                    else {
-                        _adapter.notifyItemRangeInserted(
-                            _viewModel.lastDataSize,
-                            _viewModel.dataSize.value - _viewModel.lastDataSize
-                        )
+                }
+                launch{
+                    _viewModel.loading.collect{
+                        view.findViewById<ProgressBar>(R.id.progress).visibility = if(it) View.VISIBLE else View.INVISIBLE
                     }
                 }
             }
