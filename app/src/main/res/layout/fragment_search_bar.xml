@@ -38,7 +38,9 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:selectedItemPosition="@={view_model.mediaTypeIndex}"
-                                    android:entries="@{view_model.mediaTypes}" />
+                                    android:entries="@{view_model.mediaTypes}">
+                                        <requestFocus/>
+                                </Spinner>
                         </TableRow>
 
                         <TableRow
@@ -60,7 +62,7 @@
                                     android:ems="10"
                                     android:inputType="date"
                                     android:text="@={view_model.fromDateStr}"
-                                    android:onClick="showDatePickerDialog" />
+                                    android:onClick="showDatePickerDialog"/>
 
                         </TableRow>
 
@@ -83,7 +85,7 @@
                                     android:ems="10"
                                     android:inputType="date"
                                     android:text="@={view_model.toDateStr}"
-                                    android:onClick="showDatePickerDialog" />
+                                    android:onClick="showDatePickerDialog"/>
                         </TableRow>
 
                         <TableRow
@@ -138,119 +140,3 @@
         </LinearLayout>
 
 </layout>
-
-
-<!--<?xml version="1.0" encoding="utf-8"?>-->
-<!--<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    android:layout_width="match_parent"-->
-<!--    android:layout_height="match_parent"-->
-<!--    android:background="@color/menu_bar_background">-->
-
-
-<!--        <LinearLayout-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:layout_marginLeft="@dimen/search_bar_margin"-->
-<!--            android:layout_marginTop="@dimen/search_bar_margin"-->
-<!--            android:layout_marginRight="@dimen/search_bar_margin"-->
-<!--            android:layout_marginBottom="@dimen/search_bar_margin"-->
-<!--            android:orientation="vertical">-->
-
-<!--                <TextView-->
-<!--                    android:id="@+id/textView"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginTop="@dimen/search_bar_group_margin"-->
-<!--                    android:text="Media Type"-->
-<!--                    android:textStyle="bold" />-->
-
-<!--                <Spinner-->
-<!--                    android:id="@+id/spinnerMediaType"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content" />-->
-
-<!--                <TextView-->
-<!--                    android:id="@+id/textView2"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginTop="@dimen/search_bar_group_margin"-->
-<!--                    android:layout_weight="0"-->
-<!--                    android:text="Date Range"-->
-<!--                    android:textStyle="bold" />-->
-
-<!--                <LinearLayout-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:orientation="horizontal">-->
-
-<!--                        <TextView-->
-<!--                            android:id="@+id/textFrom"-->
-<!--                            android:layout_width="wrap_content"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:width="36dp"-->
-<!--                            android:text="from"-->
-<!--                            android:textAlignment="viewEnd" />-->
-
-<!--                        <EditText-->
-<!--                            android:id="@+id/editTextFromDate"-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:ems="10"-->
-<!--                            android:inputType="date" />-->
-
-<!--                </LinearLayout>-->
-
-<!--                <LinearLayout-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:orientation="horizontal">-->
-
-<!--                        <TextView-->
-<!--                            android:id="@+id/textTo"-->
-<!--                            android:layout_width="wrap_content"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:width="36dp"-->
-<!--                            android:text="to"-->
-<!--                            android:textAlignment="viewEnd" />-->
-
-<!--                        <EditText-->
-<!--                            android:id="@+id/editTextToDate"-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:ems="10"-->
-<!--                            android:inputType="date" />-->
-
-<!--                </LinearLayout>-->
-
-<!--                <TextView-->
-<!--                    android:id="@+id/textView4"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginTop="@dimen/search_bar_group_margin"-->
-<!--                    android:text="Content  Filter"-->
-<!--                    android:textStyle="bold" />-->
-
-<!--                <Spinner-->
-<!--                    android:id="@+id/spinnerContent"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content" />-->
-
-<!--                <Switch-->
-<!--                    android:id="@+id/switchFavorite"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginTop="@dimen/search_bar_group_margin"-->
-<!--                    android:text="Favorite"-->
-<!--                    android:textStyle="bold" />-->
-
-<!--                <Button-->
-<!--                    android:id="@+id/buttonSearch"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_gravity="right"-->
-<!--                    android:layout_marginTop="@dimen/search_bar_margin"-->
-<!--                    android:drawableLeft="@drawable/search_icon"-->
-<!--                    android:text="@string/menu_item_title_search" />-->
-
-<!--        </LinearLayout>-->
-<!--</RelativeLayout>-->

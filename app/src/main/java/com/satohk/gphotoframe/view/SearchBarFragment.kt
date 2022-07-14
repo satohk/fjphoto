@@ -25,7 +25,7 @@ import java.util.*
 /**
  * Loads a grid of cards with movies to browse.
  */
-class SearchBarFragment() : Fragment() {
+class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
 
     private val _viewModel by activityViewModels<SearchBarViewModel>()
     private var _binding: FragmentSearchBarBinding? = null
@@ -56,7 +56,7 @@ class SearchBarFragment() : Fragment() {
                 } else {
                     _viewModel.toDate
                 }
-            val (year, month, dayOfMonth) =
+            val (yearCurrent, monthCurrent, dayOfMonthCurrent) =
                 if(currentDate === null){
                     val calendar = Calendar.getInstance()
                     Triple(calendar[Calendar.YEAR], calendar[Calendar.MONTH], calendar[Calendar.DAY_OF_MONTH])
@@ -69,14 +69,18 @@ class SearchBarFragment() : Fragment() {
                 { _, year, month, dayOfMonth ->
                     (parentEditText as EditText).setText(int2datestr(year, month + 1, dayOfMonth))
                 },
-                year,
-                month,
-                dayOfMonth)
+                yearCurrent,
+                monthCurrent,
+                dayOfMonthCurrent)
             datePickerDialog.show()
         }
 
         binding.editTextFromDate.setOnClickListener(showDatePicker)
         binding.editTextToDate.setOnClickListener(showDatePicker)
+    }
+
+    override fun onFocus(){
+        binding.spinnerMediaType.requestFocus()
     }
 
     private fun int2datestr(year:Int, month:Int, day:Int): String{

@@ -10,13 +10,13 @@ import kotlinx.coroutines.launch
 
 class PhotoGridWithSidebarViewModel : ViewModel() {
     private val _sideBarType = MutableStateFlow(SideBarType.TOP)
-    val sideBarType: StateFlow<SideBarType> get() = _sideBarType
+    val sidebarType: StateFlow<SideBarType> get() = _sideBarType
     private var _gridContents:MutableStateFlow<GridContents> = MutableStateFlow(GridContents(
         SearchQuery()
     ))
     val gridContents: StateFlow<GridContents> get() = _gridContents
     private var _sideBarFocused = MutableStateFlow(true)
-    val sideBarFocused: StateFlow<Boolean> get() = _sideBarFocused
+    val sidebarFocused: StateFlow<Boolean> get() = _sideBarFocused
 
     fun setSidebarType(sideBarType: SideBarType){
         viewModelScope.launch {

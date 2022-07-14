@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 /**
  * Loads a grid of cards with movies to browse.
  */
-class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar) {
+class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar), SideBarFragmentInterface {
     private lateinit var _adapter: MenuBarItemAdapter
     private lateinit var _recyclerView: RecyclerView
     private val _viewModel by activityViewModels<MenuBarViewModel>()
@@ -72,7 +72,7 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar) {
                     _adapter.setList(_viewModel.itemList.value)
                     _adapter.notifyDataSetChanged()
                     if(_viewModel.itemList.value.size > 0) {
-                        setFocus(0)
+                        setFocusToMenuBarItem(0)
                         _viewModel.onFocusMenuItem(0)
                     }
                 }
@@ -81,11 +81,11 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar) {
 
     }
 
-    fun restoreLastFocus(){
-        setFocus(_viewModel.lastFocusIndex)
+    override fun onFocus(){
+        setFocusToMenuBarItem(_viewModel.lastFocusIndex)
     }
 
-    private fun setFocus(index: Int){
+    private fun setFocusToMenuBarItem(index: Int){
         if(_recyclerView != null) {
             val holder = _recyclerView.findViewHolderForAdapterPosition(index)
                     as MenuBarItemAdapter.MenuBarItemViewHolder?
