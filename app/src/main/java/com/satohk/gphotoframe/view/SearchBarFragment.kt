@@ -5,18 +5,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TableRow
 import android.widget.*
+import androidx.core.view.children
 import androidx.fragment.app.*
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.satohk.gphotoframe.*
 import com.satohk.gphotoframe.databinding.FragmentSearchBarBinding
 import com.satohk.gphotoframe.viewmodel.SearchBarViewModel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -74,6 +70,51 @@ class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
                 dayOfMonthCurrent)
             datePickerDialog.show()
         }
+
+        val onFocusChange = fun(focusedView: View, hasFocus: Boolean){
+            // focusのあたっているRowのテキストボックスをハイライト
+            if(!hasFocus){
+                return
+            }
+//            for(i in 0..(binding.table.childCount)){
+//                val tableRow = binding.table.getChildAt(i)
+//                if(!(tableRow is TableRow)){
+//                    continue
+//                }
+//                for(j in 0..(tableRow.childCount)){
+//                    val child = tableRow.getChildAt(j)
+//                    if(child is TextView){
+//                        child.setTextColor(this.resources.getColor(
+//                            if(tableRow === focusedView.parent)
+//                                R.color.menu_bar_item_foreground_highlight
+//                            else
+//                                R.color.menu_bar_item_foreground,
+//                            this.context!!.theme
+//                        ))
+//                    }
+//                }
+//            }
+
+            binding.table.children.forEach{tableRow ->
+                (tableRow as TableRow).children.forEach{child:View ->
+                    if(child is TextView){
+                        child.setTextColor(this.resources.getColor(
+                            if(tableRow === focusedView.parent)
+                                R.color.menu_bar_item_foreground_highlight
+                            else
+                                R.color.menu_bar_item_foreground,
+                            this.context!!.theme
+                        ))
+                    }
+                }
+            }
+        }
+
+        binding.spinnerMediaType.setOnFocusChangeListener(onFocusChange)
+        binding.editTextFromDate.setOnFocusChangeListener(onFocusChange)
+        binding.editTextToDate.setOnFocusChangeListener(onFocusChange)
+        binding.spinnerContent.setOnFocusChangeListener(onFocusChange)
+        binding.switchFavorite.setOnFocusChangeListener(onFocusChange)
 
         binding.editTextFromDate.setOnClickListener(showDatePicker)
         binding.editTextToDate.setOnClickListener(showDatePicker)
