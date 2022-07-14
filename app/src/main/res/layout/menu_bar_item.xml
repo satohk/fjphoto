@@ -17,7 +17,8 @@
             android:contentDescription="@string/row_title_search"
             android:focusableInTouchMode="true"
             android:textAlignment="textStart"
-            android:textColor="@color/menu_bar_item_foreground" />
+            android:textColor="@color/menu_bar_item_foreground"
+            android:textAllCaps="false"/>
 
     </LinearLayout>
 </layout>

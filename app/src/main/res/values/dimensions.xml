@@ -4,6 +4,13 @@
         name="photo_grid_offset"
         >0dp</dimen>
     <dimen
-        name="menu_bar_width"
-        >200dp</dimen>
+        name="side_bar_width"
+        >260dp</dimen>
+    <dimen
+        name="search_bar_group_margin"
+        >16dp</dimen>
+    <dimen
+        name="search_bar_margin"
+        >16dp</dimen>
+
 </resources>

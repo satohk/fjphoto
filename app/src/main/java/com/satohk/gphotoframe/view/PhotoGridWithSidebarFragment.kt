@@ -27,19 +27,15 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
     private val _viewModel by activityViewModels<PhotoGridWithSidebarViewModel>()
     private val _gridViewModel by activityViewModels<PhotoGridViewModel>()
     private val _menuBarViewModel by activityViewModels<MenuBarViewModel>()
-    private var _menuBar:MenuBarFragment? = null
-    private var _grid :PhotoGridFragment? = null
-
+    private val _searchBarViewModel by activityViewModels<SearchBarViewModel>()
+    private var _sideBarFragment:Fragment? = null
+    private var _grid:PhotoGridFragment? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d("PhotoGridWidthSidebarFragment", "onViewCreated")
 
-        val menuBar = MenuBarFragment()
-        childFragmentManager.beginTransaction()
-            .replace(R.id.side_menu_container, menuBar)
-            .commit()
-        _menuBar = menuBar
+        setSidebar(_viewModel.sideBarType.value)
 
         val grid = PhotoGridFragment()
         grid.onBack = { _viewModel.onBackFromGrid() }
@@ -63,7 +59,7 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
                 launch{
                     Log.d("lifecycleScope", "_viewModel.sideBarType.collect")
                     _viewModel.sideBarType.collect {
-                        _menuBarViewModel.initItemList(_viewModel.sideBarType.value)
+                        setSidebar(it)
                     }
                 }
                 launch{
@@ -73,10 +69,13 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
                         _gridViewModel.setGridContents(it)
                     }
                 }
-                launch{
-                    _menuBarViewModel.sideBarAction.collect {
-                        if (it != null) {
-                            _viewModel.onSidebarAction(it)
+                val sideBarViewModels: List<SideBarViewModel> = listOf(_menuBarViewModel, _searchBarViewModel)
+                for(sideBarViewModel in sideBarViewModels){
+                    launch{
+                        sideBarViewModel.sideBarAction.collect {
+                            if (it != null) {
+                                _viewModel.onSidebarAction(it)
+                            }
                         }
                     }
                 }
@@ -95,11 +94,31 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
+    private fun setSidebar(sideBarType:SideBarType){
+        if(sideBarType == SideBarType.SEARCH){
+            val searchBar = SearchBarFragment()
+            childFragmentManager.beginTransaction()
+                .replace(R.id.side_menu_container, searchBar)
+                .commit()
+            _sideBarFragment = searchBar
+        }
+        else if(sideBarType == SideBarType.SETTING){
+
+        }
+        else{ // Menu bar
+            if(!(_sideBarFragment is MenuBarFragment)){
+                val menuBar = MenuBarFragment()
+                childFragmentManager.beginTransaction()
+                    .replace(R.id.side_menu_container, menuBar)
+                    .commit()
+                _sideBarFragment = menuBar
+            }
+            _menuBarViewModel.initItemList(_viewModel.sideBarType.value)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
-        Log.d("onresume", this.context.toString())
-        Log.d("onresume", _menuBar!!.context.toString())
-        Log.d("onresume menuber", _menuBar.toString())
 
         changeFocus(this.requireView(), _viewModel.sideBarFocused.value, false)
     }
@@ -114,7 +133,9 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
             menuBarContainer.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
             gridContainer.focusable = View.NOT_FOCUSABLE
             gridContainer.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
-            _menuBar?.restoreLastFocus()
+            if(_sideBarFragment is MenuBarFragment) {
+                (_sideBarFragment as MenuBarFragment).restoreLastFocus()
+            }
         } else {
             menuBarContainer.focusable = View.NOT_FOCUSABLE
             menuBarContainer.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS

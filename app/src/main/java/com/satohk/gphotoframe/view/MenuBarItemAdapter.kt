@@ -49,7 +49,7 @@ class MenuBarItemAdapter:
             MenuBarItem.MenuBarItemType.SHOW_MOVIE -> R.drawable.movie_icon
             MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> R.drawable.all_media_icon
             MenuBarItem.MenuBarItemType.SEARCH -> R.drawable.search_icon
-            MenuBarItem.MenuBarItemType.SETTING -> R.drawable.search_icon
+            MenuBarItem.MenuBarItemType.SETTING -> R.drawable.setting_icon
             MenuBarItem.MenuBarItemType.ALBUM_ITEM -> R.drawable.all_media_icon
             else -> 0
         }
@@ -59,7 +59,7 @@ class MenuBarItemAdapter:
             MenuBarItem.MenuBarItemType.SHOW_MOVIE -> R.string.menu_item_title_movie
             MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> R.string.row_title_album
             MenuBarItem.MenuBarItemType.SEARCH -> R.string.menu_item_title_search
-            MenuBarItem.MenuBarItemType.SETTING-> R.string.menu_item_title_search
+            MenuBarItem.MenuBarItemType.SETTING-> R.string.menu_item_title_setting
             MenuBarItem.MenuBarItemType.ALBUM_ITEM -> 0
         }
         val context = holder.binding.root.context

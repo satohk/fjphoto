@@ -67,9 +67,9 @@ class GooglePhotoRepository(
                         endDate=ParamDate(searchQuery.endDate)
                     )))
             else null
-        val conditionFilter =
+        val contentFilter =
             if(searchQuery?.photoCategory !== null)
-                ParamContentFilter(includedContentCategories=searchQuery?.photoCategory)
+                ParamContentFilter(includedContentCategories=searchQuery.photoCategory.map{v -> ParamContentCategory.valueOf(v)})
             else null
         val mediaTypeFilter: ParamMediaTypeFilter? =
             when(searchQuery?.mediaType){
@@ -80,8 +80,8 @@ class GooglePhotoRepository(
             }
         // albumと他のフィルタを同時に指定することはできない
         val filters =
-            if(searchQuery?.album == null && (dateFilter !== null || conditionFilter !== null || mediaTypeFilter !== null))
-                ParamFilters(dateFilter=dateFilter, contentFilter=conditionFilter, mediaTypeFilter=mediaTypeFilter)
+            if(searchQuery?.album == null && (dateFilter !== null || contentFilter !== null || mediaTypeFilter !== null))
+                ParamFilters(dateFilter=dateFilter, contentFilter=contentFilter, mediaTypeFilter=mediaTypeFilter)
             else null
         val searchParam = SearchParam(
             albumId=searchQuery?.album?.id,
@@ -104,13 +104,13 @@ class GooglePhotoRepository(
         val responseBodyStr = response.body?.string()!!
         val responseDecoded = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)
         val resultNextPageToken = responseDecoded.nextPageToken
-        val result: List<PhotoMetadata> = responseDecoded.mediaItems.map{
+        val result: List<PhotoMetadata> = responseDecoded.mediaItems?.map{
             PhotoMetadata(
                 ZonedDateTime.parse(it.mediaMetadata!!.creationTime),
                 it.id,
                 it.baseUrl
             )
-        }
+        } ?: listOf()
         response.body?.close()
         response.close()
         return Pair(result, resultNextPageToken)
@@ -190,7 +190,7 @@ class GooglePhotoRepository(
     }
 
     private suspend fun httpPost(url: String, requestBody: String): Response {
-        Log.d("httpPost", url + "/" + requestBody)
+        Log.d("httpPost", "$url/$requestBody")
         val client = OkHttpClient()
         val postBody =
             requestBody.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
@@ -204,5 +204,9 @@ class GooglePhotoRepository(
             response = client.newCall(request).execute()
         }
         return response!!
+    }
+
+    override fun getCategoryList(): List<String>{
+        return ParamContentCategory.values().map{ v -> v.toString() }
     }
 }

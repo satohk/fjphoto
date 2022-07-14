@@ -50,7 +50,7 @@ internal data class ParamDate(
     val day: Int
 )
 {
-    constructor(date: ZonedDateTime): this(date.year, date.monthValue, date.dayOfMonth) {}
+    constructor(date: ZonedDateTime): this(date.year, date.monthValue, date.dayOfMonth)
 }
 
 @Serializable
@@ -67,8 +67,8 @@ internal data class ParamDateFilter(
 
 @Serializable
 internal data class ParamContentFilter(
-    val includedContentCategories: List<String>? = null,
-    val excludedContentCategories: List<String>? = null
+    val includedContentCategories: List<ParamContentCategory>? = null,
+    val excludedContentCategories: List<ParamContentCategory>? = null
 )
 
 @Serializable
@@ -76,6 +76,37 @@ internal enum class ParamMediaType{
     ALL_MEDIA,
     VIDEO,
     PHOTO
+}
+
+@Serializable
+internal enum class ParamContentCategory{
+    NONE,
+    LANDSCAPES,
+    RECEIPTS,
+    CITYSCAPES,
+    LANDMARKS,
+    SELFIES,
+    PEOPLE,
+    PETS,
+    WEDDINGS,
+    BIRTHDAYS,
+    DOCUMENTS,
+    TRAVEL,
+    ANIMALS,
+    FOOD,
+    SPORT,
+    NIGHT,
+    PERFORMANCES,
+    WHITEBOARDS,
+    SCREENSHOTS,
+    UTILITY,
+    ARTS,
+    CRAFTS,
+    FASHION,
+    HOUSES,
+    GARDENS,
+    FLOWERS,
+    HOLIDAYS,
 }
 
 @Serializable
@@ -152,6 +183,6 @@ internal data class MediaItem(
 
 @Serializable
 internal data class MediaItemsResponse(
-    val mediaItems: List<MediaItem>,
+    val mediaItems: List<MediaItem>? = null,
     val nextPageToken: String? = null
 )

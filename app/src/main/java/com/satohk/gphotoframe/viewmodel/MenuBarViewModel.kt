@@ -27,13 +27,10 @@ data class MenuBarItem(
     }
 }
 
-class MenuBarViewModel : ViewModel() {
+class MenuBarViewModel : SideBarViewModel() {
     private val _accountState: AccountState by inject(AccountState::class.java)
     private val _itemList = MutableStateFlow(listOf<MenuBarItem>())
     val itemList: StateFlow<List<MenuBarItem>> get() = _itemList
-
-    private val _sideBarAction: MutableStateFlow<SideBarAction?> = MutableStateFlow(null)
-    val sideBarAction: StateFlow<SideBarAction?> get() = _sideBarAction
 
     var lastFocusIndex: Int = 0
         private set
@@ -64,6 +61,11 @@ class MenuBarViewModel : ViewModel() {
                                 MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST,
                                 SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
                                     sideBarType=SideBarType.ALBUM_LIST)
+                            ),
+                            MenuBarItem(
+                                MenuBarItem.MenuBarItemType.SEARCH,
+                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
+                                    sideBarType=SideBarType.SEARCH)
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SETTING,
@@ -118,13 +120,6 @@ class MenuBarViewModel : ViewModel() {
             }
         }
     }
-
-    fun onBack() {
-        viewModelScope.launch {
-            _sideBarAction.emit(SideBarAction(SideBarActionType.BACK))
-        }
-    }
-
 
     fun loadIcon(menuBarItem: MenuBarItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit) {
         if(_accountState.photoRepository.value != null) {

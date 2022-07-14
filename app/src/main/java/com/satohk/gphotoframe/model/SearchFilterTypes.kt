@@ -3,7 +3,6 @@ package com.satohk.gphotoframe.model
 import java.time.ZonedDateTime
 import kotlinx.serialization.Serializable
 
-typealias PhotoCategory = List<String>
 
 data class PhotoMetadata(
     val timestamp: ZonedDateTime,
@@ -28,10 +27,11 @@ data class Album(
 @Serializable
 data class SearchQuery (
     val album: Album? = null,
-    val photoCategory: PhotoCategory? = null,
+    val photoCategory: List<String>? = null,
     @Serializable(with = ZonedDateTimeSerializer::class)
     val startDate: ZonedDateTime? = null,
     @Serializable(with = ZonedDateTimeSerializer::class)
     val endDate: ZonedDateTime? = null,
     val mediaType:MediaType = MediaType.ALL,
 )
+

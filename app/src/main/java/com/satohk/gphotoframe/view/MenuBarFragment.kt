@@ -25,15 +25,10 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar) {
     private lateinit var _adapter: MenuBarItemAdapter
     private lateinit var _recyclerView: RecyclerView
     private val _viewModel by activityViewModels<MenuBarViewModel>()
-    private var _sideBarType: SideBarType = SideBarType.TOP
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d("MenuBarFragment", "onViewCreated")
-
-        if(arguments != null) {
-            _sideBarType = requireArguments().getSerializable("sideBarType")!! as SideBarType
-        }
 
         // set up menubar
         _recyclerView = view.findViewById<RecyclerView>(R.id.menu_bar)
@@ -59,7 +54,7 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar) {
                 _viewModel.onClickMenuItem(position)
             }
             else if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT){
-                _viewModel.onBack()
+                _viewModel.back()
             }
             return false
         }
@@ -84,12 +79,6 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar) {
             }
         }
 
-    }
-
-
-    override fun onResume() {
-        super.onResume()
-        _viewModel.initItemList(_sideBarType)
     }
 
     fun restoreLastFocus(){
