@@ -2,6 +2,7 @@ package com.satohk.gphotoframe.view
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -71,51 +72,59 @@ class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
             datePickerDialog.show()
         }
 
-        val onFocusChange = fun(focusedView: View, hasFocus: Boolean){
+        val onFocusChange = fun(focusedView: View, focused: Boolean){
             // focusのあたっているRowのテキストボックスをハイライト
-            if(!hasFocus){
+            val parentView = focusedView.parent
+            if(parentView !is TableRow){
                 return
             }
-//            for(i in 0..(binding.table.childCount)){
-//                val tableRow = binding.table.getChildAt(i)
-//                if(!(tableRow is TableRow)){
-//                    continue
-//                }
-//                for(j in 0..(tableRow.childCount)){
-//                    val child = tableRow.getChildAt(j)
-//                    if(child is TextView){
-//                        child.setTextColor(this.resources.getColor(
-//                            if(tableRow === focusedView.parent)
-//                                R.color.menu_bar_item_foreground_highlight
-//                            else
-//                                R.color.menu_bar_item_foreground,
-//                            this.context!!.theme
-//                        ))
-//                    }
-//                }
-//            }
-
-            binding.table.children.forEach{tableRow ->
-                (tableRow as TableRow).children.forEach{child:View ->
-                    if(child is TextView){
-                        child.setTextColor(this.resources.getColor(
-                            if(tableRow === focusedView.parent)
-                                R.color.menu_bar_item_foreground_highlight
-                            else
-                                R.color.menu_bar_item_foreground,
-                            this.context!!.theme
-                        ))
-                    }
+            parentView.children.forEach { child: View ->
+                if(child is TextView){
+                    child.setTextColor(this.resources.getColor(
+                        if(focused)
+                            R.color.menu_bar_item_foreground_highlight
+                        else
+                            R.color.menu_bar_item_foreground,
+                        this.context!!.theme
+                    ))
                 }
             }
         }
+        val onKey = fun(view: View, i: Int, keyEvent: KeyEvent): Boolean {
+            if(keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT){
+                _viewModel.onClickMenuItem()
+            }
+            else if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT){
+                _viewModel.back()
+            }
+            return false
+        }
 
-        binding.spinnerMediaType.setOnFocusChangeListener(onFocusChange)
-        binding.editTextFromDate.setOnFocusChangeListener(onFocusChange)
-        binding.editTextToDate.setOnFocusChangeListener(onFocusChange)
-        binding.spinnerContent.setOnFocusChangeListener(onFocusChange)
-        binding.switchFavorite.setOnFocusChangeListener(onFocusChange)
+        // set focus listener
+        val focusableViews: List<View> = listOf(
+            binding.spinnerMediaType,
+            binding.editTextFromDate,
+            binding.editTextToDate,
+            binding.spinnerContent,
+            binding.switchFavorite,
+            binding.buttonOK
+        )
+        focusableViews.forEach{v: View ->
+            v.setOnFocusChangeListener(onFocusChange)
+        }
 
+        // set key listener
+        val keyHandleView: List<View> = listOf(
+            binding.spinnerMediaType,
+            binding.spinnerContent,
+            binding.switchFavorite,
+            binding.buttonOK
+        )
+        keyHandleView.forEach{v: View ->
+            v.setOnKeyListener(onKey)
+        }
+
+        binding.buttonOK.setOnClickListener{_viewModel.onClickMenuItem()}
         binding.editTextFromDate.setOnClickListener(showDatePicker)
         binding.editTextToDate.setOnClickListener(showDatePicker)
     }

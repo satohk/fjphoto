@@ -15,7 +15,6 @@
             android:layout_height="wrap_content"
             android:background="@color/menu_bar_item_background"
             android:contentDescription="@string/row_title_search"
-            android:focusableInTouchMode="true"
             android:textAlignment="textStart"
             android:textColor="@color/menu_bar_item_foreground"
             android:textAllCaps="false"/>

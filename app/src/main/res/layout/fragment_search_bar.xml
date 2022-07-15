@@ -38,9 +38,12 @@
                                     android:id="@+id/spinnerMediaType"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:selectedItemPosition="@={view_model.mediaTypeIndex}"
-                                    android:entries="@{view_model.mediaTypes}">
-                                        <requestFocus/>
+                                    android:entries="@{view_model.mediaTypes}"
+                                    android:focusable="true"
+                                    android:focusableInTouchMode="true"
+                                    android:selectedItemPosition="@={view_model.mediaTypeIndex}">
+
+                                        <requestFocus />
                                 </Spinner>
                         </TableRow>
 
@@ -128,16 +131,20 @@
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="left"
                                     android:textStyle="bold" />
+
                         </TableRow>
-
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="@dimen/search_bar_group_margin">
+                                <Button
+                                    android:id="@+id/buttonOK"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_margin="@dimen/search_bar_margin"
+                                    android:text="OK" />
+                        </TableRow>
                 </TableLayout>
-
-                <Button
-                    android:id="@+id/buttonOK"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/search_bar_margin"
-                    android:text="OK" />
         </LinearLayout>
 
 </layout>

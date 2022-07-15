@@ -9,7 +9,6 @@ import com.satohk.gphotoframe.model.SearchQuery
 import kotlinx.coroutines.flow.*
 import org.koin.java.KoinJavaComponent
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -96,17 +95,17 @@ class SearchBarViewModel : SideBarViewModel() {
         )
     }
 
-    private fun emitSideBarAction(){
+    fun onClickMenuItem() {
         val action = SideBarAction(
-            SideBarActionType.CHANGE_GRID,
+            SideBarActionType.ENTER_GRID,
             gridContents = getGridContents()
         )
         _sideBarAction.value = action
     }
 
-    fun clickOk(){
+    private fun emitSideBarAction(){
         val action = SideBarAction(
-            SideBarActionType.ENTER_GRID,
+            SideBarActionType.CHANGE_GRID,
             gridContents = getGridContents()
         )
         _sideBarAction.value = action
