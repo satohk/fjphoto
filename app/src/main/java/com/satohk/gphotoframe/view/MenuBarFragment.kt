@@ -16,15 +16,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.satohk.gphotoframe.viewmodel.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
 
-/**
- * Loads a grid of cards with movies to browse.
- */
 class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar), SideBarFragmentInterface {
+    private val _viewModel by sharedViewModel<MenuBarViewModel>()
     private lateinit var _adapter: MenuBarItemAdapter
     private lateinit var _recyclerView: RecyclerView
-    private val _viewModel by activityViewModels<MenuBarViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -40,21 +38,21 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar), SideBarFragmentI
 
         _adapter.onClick = fun(_:View?, position:Int):Unit{
             Log.d("click",  position.toString())
-            _viewModel.onClickMenuItem(position)
+            _viewModel.enterToGrid(position)
         }
 
         _adapter.onFocus = fun(_:View?, position:Int):Unit {
             Log.d("menu onFocus",  position.toString())
-            _viewModel.onFocusMenuItem(position)
+            _viewModel.changeFocus(position)
         }
 
         _adapter.onKeyDown = fun(_:View?, position:Int, keyEvent: KeyEvent):Boolean{
             Log.d("keydown", keyEvent.toString())
             if(keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT){
-                _viewModel.onClickMenuItem(position)
+                _viewModel.enterToGrid(position)
             }
             else if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT){
-                _viewModel.back()
+                _viewModel.goBack()
             }
             return false
         }
@@ -73,15 +71,15 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar), SideBarFragmentI
                     _adapter.notifyDataSetChanged()
                     if(_viewModel.itemList.value.size > 0) {
                         setFocusToMenuBarItem(0)
-                        _viewModel.onFocusMenuItem(0)
+                        _viewModel.changeFocus(0)
                     }
                 }
             }
         }
-
     }
 
     override fun onFocus(){
+        Log.d("MenuBarFragment", "onFocus")
         setFocusToMenuBarItem(_viewModel.lastFocusIndex)
     }
 

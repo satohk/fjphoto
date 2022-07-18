@@ -2,12 +2,13 @@ package com.satohk.gphotoframe.viewmodel
 
 import android.util.Log
 import android.widget.AdapterView.INVALID_POSITION
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.satohk.gphotoframe.model.AccountState
 import com.satohk.gphotoframe.model.MediaType
 import com.satohk.gphotoframe.model.SearchQuery
 import kotlinx.coroutines.flow.*
-import org.koin.java.KoinJavaComponent
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -15,8 +16,9 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
 
-class SearchBarViewModel : SideBarViewModel() {
-    private val _accountState: AccountState by KoinJavaComponent.inject(AccountState::class.java)
+class SearchBarViewModel(
+    _accountState: AccountState
+    ) : SidebarActionPublisherViewModel() {
 
     private val _mediaType: String? get() = index2str(mediaTypeIndex.value, mediaTypes)
     private val _contentType: String? get() = index2str(contentTypeIndex.value, contentTypes.value)
@@ -41,10 +43,10 @@ class SearchBarViewModel : SideBarViewModel() {
             }
         }.launchIn(viewModelScope)
 
-        mediaTypeIndex.onEach{ emitSideBarAction() }.launchIn(viewModelScope)
-        contentTypeIndex.onEach{ emitSideBarAction() }.launchIn(viewModelScope)
-        fromDateStr.onEach{ emitSideBarAction() }.launchIn(viewModelScope)
-        toDateStr.onEach{ emitSideBarAction() }.launchIn(viewModelScope)
+        mediaTypeIndex.onEach{ changeGridContents() }.launchIn(viewModelScope)
+        contentTypeIndex.onEach{ changeGridContents() }.launchIn(viewModelScope)
+        fromDateStr.onEach{ changeGridContents() }.launchIn(viewModelScope)
+        toDateStr.onEach{ changeGridContents() }.launchIn(viewModelScope)
     }
 
     private fun index2str(index: Int, values: List<String>):String?{
@@ -95,19 +97,27 @@ class SearchBarViewModel : SideBarViewModel() {
         )
     }
 
-    fun onClickMenuItem() {
-        val action = SideBarAction(
+    fun enterToGrid() {
+        val action = SidebarAction(
             SideBarActionType.ENTER_GRID,
-            gridContents = getGridContents()
+            gridContents = null
         )
-        _sideBarAction.value = action
+        publishAction(action)
     }
 
-    private fun emitSideBarAction(){
-        val action = SideBarAction(
+    fun goBack(){
+        val action = SidebarAction(
+            SideBarActionType.BACK,
+            gridContents = null
+        )
+        publishAction(action)
+    }
+
+    private fun changeGridContents(){
+        val action = SidebarAction(
             SideBarActionType.CHANGE_GRID,
             gridContents = getGridContents()
         )
-        _sideBarAction.value = action
+        publishAction(action)
     }
 }

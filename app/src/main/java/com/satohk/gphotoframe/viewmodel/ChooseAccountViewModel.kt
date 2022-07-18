@@ -7,9 +7,9 @@ import com.satohk.gphotoframe.model.ServiceProvider
 import org.koin.java.KoinJavaComponent.inject
 
 
-class ChooseAccountViewModel : ViewModel() {
-    private val _accountState: AccountState by inject(AccountState::class.java)
-
+class ChooseAccountViewModel(
+    private val _accountState: AccountState
+)  : ViewModel() {
     private var _serviceProvider: ServiceProvider = ServiceProvider.GOOGLE
     val accountType: String
         get() = _serviceProvider.url

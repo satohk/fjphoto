@@ -7,7 +7,8 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 
 import com.satohk.gphotoframe.model.AccountState
-import com.satohk.gphotoframe.viewmodel.ChooseAccountViewModel
+import com.satohk.gphotoframe.viewmodel.*
+import org.koin.androidx.viewmodel.dsl.viewModel
 
 
 class GPApplication : Application() {
@@ -26,6 +27,10 @@ class GPApplication : Application() {
 
     private val modules: Module = module {
         single { AccountState() }
-        single { ChooseAccountViewModel() }
+        viewModel { ChooseAccountViewModel( get() ) }
+        viewModel { PhotoGridWithSidebarViewModel() }
+        viewModel { PhotoGridViewModel( get() ) }
+        viewModel { SearchBarViewModel( get() ) }
+        viewModel { MenuBarViewModel( get()) }
     }
 }

@@ -12,7 +12,10 @@ import androidx.core.view.children
 import androidx.fragment.app.*
 import com.satohk.gphotoframe.*
 import com.satohk.gphotoframe.databinding.FragmentSearchBarBinding
+import com.satohk.gphotoframe.viewmodel.MenuBarViewModel
 import com.satohk.gphotoframe.viewmodel.SearchBarViewModel
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.java.KoinJavaComponent.inject
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -23,8 +26,7 @@ import java.util.*
  * Loads a grid of cards with movies to browse.
  */
 class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
-
-    private val _viewModel by activityViewModels<SearchBarViewModel>()
+    private val _viewModel by sharedViewModel<SearchBarViewModel>()
     private var _binding: FragmentSearchBarBinding? = null
     private val binding get() = _binding!!
 
@@ -92,10 +94,10 @@ class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
         }
         val onKey = fun(view: View, i: Int, keyEvent: KeyEvent): Boolean {
             if(keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT){
-                _viewModel.onClickMenuItem()
+                _viewModel.enterToGrid()
             }
             else if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT){
-                _viewModel.back()
+                _viewModel.goBack()
             }
             return false
         }
@@ -124,7 +126,7 @@ class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
             v.setOnKeyListener(onKey)
         }
 
-        binding.buttonOK.setOnClickListener{_viewModel.onClickMenuItem()}
+        binding.buttonOK.setOnClickListener{_viewModel.enterToGrid()}
         binding.editTextFromDate.setOnClickListener(showDatePicker)
         binding.editTextToDate.setOnClickListener(showDatePicker)
     }

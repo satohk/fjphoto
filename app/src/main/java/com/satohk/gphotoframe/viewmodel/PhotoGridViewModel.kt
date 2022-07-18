@@ -10,13 +10,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.inject
 
 
-class PhotoGridViewModel() : ViewModel() {
-    private val _accountState: AccountState by inject(AccountState::class.java)
+class PhotoGridViewModel(
+    private val _accountState: AccountState
+) : SidebarActionPublisherViewModel() {
     private var _gridContents: GridContents? = null
     private val _readPageSize = 60
     private var _pageToken: String? = null
@@ -31,10 +34,24 @@ class PhotoGridViewModel() : ViewModel() {
     private val _dataSize = MutableStateFlow<Int>(0)
     val dataSize: StateFlow<Int> get() = _dataSize
 
+    init{
+        _accountState.photoRepository.onEach {
+            if(it !== null){
+                if(_gridContents !== null){
+                    val tmp:GridContents = _gridContents!!
+                    _gridContents = null
+                    setGridContents(tmp)
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
 
 
     fun setGridContents(gridContents: GridContents){
-        if(_accountState.photoRepository.value != null && gridContents != _gridContents) {
+        if(_accountState.photoRepository.value != null) {
+            if(gridContents == _gridContents){
+                return
+            }
             viewModelScope.launch {
                 // stop dataload job
                 _dataLoadJob?.cancel()
@@ -50,6 +67,10 @@ class PhotoGridViewModel() : ViewModel() {
                 _loading.emit(false)
                 loadNextImageList()
             }
+        }
+        else{
+            // photoRepositoryが決定してから再度setGridContentsを呼び出すために、gridContentの値は保持しておく
+            _gridContents = gridContents
         }
     }
 
@@ -93,6 +114,12 @@ class PhotoGridViewModel() : ViewModel() {
                 }
             }
         }
+    }
+
+    fun goBack(){
+        publishAction(SidebarAction(
+            SideBarActionType.BACK
+        ))
     }
 
     data class PhotoGridItem(

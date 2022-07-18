@@ -19,18 +19,18 @@ import com.satohk.gphotoframe.viewmodel.GridContents
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
 
 /**
  * Loads a grid of cards with movies to browse.
  */
 class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
-    private val _viewModel by activityViewModels<PhotoGridViewModel>()
+    private val _viewModel by sharedViewModel<PhotoGridViewModel>()
     private lateinit var _recyclerView: RecyclerView
     private lateinit var _adapter: PhotoAdapter
     private lateinit var _layoutManager: GridLayoutManager
     private val _numberOfColumns = 6
-    var onBack: (() -> Unit)? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -60,7 +60,7 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
             if(view != null) {
                 Log.i("keydown", view?.x.toString())
                 if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && (view.x < 10.0f)) {
-                    onBack?.invoke()
+                    _viewModel.goBack()
                 }
             }
             return false

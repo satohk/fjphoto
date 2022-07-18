@@ -6,13 +6,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.accounts.Account
 import android.accounts.AuthenticatorException
-import org.koin.java.KoinJavaComponent
 
 import com.satohk.gphotoframe.viewmodel.ChooseAccountViewModel
+import org.koin.android.ext.android.inject
 
 
 class ChooseAccountActivity : Activity() {
-    private val _viewModel: ChooseAccountViewModel by KoinJavaComponent.inject(ChooseAccountViewModel::class.java)
+    private val _viewModel:ChooseAccountViewModel by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

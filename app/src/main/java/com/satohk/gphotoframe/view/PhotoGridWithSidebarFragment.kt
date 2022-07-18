@@ -1,32 +1,33 @@
 package com.satohk.gphotoframe.view
 
+import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.util.Log
-import android.view.ViewGroup
-import com.satohk.gphotoframe.*
-
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.satohk.gphotoframe.*
 import com.satohk.gphotoframe.viewmodel.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
 
 /**
  * Loads a grid of cards with movies to browse.
  */
 class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_with_sidebar) {
-    private val _viewModel by activityViewModels<PhotoGridWithSidebarViewModel>()
-    private val _gridViewModel by activityViewModels<PhotoGridViewModel>()
-    private val _menuBarViewModel by activityViewModels<MenuBarViewModel>()
-    private val _searchBarViewModel by activityViewModels<SearchBarViewModel>()
-    private var _sideBarFragment:Fragment? = null
+    private val _viewModel by sharedViewModel<PhotoGridWithSidebarViewModel>()
+    private val _gridViewModel by sharedViewModel<PhotoGridViewModel>()
+    private val _searchBarViewModel by sharedViewModel<SearchBarViewModel>()
+    private val _menuBarViewModel by sharedViewModel<MenuBarViewModel>()
+    private var _sideBarFragment: Fragment? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -35,7 +36,6 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
         setSidebar(_viewModel.sidebarType.value)
 
         val grid = PhotoGridFragment()
-        grid.onBack = { _viewModel.onBackFromGrid() }
         childFragmentManager.beginTransaction()
             .replace(R.id.grid, grid)
             .commitAllowingStateLoss()
@@ -66,13 +66,13 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
                         _gridViewModel.setGridContents(it)
                     }
                 }
-                val sideBarViewModels: List<SideBarViewModel> = listOf(_menuBarViewModel, _searchBarViewModel)
-                for(sideBarViewModel in sideBarViewModels){
+
+                val sidebarViewModels: List<SidebarActionPublisherViewModel> =
+                    listOf(_menuBarViewModel, _searchBarViewModel, _gridViewModel)
+                sidebarViewModels.forEach{vm ->
                     launch{
-                        sideBarViewModel.sideBarAction.collect {
-                            if (it != null) {
-                                _viewModel.onSidebarAction(it)
-                            }
+                        vm.action.collect{ action ->
+                            _viewModel.subscribeSidebarAction(action)
                         }
                     }
                 }
@@ -103,7 +103,7 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
 
         }
         else{ // Menu bar
-            if(!(_sideBarFragment is MenuBarFragment)){
+            if(_sideBarFragment !is MenuBarFragment){
                 val menuBar = MenuBarFragment()
                 childFragmentManager.beginTransaction()
                     .replace(R.id.sidebar_container, menuBar)

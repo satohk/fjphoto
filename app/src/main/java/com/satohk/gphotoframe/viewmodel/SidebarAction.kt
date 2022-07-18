@@ -1,7 +1,7 @@
 package com.satohk.gphotoframe.viewmodel
 
 
-data class SideBarAction(
+data class SidebarAction(
     val actionType: SideBarActionType,
     val sideBarType: SideBarType? = null,
     val gridContents: GridContents? = null

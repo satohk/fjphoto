@@ -2,18 +2,15 @@ package com.satohk.gphotoframe.viewmodel
 
 import android.graphics.Bitmap
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.satohk.gphotoframe.model.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.koin.java.KoinJavaComponent.inject
 
 
 data class MenuBarItem(
     val itemType: MenuBarItemType,
-    val action: SideBarAction,
+    val action: SidebarAction,
     val album: Album? = null,
 ) {
     enum class MenuBarItemType{
@@ -27,8 +24,9 @@ data class MenuBarItem(
     }
 }
 
-class MenuBarViewModel : SideBarViewModel() {
-    private val _accountState: AccountState by inject(AccountState::class.java)
+class MenuBarViewModel(
+    private val _accountState: AccountState
+    ) : SidebarActionPublisherViewModel() {
     private val _itemList = MutableStateFlow(listOf<MenuBarItem>())
     val itemList: StateFlow<List<MenuBarItem>> get() = _itemList
 
@@ -44,32 +42,32 @@ class MenuBarViewModel : SideBarViewModel() {
                         listOf(
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_ALL,
-                                SideBarAction(SideBarActionType.ENTER_GRID,
+                                SidebarAction(SideBarActionType.ENTER_GRID,
                                             gridContents=GridContents())
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_PHOTO,
-                                SideBarAction(SideBarActionType.ENTER_GRID,
+                                SidebarAction(SideBarActionType.ENTER_GRID,
                                     gridContents=GridContents(searchQuery=SearchQuery(mediaType=MediaType.PHOTO)))
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_MOVIE,
-                                SideBarAction(SideBarActionType.ENTER_GRID,
+                                SidebarAction(SideBarActionType.ENTER_GRID,
                                     gridContents=GridContents(searchQuery=SearchQuery(mediaType=MediaType.VIDEO)))
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST,
-                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
+                                SidebarAction(SideBarActionType.CHANGE_SIDEBAR,
                                     sideBarType=SideBarType.ALBUM_LIST)
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SEARCH,
-                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
+                                SidebarAction(SideBarActionType.CHANGE_SIDEBAR,
                                     sideBarType=SideBarType.SEARCH)
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SETTING,
-                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
+                                SidebarAction(SideBarActionType.CHANGE_SIDEBAR,
                                     sideBarType=SideBarType.SETTING)
                             ),
                         )
@@ -83,7 +81,7 @@ class MenuBarViewModel : SideBarViewModel() {
                             albumList.map { album ->
                                 MenuBarItem(
                                     MenuBarItem.MenuBarItemType.ALBUM_ITEM,
-                                    SideBarAction(SideBarActionType.ENTER_GRID,
+                                    SidebarAction(SideBarActionType.ENTER_GRID,
                                         gridContents=GridContents(searchQuery = SearchQuery(album=album))),
                                     album=album
                                 )
@@ -98,26 +96,29 @@ class MenuBarViewModel : SideBarViewModel() {
         }
     }
 
-    fun onClickMenuItem(itemIndex: Int) {
-        viewModelScope.launch {
-            _sideBarAction.emit(_itemList.value[itemIndex].action)
-        }
+    fun enterToGrid(itemIndex: Int) {
+        publishAction(_itemList.value[itemIndex].action)
     }
 
-    fun onFocusMenuItem(itemIndex: Int) {
+    fun goBack(){
+        val action = SidebarAction(
+            SideBarActionType.BACK,
+            gridContents = null
+        )
+        publishAction(action)
+    }
+
+    fun changeFocus(itemIndex: Int) {
         lastFocusIndex = itemIndex
 
         val action = _itemList.value[itemIndex].action
         if(action.actionType == SideBarActionType.ENTER_GRID) {
             // グリッドの表示を更新するボタンにフォーカスしたときは、グリッドの表示を変更
-            val focusAction = SideBarAction(
+            val focusAction = SidebarAction(
                 SideBarActionType.CHANGE_GRID,
                 gridContents=action.gridContents
             )
-
-            viewModelScope.launch {
-                _sideBarAction.emit(focusAction)
-            }
+            publishAction(focusAction)
         }
     }
 
