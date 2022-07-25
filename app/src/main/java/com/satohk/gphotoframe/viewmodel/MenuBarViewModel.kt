@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 data class MenuBarItem(
     val itemType: MenuBarItemType,
-    val action: SidebarAction,
+    val action: SideBarAction,
     val album: Album? = null,
 ) {
     enum class MenuBarItemType{
@@ -26,7 +26,7 @@ data class MenuBarItem(
 
 class MenuBarViewModel(
     private val _accountState: AccountState
-    ) : SidebarActionPublisherViewModel() {
+    ) : SideBarActionPublisherViewModel() {
     private val _itemList = MutableStateFlow(listOf<MenuBarItem>())
     val itemList: StateFlow<List<MenuBarItem>> get() = _itemList
 
@@ -42,32 +42,32 @@ class MenuBarViewModel(
                         listOf(
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_ALL,
-                                SidebarAction(SideBarActionType.ENTER_GRID,
+                                SideBarAction(SideBarActionType.ENTER_GRID,
                                             gridContents=GridContents())
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_PHOTO,
-                                SidebarAction(SideBarActionType.ENTER_GRID,
+                                SideBarAction(SideBarActionType.ENTER_GRID,
                                     gridContents=GridContents(searchQuery=SearchQuery(mediaType=MediaType.PHOTO)))
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_MOVIE,
-                                SidebarAction(SideBarActionType.ENTER_GRID,
+                                SideBarAction(SideBarActionType.ENTER_GRID,
                                     gridContents=GridContents(searchQuery=SearchQuery(mediaType=MediaType.VIDEO)))
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST,
-                                SidebarAction(SideBarActionType.CHANGE_SIDEBAR,
+                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
                                     sideBarType=SideBarType.ALBUM_LIST)
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SEARCH,
-                                SidebarAction(SideBarActionType.CHANGE_SIDEBAR,
+                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
                                     sideBarType=SideBarType.SEARCH)
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SETTING,
-                                SidebarAction(SideBarActionType.CHANGE_SIDEBAR,
+                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
                                     sideBarType=SideBarType.SETTING)
                             ),
                         )
@@ -81,7 +81,7 @@ class MenuBarViewModel(
                             albumList.map { album ->
                                 MenuBarItem(
                                     MenuBarItem.MenuBarItemType.ALBUM_ITEM,
-                                    SidebarAction(SideBarActionType.ENTER_GRID,
+                                    SideBarAction(SideBarActionType.ENTER_GRID,
                                         gridContents=GridContents(searchQuery = SearchQuery(album=album))),
                                     album=album
                                 )
@@ -101,7 +101,7 @@ class MenuBarViewModel(
     }
 
     fun goBack(){
-        val action = SidebarAction(
+        val action = SideBarAction(
             SideBarActionType.BACK,
             gridContents = null
         )
@@ -114,7 +114,7 @@ class MenuBarViewModel(
         val action = _itemList.value[itemIndex].action
         if(action.actionType == SideBarActionType.ENTER_GRID) {
             // グリッドの表示を更新するボタンにフォーカスしたときは、グリッドの表示を変更
-            val focusAction = SidebarAction(
+            val focusAction = SideBarAction(
                 SideBarActionType.CHANGE_GRID,
                 gridContents=action.gridContents
             )

@@ -2,13 +2,11 @@ package com.satohk.gphotoframe.viewmodel
 
 import android.util.Log
 import android.widget.AdapterView.INVALID_POSITION
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.satohk.gphotoframe.model.AccountState
 import com.satohk.gphotoframe.model.MediaType
 import com.satohk.gphotoframe.model.SearchQuery
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -18,7 +16,7 @@ import java.time.format.DateTimeParseException
 
 class SearchBarViewModel(
     _accountState: AccountState
-    ) : SidebarActionPublisherViewModel() {
+    ) : SideBarActionPublisherViewModel() {
 
     private val _mediaType: String? get() = index2str(mediaTypeIndex.value, mediaTypes)
     private val _contentType: String? get() = index2str(contentTypeIndex.value, contentTypes.value)
@@ -98,7 +96,7 @@ class SearchBarViewModel(
     }
 
     fun enterToGrid() {
-        val action = SidebarAction(
+        val action = SideBarAction(
             SideBarActionType.ENTER_GRID,
             gridContents = null
         )
@@ -106,7 +104,7 @@ class SearchBarViewModel(
     }
 
     fun goBack(){
-        val action = SidebarAction(
+        val action = SideBarAction(
             SideBarActionType.BACK,
             gridContents = null
         )
@@ -114,7 +112,7 @@ class SearchBarViewModel(
     }
 
     private fun changeGridContents(){
-        val action = SidebarAction(
+        val action = SideBarAction(
             SideBarActionType.CHANGE_GRID,
             gridContents = getGridContents()
         )

@@ -5,16 +5,13 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.satohk.gphotoframe.R
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel.PhotoGridItem
 import com.satohk.gphotoframe.databinding.GridItemBinding
 import android.util.Log
 import android.view.KeyEvent
-import com.satohk.gphotoframe.viewmodel.MenuBarItem
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
-import kotlinx.coroutines.*
 
 class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewModel.PhotoGridItem>):
     RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {

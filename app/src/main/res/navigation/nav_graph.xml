@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/photoGridWithSidebarFragment"
-        android:name="com.satohk.gphotoframe.view.PhotoGridWithSidebarFragment"
+        android:name="com.satohk.gphotoframe.view.PhotoGridWithSideBarFragment"
         android:label="MainFragment" >
         <action
             android:id="@+id/action_photoGridWithSidebarFragment_self"

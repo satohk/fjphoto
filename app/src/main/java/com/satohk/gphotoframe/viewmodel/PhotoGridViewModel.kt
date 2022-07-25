@@ -2,7 +2,6 @@ package com.satohk.gphotoframe.viewmodel
 
 import android.graphics.Bitmap
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DiffUtil
 import com.satohk.gphotoframe.model.*
@@ -14,12 +13,11 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.koin.java.KoinJavaComponent.inject
 
 
 class PhotoGridViewModel(
     private val _accountState: AccountState
-) : SidebarActionPublisherViewModel() {
+) : SideBarActionPublisherViewModel() {
     private var _gridContents: GridContents? = null
     private val _readPageSize = 60
     private var _pageToken: String? = null
@@ -117,7 +115,7 @@ class PhotoGridViewModel(
     }
 
     fun goBack(){
-        publishAction(SidebarAction(
+        publishAction(SideBarAction(
             SideBarActionType.BACK
         ))
     }

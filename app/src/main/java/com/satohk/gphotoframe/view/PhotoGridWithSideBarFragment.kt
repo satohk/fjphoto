@@ -1,6 +1,5 @@
 package com.satohk.gphotoframe.view
 
-import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.util.Log
@@ -22,8 +21,8 @@ import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 /**
  * Loads a grid of cards with movies to browse.
  */
-class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_with_sidebar) {
-    private val _viewModel by sharedViewModel<PhotoGridWithSidebarViewModel>()
+class PhotoGridWithSideBarFragment() : Fragment(R.layout.fragment_photo_grid_with_sidebar) {
+    private val _viewModel by sharedViewModel<PhotoGridWithSideBarViewModel>()
     private val _gridViewModel by sharedViewModel<PhotoGridViewModel>()
     private val _searchBarViewModel by sharedViewModel<SearchBarViewModel>()
     private val _menuBarViewModel by sharedViewModel<MenuBarViewModel>()
@@ -31,9 +30,9 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d("PhotoGridWidthSidebarFragment", "onViewCreated")
+        Log.d("PhotoGridWidthSideBarFragment", "onViewCreated")
 
-        setSidebar(_viewModel.sidebarType.value)
+        setSideBar(_viewModel.sideBarType.value)
 
         val grid = PhotoGridFragment()
         childFragmentManager.beginTransaction()
@@ -45,18 +44,18 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
                 launch {
                     Log.d("lifecycleScope", "_viewModel.menuBarFocused.collect")
-                    _viewModel.sidebarFocused.collect {
+                    _viewModel.sideBarFocused.collect {
                         changeFocus(
-                            this@PhotoGridWithSidebarFragment.requireView(),
-                            _viewModel.sidebarFocused.value,
+                            this@PhotoGridWithSideBarFragment.requireView(),
+                            _viewModel.sideBarFocused.value,
                             true
                         )
                     }
                 }
                 launch{
                     Log.d("lifecycleScope", "_viewModel.sideBarType.collect")
-                    _viewModel.sidebarType.collect {
-                        setSidebar(it)
+                    _viewModel.sideBarType.collect {
+                        setSideBar(it)
                     }
                 }
                 launch{
@@ -67,12 +66,12 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
                     }
                 }
 
-                val sidebarViewModels: List<SidebarActionPublisherViewModel> =
+                val sidebarViewModels: List<SideBarActionPublisherViewModel> =
                     listOf(_menuBarViewModel, _searchBarViewModel, _gridViewModel)
                 sidebarViewModels.forEach{vm ->
                     launch{
                         vm.action.collect{ action ->
-                            _viewModel.subscribeSidebarAction(action)
+                            _viewModel.subscribeSideBarAction(action)
                         }
                     }
                 }
@@ -91,7 +90,7 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
-    private fun setSidebar(sideBarType:SideBarType){
+    private fun setSideBar(sideBarType:SideBarType){
         if(sideBarType == SideBarType.SEARCH){
             val searchBar = SearchBarFragment()
             childFragmentManager.beginTransaction()
@@ -110,39 +109,39 @@ class PhotoGridWithSidebarFragment() : Fragment(R.layout.fragment_photo_grid_wit
                     .commit()
                 _sideBarFragment = menuBar
             }
-            _menuBarViewModel.initItemList(_viewModel.sidebarType.value)
+            _menuBarViewModel.initItemList(_viewModel.sideBarType.value)
         }
     }
 
     override fun onResume() {
         super.onResume()
 
-        changeFocus(this.requireView(), _viewModel.sidebarFocused.value, false)
+        changeFocus(this.requireView(), _viewModel.sideBarFocused.value, false)
     }
 
-    private fun changeFocus(view:View, focusSidebar: Boolean, animation:Boolean){
-        val sidebarContainer = view.findViewById<FrameLayout>(R.id.sidebar_container)
+    private fun changeFocus(view:View, focusSideBar: Boolean, animation:Boolean){
+        val sideBarContainer = view.findViewById<FrameLayout>(R.id.sidebar_container)
         val gridContainer = view.findViewById<FrameLayout>(R.id.grid)
 
         // change focus
-        if (focusSidebar) {
-            sidebarContainer.focusable = View.NOT_FOCUSABLE
-            sidebarContainer.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
+        if (focusSideBar) {
+            sideBarContainer.focusable = View.NOT_FOCUSABLE
+            sideBarContainer.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
             gridContainer.focusable = View.NOT_FOCUSABLE
             gridContainer.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
             if(_sideBarFragment is SideBarFragmentInterface) {
                 (_sideBarFragment as SideBarFragmentInterface).onFocus()
             }
         } else {
-            sidebarContainer.focusable = View.NOT_FOCUSABLE
-            sidebarContainer.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+            sideBarContainer.focusable = View.NOT_FOCUSABLE
+            sideBarContainer.descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
             gridContainer.focusable = View.NOT_FOCUSABLE
             gridContainer.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
         }
 
         // show/hide sidebar
-        val alpha = if (focusSidebar) {1f} else {0f}
-        ObjectAnimator.ofFloat(sidebarContainer, "alpha", alpha).apply {
+        val alpha = if (focusSideBar) {1f} else {0f}
+        ObjectAnimator.ofFloat(sideBarContainer, "alpha", alpha).apply {
             duration = if (animation) {200} else {0}
             start()
         }

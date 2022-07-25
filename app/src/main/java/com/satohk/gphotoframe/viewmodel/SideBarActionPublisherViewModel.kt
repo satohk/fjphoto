@@ -8,11 +8,11 @@ import kotlinx.coroutines.launch
 
 
 // Abstract class
-open class SidebarActionPublisherViewModel : ViewModel() {
-    private val _action = MutableSharedFlow<SidebarAction>()
+open class SideBarActionPublisherViewModel : ViewModel() {
+    private val _action = MutableSharedFlow<SideBarAction>()
     val action = _action.asSharedFlow()
 
-    protected fun publishAction(a: SidebarAction){
+    protected fun publishAction(a: SideBarAction){
         viewModelScope.launch {
             _action.emit(a)
         }

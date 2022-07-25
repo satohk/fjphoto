@@ -28,7 +28,7 @@ class GPApplication : Application() {
     private val modules: Module = module {
         single { AccountState() }
         viewModel { ChooseAccountViewModel( get() ) }
-        viewModel { PhotoGridWithSidebarViewModel() }
+        viewModel { PhotoGridWithSideBarViewModel() }
         viewModel { PhotoGridViewModel( get() ) }
         viewModel { SearchBarViewModel( get() ) }
         viewModel { MenuBarViewModel( get()) }
