@@ -139,7 +139,14 @@ class MenuBarItemAdapter:
             }
 
             buttonView.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
-                return@setOnKeyListener onKeyDown?.invoke(view, adapterPosition, keyEvent) == true
+                if(keyEvent.action == KeyEvent.ACTION_DOWN) {
+                    return@setOnKeyListener onKeyDown?.invoke(
+                        view,
+                        adapterPosition,
+                        keyEvent
+                    ) == true
+                }
+                return@setOnKeyListener false
             }
 
             _binding = bindingArg

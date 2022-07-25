@@ -15,13 +15,30 @@ class PhotoGridWithSideBarViewModel : ViewModel() {
     private var _sideBarFocused = MutableStateFlow(true)
     val sideBarFocused: StateFlow<Boolean> get() = _sideBarFocused
 
-    fun subscribeSideBarAction(action: SideBarAction){
+    private val _backStack: MutableList<SideBarAction> = mutableListOf()
+    val backStackSize  get() = _backStack.size
+
+    fun subscribeSideBarAction(action: SideBarAction, addBackStack: Boolean){
+        if(addBackStack){
+            when(action.actionType){
+                SideBarActionType.CHANGE_SIDEBAR -> {
+                    _backStack.add(SideBarAction(SideBarActionType.CHANGE_SIDEBAR, sideBarType.value, null))
+                }
+                SideBarActionType.ENTER_GRID -> {
+                    _backStack.add(SideBarAction(SideBarActionType.LEAVE_GRID, null, null))
+                }
+            }
+        }
         when (action.actionType) {
             SideBarActionType.CHANGE_SIDEBAR -> {
                 _sideBarType.value = action.sideBarType!!
             }
             SideBarActionType.BACK -> {
-                // TBD back
+                if(_backStack.size > 0) {
+                    val backAction = _backStack.last()
+                    _backStack.removeLast()
+                    subscribeSideBarAction(backAction, false)
+                }
             }
             SideBarActionType.CHANGE_GRID -> {
                 _gridContents.value = action.gridContents!!
@@ -29,6 +46,10 @@ class PhotoGridWithSideBarViewModel : ViewModel() {
             SideBarActionType.ENTER_GRID -> {
                 //_gridContents.emit(it.gridContents!!)
                 _sideBarFocused.value = false
+            }
+            SideBarActionType.LEAVE_GRID -> {
+                //_gridContents.emit(it.gridContents!!)
+                _sideBarFocused.value = true
             }
         }
     }

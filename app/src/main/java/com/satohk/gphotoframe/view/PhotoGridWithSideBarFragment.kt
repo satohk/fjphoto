@@ -11,6 +11,7 @@ import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
 import com.satohk.gphotoframe.*
 import com.satohk.gphotoframe.viewmodel.*
 import kotlinx.coroutines.flow.collect
@@ -71,7 +72,7 @@ class PhotoGridWithSideBarFragment() : Fragment(R.layout.fragment_photo_grid_wit
                 sidebarViewModels.forEach{vm ->
                     launch{
                         vm.action.collect{ action ->
-                            _viewModel.subscribeSideBarAction(action)
+                            _viewModel.subscribeSideBarAction(action, true)
                         }
                     }
                 }
@@ -84,7 +85,18 @@ class PhotoGridWithSideBarFragment() : Fragment(R.layout.fragment_photo_grid_wit
             {
                 override fun handleOnBackPressed() {
                     Log.d("onBackPressedDispatcher", "back button pressed")
-                    //findNavController().popBackStack()
+                    if(_viewModel.backStackSize > 0) {
+                        _viewModel.subscribeSideBarAction(
+                            SideBarAction(
+                                SideBarActionType.BACK,
+                                null,
+                                null
+                            ), false
+                        )
+                    }
+                    else{
+                        requireActivity().onBackPressed()
+                    }
                 }
             }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)

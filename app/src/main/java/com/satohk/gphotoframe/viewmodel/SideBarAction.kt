@@ -12,6 +12,7 @@ enum class SideBarActionType{
     CHANGE_SIDEBAR,
     CHANGE_GRID,
     ENTER_GRID,
+    LEAVE_GRID,
     BACK
 }
 

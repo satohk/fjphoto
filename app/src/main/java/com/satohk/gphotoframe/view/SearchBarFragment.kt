@@ -93,11 +93,12 @@ class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
             }
         }
         val onKey = fun(view: View, i: Int, keyEvent: KeyEvent): Boolean {
-            if(keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT){
-                _viewModel.enterToGrid()
-            }
-            else if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT){
-                _viewModel.goBack()
+            if(keyEvent.action == KeyEvent.ACTION_DOWN) {
+                if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    _viewModel.enterToGrid()
+                } else if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    _viewModel.goBack()
+                }
             }
             return false
         }
