@@ -19,6 +19,7 @@ class PhotoGridViewModel(
     private val _accountState: AccountState
 ) : SideBarActionPublisherViewModel() {
     private var _gridContents: GridContents? = null
+    val gridContents: GridContents? get() = _gridContents
     private val _readPageSize = 60
     private var _pageToken: String? = null
     private var _dataLoadJob: Job? = null
@@ -76,7 +77,7 @@ class PhotoGridViewModel(
         if((_accountState.photoRepository.value != null) && (_dataLoadJob == null) && (_gridContents != null)){
             _dataLoadJob = viewModelScope.launch {
                 _loading.emit(true)
-                val result = _accountState.photoRepository.value!!.getPhotoList(
+                val result = _accountState.photoRepository.value!!.getNextPhotoMetadataList(
                     _readPageSize, _pageToken, _gridContents!!.searchQuery
                 )
                 val photoMetaList = result.first

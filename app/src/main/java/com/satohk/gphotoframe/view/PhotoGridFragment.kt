@@ -10,12 +10,12 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.fragment.app.Fragment
 
 import android.view.View
+import android.widget.Button
 import android.widget.ProgressBar
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.satohk.gphotoframe.viewmodel.GridContents
+import androidx.navigation.findNavController
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
@@ -64,6 +64,16 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
                 }
             }
             return false
+        }
+        val slideShowButton = view.findViewById<Button>(R.id.playButton)
+        slideShowButton.setOnClickListener {
+            val action =
+                PhotoGridWithSideBarFragmentDirections.actionPhotoGridWithSidebarFragmentToPhotoFragment(
+                    _viewModel.gridContents!!,
+                    true,
+                    0
+                )
+                view.findNavController().navigate(action)
         }
 
         _adapter.loadThumbnail = fun(photoGridItem: PhotoGridViewModel.PhotoGridItem, width:Int?, height:Int?, callback:(bmp: Bitmap?)->Unit) {

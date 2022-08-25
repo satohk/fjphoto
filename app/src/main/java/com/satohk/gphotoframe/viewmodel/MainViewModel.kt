@@ -3,8 +3,6 @@ package com.satohk.gphotoframe.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.satohk.gphotoframe.model.AccountState
-import com.satohk.gphotoframe.model.Account
-import com.satohk.gphotoframe.model.GooglePhotoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -20,19 +18,11 @@ class MainViewModel : ViewModel() {
 
     init{
         viewModelScope.launch{
-            _accountState.activeAccount.collect {
-                    account ->
-                        if(account != null) {
-                            _initPhotoRepository(account)
-                            _activeUserName.value = account.userName
-                        }
+            _accountState.activeAccount.collect { account ->
+                if(account != null) {
+                    _activeUserName.value = account.userName
+                }
             }
         }
-    }
-
-    private fun _initPhotoRepository(account: Account) {
-        // google photo only
-        val photoRepository = GooglePhotoRepository(account.accessToken)
-        _accountState.setPhotoRepository(photoRepository)
     }
 }

@@ -7,7 +7,7 @@
     <fragment
         android:id="@+id/photoGridWithSidebarFragment"
         android:name="com.satohk.gphotoframe.view.PhotoGridWithSideBarFragment"
-        android:label="MainFragment" >
+        android:label="PhotoGridWithSideBarFragment" >
         <action
             android:id="@+id/action_photoGridWithSidebarFragment_self"
             app:destination="@id/photoGridWithSidebarFragment"
@@ -19,5 +19,37 @@
             android:name="sideBarType"
             app:argType="com.satohk.gphotoframe.viewmodel.SideBarType"
             android:defaultValue="TOP" />
+        <action
+            android:id="@+id/action_photoGridWithSidebarFragment_to_photoFragment"
+            app:destination="@id/photoFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/photoFragment"
+        android:name="com.satohk.gphotoframe.view.PhotoFragment"
+        android:label="PhotoFragment" >
+        <argument
+            android:name="contents"
+            app:argType="com.satohk.gphotoframe.viewmodel.GridContents" />
+        <argument
+            android:name="slideShow"
+            app:argType="boolean"
+            android:defaultValue="false" />
+        <argument
+            android:name="showIndex"
+            app:argType="integer"
+            android:defaultValue="0" />
+        <action
+            android:id="@+id/action_photoFragment_pop"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/photoFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 </navigation>
