@@ -1,5 +1,8 @@
 package com.satohk.gphotoframe.model
 
+import com.satohk.gphotoframe.repository.CachedPhotoRepository
+import com.satohk.gphotoframe.repository.GooglePhotoRepository
+import com.satohk.gphotoframe.repository.PhotoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

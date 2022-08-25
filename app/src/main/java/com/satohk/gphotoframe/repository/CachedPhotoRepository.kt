@@ -1,11 +1,14 @@
-package com.satohk.gphotoframe.model
+package com.satohk.gphotoframe.repository
 
 import android.graphics.Bitmap
 import android.util.LruCache
+import com.satohk.gphotoframe.model.Album
+import com.satohk.gphotoframe.model.PhotoMetadata
+import com.satohk.gphotoframe.model.SearchQuery
 
 class CachedPhotoRepository(
     private val repository: PhotoRepository
-) : PhotoRepository{
+) : PhotoRepository {
 
     private val albumCache = mutableListOf<Album>()
     private val photoBitmapCache = LruCache<String, Bitmap>(256)
@@ -26,11 +29,11 @@ class CachedPhotoRepository(
         return albumCache
     }
 
-    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery:SearchQuery?):Pair<List<PhotoMetadata>,String?>{
+    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQuery?):Pair<List<PhotoMetadata>,String?>{
         return repository.getNextPhotoMetadataList(pageSize, pageToken, searchQuery)
     }
 
-    override suspend fun getPhotoBitmap(photo:PhotoMetadata, width:Int?, height:Int?, cropFlag:Boolean?):Bitmap? {
+    override suspend fun getPhotoBitmap(photo: PhotoMetadata, width:Int?, height:Int?, cropFlag:Boolean?):Bitmap? {
         val key = arg2str(photo, width, height, cropFlag)
         var res = photoBitmapCache.get(key)
         if(res == null){
@@ -40,7 +43,7 @@ class CachedPhotoRepository(
         return res
     }
 
-    override suspend fun getAlbumCoverPhoto(album:Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {
+    override suspend fun getAlbumCoverPhoto(album: Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {
         val key = arg2str(album, width, height, cropFlag)
         var res = albumCoverCache.get(key)
         if(res == null){

@@ -11,7 +11,6 @@ import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
 import com.satohk.gphotoframe.*
 import com.satohk.gphotoframe.viewmodel.*
 import kotlinx.coroutines.flow.collect

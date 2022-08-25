@@ -1,8 +1,21 @@
-package com.satohk.gphotoframe.model
+package com.satohk.gphotoframe.repository
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import com.satohk.gphotoframe.model.*
+import com.satohk.gphotoframe.model.AlbumsResponse
+import com.satohk.gphotoframe.model.MediaItemsResponse
+import com.satohk.gphotoframe.model.MediaType
+import com.satohk.gphotoframe.model.ParamContentCategory
+import com.satohk.gphotoframe.model.ParamContentFilter
+import com.satohk.gphotoframe.model.ParamDate
+import com.satohk.gphotoframe.model.ParamDateFilter
+import com.satohk.gphotoframe.model.ParamDateRange
+import com.satohk.gphotoframe.model.ParamFilters
+import com.satohk.gphotoframe.model.ParamMediaType
+import com.satohk.gphotoframe.model.ParamMediaTypeFilter
+import com.satohk.gphotoframe.model.SearchParam
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -18,7 +31,7 @@ import java.net.ConnectException
 class GooglePhotoRepository(
     private val accessToken:String,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
-    ) : PhotoRepository{
+    ) : PhotoRepository {
     private val jsonDec = Json{ignoreUnknownKeys=true}
 
     override suspend fun getAlbumList():List<Album> {
@@ -58,14 +71,16 @@ class GooglePhotoRepository(
         return albums
     }
 
-    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery:SearchQuery?):Pair<List<PhotoMetadata>,String?>{
+    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQuery?):Pair<List<PhotoMetadata>,String?>{
         val dateFilter =
             if(searchQuery?.startDate !== null && searchQuery?.endDate !== null)
                 ParamDateFilter(
-                    ranges=listOf(ParamDateRange(
-                        startDate=ParamDate(searchQuery.startDate),
-                        endDate=ParamDate(searchQuery.endDate)
-                    )))
+                    ranges=listOf(
+                        ParamDateRange(
+                        startDate= ParamDate(searchQuery.startDate),
+                        endDate= ParamDate(searchQuery.endDate)
+                    )
+                    ))
             else null
         val contentFilter =
             if(searchQuery?.photoCategory !== null)
@@ -145,7 +160,7 @@ class GooglePhotoRepository(
         }
     }
 
-    override suspend fun getAlbumCoverPhoto(album:Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {
+    override suspend fun getAlbumCoverPhoto(album: Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {
         if(album.coverPhotoUrl != null){
             val res = httpGet(makeImageUrl(album.coverPhotoUrl, width, height, cropFlag))
             if(!res.isSuccessful){
