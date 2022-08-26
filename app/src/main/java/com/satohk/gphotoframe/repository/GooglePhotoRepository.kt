@@ -1,5 +1,6 @@
 package com.satohk.gphotoframe.repository
 
+import android.accounts.NetworkErrorException
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
@@ -114,7 +115,8 @@ class GooglePhotoRepository(
             Log.i("http", "response is not ok . %s, %s".format(url, response.toString()))
             response.body?.close()
             response.close()
-            return Pair(listOf(), "")
+            throw NetworkErrorException(response.message)
+            //return Pair(listOf(), null)
         }
         val responseBodyStr = response.body?.string()!!
         val responseDecoded = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)

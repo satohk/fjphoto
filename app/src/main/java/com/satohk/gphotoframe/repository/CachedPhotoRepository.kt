@@ -1,20 +1,37 @@
 package com.satohk.gphotoframe.repository
 
 import android.graphics.Bitmap
+import android.util.Log
 import android.util.LruCache
 import com.satohk.gphotoframe.model.Album
 import com.satohk.gphotoframe.model.PhotoMetadata
 import com.satohk.gphotoframe.model.SearchQuery
+import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
+import java.lang.Math.min
 
 class CachedPhotoRepository(
-    private val repository: PhotoRepository
-) : PhotoRepository {
+    private val _repository: PhotoRepository
+) {
+    private class PhotoMetadataList(
+        val pageToken: String?,
+        val photoMetadataList: List<PhotoMetadata>,
+        val allLoaded: Boolean
+    ){
+        val size: Int get() = photoMetadataList.size
+    }
 
-    private val albumCache = mutableListOf<Album>()
-    private val photoBitmapCache = LruCache<String, Bitmap>(256)
-    private val albumCoverCache = LruCache<String, Bitmap>(256)
+    private val _albumCache = mutableListOf<Album>()
+    private val _photoBitmapCache = LruCache<String, Bitmap>(256)
+    private val _albumCoverCache = LruCache<String, Bitmap>(256)
 
-    fun arg2str(vararg args: Any?): String{
+    // 全listの要素数の合計をmaxSize以下とする
+    private val _photoMetadataCache = object : LruCache<String, PhotoMetadataList>(1024) {
+        override fun sizeOf(key:String, metadataList:PhotoMetadataList):Int{
+            return metadataList.size
+        }
+    }
+
+    private fun arg2str(vararg args: Any?): String{
         var key: String = ""
         args.forEach {
             key += it.toString() + "_"
@@ -22,38 +39,58 @@ class CachedPhotoRepository(
         return key
     }
 
-    override suspend fun getAlbumList():List<Album> {
-        if(albumCache.size == 0) {
-            albumCache.addAll(repository.getAlbumList())
+    suspend fun getPhotoMetadataList(offset:Int, size:Int, searchQuery:SearchQuery?):List<PhotoMetadata>{
+        val key = arg2str(searchQuery)
+        var list = _photoMetadataCache.get(key)
+
+        if((list == null) || (!list.allLoaded && list.size < offset + size)){
+            val pageToken = list?.pageToken
+            val loadSize = offset + size - (list?.size ?: 0)
+            val result = _repository.getNextPhotoMetadataList(
+                loadSize, pageToken, searchQuery
+            )
+            val resultList = if(list == null) result.first else list.photoMetadataList + result.first
+            val nextPageToken = result.second
+            list = PhotoMetadataList(nextPageToken, resultList, nextPageToken == null)
+            _photoMetadataCache.put(key, list)
         }
-        return albumCache
+
+        if(list.size < offset){
+            return listOf()
+        }
+        else {
+            return list.photoMetadataList.subList(offset, min(offset + size, list.size))
+        }
     }
 
-    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQuery?):Pair<List<PhotoMetadata>,String?>{
-        return repository.getNextPhotoMetadataList(pageSize, pageToken, searchQuery)
+    suspend fun getAlbumList():List<Album> {
+        if(_albumCache.size == 0) {
+            _albumCache.addAll(_repository.getAlbumList())
+        }
+        return _albumCache
     }
 
-    override suspend fun getPhotoBitmap(photo: PhotoMetadata, width:Int?, height:Int?, cropFlag:Boolean?):Bitmap? {
+    suspend fun getPhotoBitmap(photo: PhotoMetadata, width:Int?, height:Int?, cropFlag:Boolean?):Bitmap? {
         val key = arg2str(photo, width, height, cropFlag)
-        var res = photoBitmapCache.get(key)
+        var res = _photoBitmapCache.get(key)
         if(res == null){
-            res = repository.getPhotoBitmap(photo, width, height, cropFlag)
-            photoBitmapCache.put(key, res)
+            res = _repository.getPhotoBitmap(photo, width, height, cropFlag)
+            _photoBitmapCache.put(key, res)
         }
         return res
     }
 
-    override suspend fun getAlbumCoverPhoto(album: Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {
+    suspend fun getAlbumCoverPhoto(album: Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {
         val key = arg2str(album, width, height, cropFlag)
-        var res = albumCoverCache.get(key)
+        var res = _albumCoverCache.get(key)
         if(res == null){
-            res = repository.getAlbumCoverPhoto(album, width, height, cropFlag)
-            albumCoverCache.put(key, res)
+            res = _repository.getAlbumCoverPhoto(album, width, height, cropFlag)
+            _albumCoverCache.put(key, res)
         }
         return res
     }
 
-    override fun getCategoryList(): List<String>{
-        return repository.getCategoryList()
+    fun getCategoryList(): List<String>{
+        return _repository.getCategoryList()
     }
 }
