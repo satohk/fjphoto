@@ -5,6 +5,7 @@ import android.widget.AdapterView.INVALID_POSITION
 import androidx.lifecycle.viewModelScope
 import com.satohk.gphotoframe.model.AccountState
 import com.satohk.gphotoframe.model.MediaType
+import com.satohk.gphotoframe.model.SearchQueryForRepo
 import com.satohk.gphotoframe.model.SearchQuery
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
@@ -87,10 +88,12 @@ class SearchBarViewModel(
         )
         return GridContents(
             searchQuery = SearchQuery(
-                photoCategory = if (_contentType !== null) listOf(_contentType!!) else null,
-                startDate = from,
-                endDate = to,
-                mediaType = if (_mediaType !== null) MediaType.valueOf(_mediaType!!) else MediaType.ALL
+                queryForRepo = SearchQueryForRepo(
+                    photoCategory = if (_contentType !== null) listOf(_contentType!!) else null,
+                    startDate = from,
+                    endDate = to,
+                    mediaType = if (_mediaType !== null) MediaType.valueOf(_mediaType!!) else MediaType.ALL
+                )
             )
         )
     }

@@ -32,5 +32,6 @@ class GPApplication : Application() {
         viewModel { PhotoGridViewModel( get() ) }
         viewModel { SearchBarViewModel( get() ) }
         viewModel { MenuBarViewModel( get()) }
+        viewModel { PhotoViewModel( get()) }
     }
 }

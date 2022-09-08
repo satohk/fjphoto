@@ -20,7 +20,8 @@ class PhotoGridViewModel(
 ) : SideBarActionPublisherViewModel() {
     private var _gridContents: GridContents? = null
     val gridContents: GridContents? get() = _gridContents
-    private val _readPageSize = 60
+    private val _readPageSize = 10
+    private val _readNum = 6
     private var _dataLoadJob: Job? = null
     var lastDataSize: Int = 0
         private set
@@ -31,6 +32,8 @@ class PhotoGridViewModel(
     val itemList:List<PhotoGridItem> get(){return _itemList}
     private val _dataSize = MutableStateFlow<Int>(0)
     val dataSize: StateFlow<Int> get() = _dataSize
+
+    private var _filteredPhotoList: FilteredPhotoList? = null
 
     init{
         _accountState.photoRepository.onEach {
@@ -57,6 +60,7 @@ class PhotoGridViewModel(
                 _dataLoadJob = null
 
                 _gridContents = gridContents
+                _filteredPhotoList = FilteredPhotoList(_accountState.photoRepository.value!!, gridContents.searchQuery)
                 _itemList.clear()
                 lastDataSize = dataSize.value
                 _dataLoadJob = null
@@ -68,24 +72,27 @@ class PhotoGridViewModel(
         else{
             // photoRepositoryが決定してから再度setGridContentsを呼び出すために、gridContentの値は保持しておく
             _gridContents = gridContents
+            _filteredPhotoList = null
         }
     }
 
     fun loadNextImageList() {
-        if((_accountState.photoRepository.value != null) && (_dataLoadJob == null) && (_gridContents != null)){
+        Log.i("loadNextImageList", "Thread  = %s(%d)".format(Thread.currentThread().name, Thread.currentThread().id))
+        if((_accountState.photoRepository.value != null) && (_dataLoadJob == null) && (_gridContents != null) && (_filteredPhotoList != null)){
             _dataLoadJob = viewModelScope.launch {
                 _loading.emit(true)
-                val photoMetaList = _accountState.photoRepository.value!!.getPhotoMetadataList(
-                    _itemList.size, _readPageSize, _gridContents!!.searchQuery
-                )
-                _itemList.addAll(photoMetaList.map { PhotoGridItem(it) })
-                lastDataSize = _dataSize.value
-                _dataSize.emit(_dataSize.value + photoMetaList.size)
+                for(i in 1.._readNum) {
+                    val photoMetaList = _filteredPhotoList!!.getFilteredPhotoMetadataList(
+                        _itemList.size,
+                        _readPageSize
+                    )
+                    _itemList.addAll(photoMetaList.map { PhotoGridItem(it) })
+                    lastDataSize = _dataSize.value
+                    _dataSize.emit(_dataSize.value + photoMetaList.size)
+                }
                 _dataLoadJob = null
                 _loading.emit(false)
-                Log.d("loadNextImageList", photoMetaList.size.toString())
             }
-            Log.d("loadNextImageList launched", "")
         }
         else{
             Log.d("loadNextImageList", "_accountState.photoRepository.value is null")

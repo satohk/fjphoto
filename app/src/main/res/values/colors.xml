@@ -16,4 +16,6 @@
 
     <color name="selected_grid_item">#ffaa3f</color>
     <color name="default_grid_item">#3d3d3d</color>
+
+    <color name="blank_image">#000000</color>
 </resources>

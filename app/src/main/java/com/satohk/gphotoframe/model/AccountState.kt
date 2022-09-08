@@ -2,6 +2,7 @@ package com.satohk.gphotoframe.model
 
 import com.satohk.gphotoframe.repository.CachedPhotoRepository
 import com.satohk.gphotoframe.repository.GooglePhotoRepository
+import com.satohk.gphotoframe.repository.TestPhotoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -19,12 +20,13 @@ class AccountState {
         _photoRepository.value = repo
     }
 
-    fun makePhotoRepository(account: Account?): CachedPhotoRepository? {
+    private fun makePhotoRepository(account: Account?): CachedPhotoRepository? {
         if (account == null) {
             return null
         }
         val repo = when (account.serviceProvider) {
             ServiceProvider.GOOGLE -> GooglePhotoRepository(account.accessToken)
+            //ServiceProvider.GOOGLE -> TestPhotoRepository(account.accessToken)
         }
 
         return CachedPhotoRepository(repo)
