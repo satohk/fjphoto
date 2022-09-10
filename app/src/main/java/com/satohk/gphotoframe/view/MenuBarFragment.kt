@@ -33,7 +33,6 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar), SideBarFragmentI
         val numberOfColumns = 1
         _recyclerView.layoutManager =
             GridLayoutManager(requireContext(), numberOfColumns)
-        Log.d("MenuBarFragment", this._viewModel.itemList.value.toString())
         _adapter = MenuBarItemAdapter()
 
         _adapter.onClick = fun(_:View?, position:Int):Unit{
@@ -57,7 +56,7 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar), SideBarFragmentI
             return false
         }
 
-        _adapter.loadIcon = fun(menuBarItem: MenuBarItem, width:Int?, height:Int?, callback:(bmp: Bitmap?)->Unit) {
+        _adapter.loadIcon = fun(menuBarItem: MenuBarViewModel.MenuBarItem, width:Int?, height:Int?, callback:(bmp: Bitmap?)->Unit) {
             _viewModel.loadIcon(menuBarItem, width, height, callback)
         }
 
@@ -70,8 +69,8 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar), SideBarFragmentI
                     _adapter.setList(_viewModel.itemList.value)
                     _adapter.notifyDataSetChanged()
                     if(_viewModel.itemList.value.size > 0) {
-                        setFocusToMenuBarItem(0)
-                        _viewModel.changeFocus(0)
+                        setFocusToMenuBarItem(_viewModel.lastFocusIndex)
+                        _viewModel.changeFocus(_viewModel.lastFocusIndex)
                     }
                 }
             }
@@ -79,7 +78,6 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar), SideBarFragmentI
     }
 
     override fun onFocus(){
-        Log.d("MenuBarFragment", "onFocus")
         setFocusToMenuBarItem(_viewModel.lastFocusIndex)
     }
 

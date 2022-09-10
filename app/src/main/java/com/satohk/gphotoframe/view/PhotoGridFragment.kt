@@ -62,6 +62,15 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
                 if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && (view.x < 10.0f)) {
                     _viewModel.goBack()
                 }
+                else if(keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_CENTER){
+                    val action =
+                        PhotoGridWithSideBarFragmentDirections.actionPhotoGridWithSidebarFragmentToPhotoFragment(
+                            _viewModel.gridContents!!,
+                            false,
+                            position
+                        )
+                    view.findNavController().navigate(action)
+                }
             }
             return false
         }

@@ -6,7 +6,9 @@ import android.animation.ObjectAnimator
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import androidx.fragment.app.*
@@ -14,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.satohk.gphotoframe.*
 import com.satohk.gphotoframe.viewmodel.PhotoViewModel
+import kotlinx.android.synthetic.main.fragment_photo.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -41,6 +44,21 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         hideImageView.alpha = 0.0f
         showImageView.setImageResource(R.drawable.blank_image)
 
+        view.focusable = View.FOCUSABLE
+        view.isFocusableInTouchMode = true;
+        view.setOnKeyListener { _: View, _: Int, keyEvent: KeyEvent ->
+            Log.d("PhotoFragment", "KeyEvent " + keyEvent.toString())
+            if(keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when(keyEvent.keyCode){
+                    KeyEvent.KEYCODE_DPAD_LEFT -> _viewModel.goPrev()
+                    KeyEvent.KEYCODE_DPAD_RIGHT -> _viewModel.goNext()
+                    else -> return@setOnKeyListener false
+                }
+                return@setOnKeyListener true
+            }
+            return@setOnKeyListener false
+        }
+
         _viewModel.currentPhoto.onEach{
             if(it != null) {
                 changeImage(it)
@@ -50,7 +68,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
 
     override fun onStart() {
         super.onStart()
-        _viewModel.onStart(args.contents)
+        _viewModel.onStart(args.contents, args.slideShow, args.showIndex)
     }
 
     override fun onStop() {
@@ -59,7 +77,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     }
 
     private fun changeImage(bmp: Bitmap){
-        val fadeDuration = 1500L // msec
+        val fadeDuration = if(args.slideShow) 1500L else 0L // msec
 
         hideImageView.setImageBitmap(bmp)
         ObjectAnimator.ofFloat(hideImageView, "alpha", 1.0f).apply {
@@ -70,6 +88,8 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
             duration = fadeDuration
             start()
         }
+
+        photoInfo.text = _viewModel.currentPhotoMetadata!!.timestamp.toString()
 
         val tmp = hideImageView
         hideImageView = showImageView

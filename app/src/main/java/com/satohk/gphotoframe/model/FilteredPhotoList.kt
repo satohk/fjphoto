@@ -52,7 +52,6 @@ class FilteredPhotoList(
                     val filterResult = metadataList.map { it ->
                         async { filterPhoto(it) }
                     }.awaitAll()
-                    Log.d("filterResult", filterResult.toString())
                     val filteredList =
                         metadataList.zip(filterResult).filter { it.second }.map { it.first }
                     _filteredPhotoMetadataList.addAll(filteredList)
@@ -73,6 +72,7 @@ class FilteredPhotoList(
 
     var ct = 0
     suspend private fun filterPhoto(photoMetadata: PhotoMetadata):Boolean{
+        return true
 
         _repository.getPhotoBitmap(photoMetadata, _preloadPhotoSize, _preloadPhotoSize, false)
         ct += 1

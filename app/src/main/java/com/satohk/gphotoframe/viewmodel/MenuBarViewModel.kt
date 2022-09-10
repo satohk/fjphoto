@@ -8,32 +8,43 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 
-data class MenuBarItem(
-    val itemType: MenuBarItemType,
-    val action: SideBarAction,
-    val album: Album? = null,
-) {
-    enum class MenuBarItemType{
-        SHOW_ALL,
-        SHOW_PHOTO,
-        SHOW_MOVIE,
-        SHOW_ALBUM_LIST,
-        SEARCH,
-        SETTING,
-        ALBUM_ITEM
-    }
-}
-
 class MenuBarViewModel(
     private val _accountState: AccountState
     ) : SideBarActionPublisherViewModel() {
+
+    data class MenuBarItem(
+        val itemType: MenuBarItemType,
+        val action: SideBarAction,
+        val album: Album? = null,
+    ) {
+        enum class MenuBarItemType{
+            SHOW_ALL,
+            SHOW_PHOTO,
+            SHOW_MOVIE,
+            SHOW_ALBUM_LIST,
+            SEARCH,
+            SETTING,
+            ALBUM_ITEM
+        }
+    }
+
     private val _itemList = MutableStateFlow(listOf<MenuBarItem>())
     val itemList: StateFlow<List<MenuBarItem>> get() = _itemList
 
-    var lastFocusIndex: Int = 0
+    private val _lastFocusIndexForSideBarType: MutableMap<SideBarType, Int> = mutableMapOf()
+    var sideBarType: SideBarType = SideBarType.TOP
         private set
+    val lastFocusIndex: Int
+        get() = _lastFocusIndexForSideBarType[sideBarType]!!
+
+
+    init {
+        _lastFocusIndexForSideBarType[SideBarType.TOP] = 0
+        _lastFocusIndexForSideBarType[SideBarType.ALBUM_LIST] = 0
+    }
 
     fun initItemList(sideBarType: SideBarType) {
+        this.sideBarType = sideBarType
         _itemList.value = listOf()
         viewModelScope.launch {
             when (sideBarType) {
@@ -109,7 +120,8 @@ class MenuBarViewModel(
     }
 
     fun changeFocus(itemIndex: Int) {
-        lastFocusIndex = itemIndex
+        Log.d("MenuBarViewModel", "lastFocusIndex " + lastFocusIndex.toString() + " itemIndex" + itemIndex.toString())
+        _lastFocusIndexForSideBarType[sideBarType] = itemIndex
 
         val action = _itemList.value[itemIndex].action
         if(action.actionType == SideBarActionType.ENTER_GRID) {

@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.satohk.gphotoframe.R
 import com.satohk.gphotoframe.databinding.MenuBarItemBinding
 import android.widget.TextView
-import com.satohk.gphotoframe.viewmodel.MenuBarItem
+import com.satohk.gphotoframe.viewmodel.MenuBarViewModel.MenuBarItem
 
 
 class MenuBarItemAdapter:
