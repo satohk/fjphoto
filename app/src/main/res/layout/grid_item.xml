@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.satohk.gphotoframe.view.FocusFixConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="2dp">
@@ -22,5 +22,5 @@
             android:adjustViewBounds="true"
             tools:ignore="HardcodedText" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.satohk.gphotoframe.view.FocusFixConstraintLayout>
 </layout>
