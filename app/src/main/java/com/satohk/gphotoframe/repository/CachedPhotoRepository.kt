@@ -103,6 +103,10 @@ class CachedPhotoRepository(
         return res
     }
 
+    fun getMediaAccessHeaderAndUrl(media: PhotoMetadata): Pair<PhotoRequestHeader, String> {
+        return _repository.getMediaAccessHeaderAndUrl(media)
+    }
+
     fun getCategoryList(): List<String>{
         return _repository.getCategoryList()
     }

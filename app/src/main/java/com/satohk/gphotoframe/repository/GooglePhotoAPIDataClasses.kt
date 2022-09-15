@@ -175,7 +175,7 @@ internal data class MediaItem(
     val description: String? = null,
     val productUrl: String,
     val baseUrl: String,
-    val mimeType: String? = null,
+    val mimeType: String,
     val mediaMetadata: MediaMetadata? = null,
     val contributorInfo: ContributorInfo? = null,
     val filename: String? = null

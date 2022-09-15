@@ -123,11 +123,14 @@ open class GooglePhotoRepository(
         val responseBodyStr = response.body?.string()!!
         val responseDecoded = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)
         val resultNextPageToken = responseDecoded.nextPageToken
+        Log.d("getNextPhotoMetadataList", responseDecoded.mediaItems?.get(0).toString())
         val result: List<PhotoMetadata> = responseDecoded.mediaItems?.map{
             PhotoMetadata(
                 ZonedDateTime.parse(it.mediaMetadata!!.creationTime),
                 it.id,
-                it.baseUrl
+                it.baseUrl,
+                it.productUrl,
+                it.mimeType
             )
         } ?: listOf()
         response.body?.close()
@@ -182,6 +185,16 @@ open class GooglePhotoRepository(
         else{
             return null
         }
+    }
+
+    override fun getMediaAccessHeaderAndUrl(media: PhotoMetadata): Pair<PhotoRequestHeader, String>{
+        val headers: MutableMap<String, String> = HashMap()
+        headers["Authorization"] = "Bearer $accessToken"
+        headers["Accept-Ranges"] = "bytes";
+        headers["Status"] = "206";
+        headers["Cache-control"] = "no-cache";
+
+        return Pair(headers, media.url + "=dv")
     }
 
     private fun makeImageUrl(baseUrl:String, width:Int?, height:Int?, cropFlag:Boolean?):String{

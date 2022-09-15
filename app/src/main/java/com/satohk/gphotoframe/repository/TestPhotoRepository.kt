@@ -47,7 +47,7 @@ class TestPhotoRepository(
             return res
         }
         else{
-            val newList = samplePhotoMetadataList!!.map{PhotoMetadata(it.timestamp, it.id+count.toString(), it.url)}
+            val newList = samplePhotoMetadataList!!.map{PhotoMetadata(it.timestamp, it.id+count.toString(), it.url, it.productUrl, it.mimeType)}
             count += 1
             return Pair(newList, "nextToken")
         }

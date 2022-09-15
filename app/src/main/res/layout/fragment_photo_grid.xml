@@ -4,50 +4,57 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:orientation="horizontal">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+            <!--                        <Space-->
+            <!--                            android:layout_width="338dp"-->
+            <!--                            android:layout_height="45dp"-->
+            <!--                            android:layout_weight="1" />-->
 
-                        <Space
-                            android:layout_width="338dp"
-                            android:layout_height="45dp"
-                            android:layout_weight="1" />
+            <Button
+                android:id="@+id/playButton"
+                style="@android:style/Widget.DeviceDefault.Button.Colored"
+                android:layout_width="106dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/slideshow_icon"
+                android:text="Play"
+                android:textAllCaps="false" />
 
-                        <Button
-                            android:id="@+id/playButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Play" />
+            <Button
+                android:id="@+id/setToSlideshowButton"
+                android:layout_width="155dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_weight="1"
+                android:text="Set Slideshow" />
 
-                        <Button
-                            android:id="@+id/setToSlideshowButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="set to slideshow" />
-
-                        <ToggleButton
-                            android:id="@+id/toggleButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="edit train data"
-                            android:textOff="edit train off"
-                            android:textOn="edit train on" />
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/photo_grid"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+            <ToggleButton
+                android:id="@+id/toggleButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_weight="1"
+                android:text="select train data"
+                android:textOff="edit train off"
+                android:textOn="edit train on" />
         </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/photo_grid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 
         <ProgressBar
             android:id="@+id/progress"

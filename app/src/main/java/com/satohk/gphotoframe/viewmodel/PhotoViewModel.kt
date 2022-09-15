@@ -16,10 +16,18 @@ import kotlinx.coroutines.withContext
 
 
 class PhotoViewModel(
-    private val _accountState: AccountState
+    val _accountState: AccountState
 ) : ViewModel() {
+
+    data class VideoRequest(
+        val header: Map<String, String>,
+        val url: String
+    )
+
     private val _currentPhoto = MutableStateFlow<Bitmap?>(null)
     val currentPhoto: StateFlow<Bitmap?> get() = _currentPhoto
+    private val _currentVideoRequest = MutableStateFlow<VideoRequest?>(null)
+    val currentVideoRequest: StateFlow<VideoRequest?> get() = _currentVideoRequest
     var photoWidth: Int = 1024
     var photoHeight: Int = 768
     var currentPhotoMetadata: PhotoMetadata? = null
@@ -86,14 +94,23 @@ class PhotoViewModel(
         _photoSelector!!.currentPhotoMetadata.onEach {
             if(it != null) {
                 currentPhotoMetadata = it
-                withContext(Dispatchers.IO) {
-                    val bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
-                        it!!,
-                        photoWidth,
-                        photoHeight,
-                        false
+                if(it.mimeType.startsWith("image")) {
+                    withContext(Dispatchers.IO) {
+                        val bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
+                            it!!,
+                            photoWidth,
+                            photoHeight,
+                            false
+                        )
+                        _currentPhoto.value = bmp
+                    }
+                }
+                else if(it.mimeType.startsWith("video")){
+                    val tmp = _accountState.photoRepository.value!!.getMediaAccessHeaderAndUrl(currentPhotoMetadata!!)
+                    _currentVideoRequest.value = VideoRequest(
+                        tmp.first,
+                        tmp.second
                     )
-                    _currentPhoto.value = bmp
                 }
             }
         }.launchIn(viewModelScope)

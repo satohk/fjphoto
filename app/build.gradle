@@ -47,6 +47,9 @@ android {
     dataBinding {
         enabled = true
     }
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -79,4 +82,8 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly-SNAPSHOT'
     implementation 'org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly-SNAPSHOT'
     implementation 'org.tensorflow:tensorflow-lite-support:0.0.0-nightly-SNAPSHOT'
+    def expoplayer_version = '2.18.1'
+    implementation "com.google.android.exoplayer:exoplayer-core:$expoplayer_version"
+    implementation "com.google.android.exoplayer:exoplayer-dash:$expoplayer_version"
+    implementation "com.google.android.exoplayer:exoplayer-ui:$expoplayer_version"
 }
