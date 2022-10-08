@@ -1,7 +1,6 @@
 package com.satohk.gphotoframe.viewmodel
 
 import android.graphics.Bitmap
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.satohk.gphotoframe.model.*
@@ -30,7 +29,7 @@ class PhotoViewModel(
     val currentVideoRequest: StateFlow<VideoRequest?> get() = _currentVideoRequest
     var photoWidth: Int = 1024
     var photoHeight: Int = 768
-    var currentPhotoMetadata: PhotoMetadata? = null
+    var currentPhotoMetadata: PhotoMetadataRepo? = null
         private set
 
     private var _gridContents: GridContents? = null

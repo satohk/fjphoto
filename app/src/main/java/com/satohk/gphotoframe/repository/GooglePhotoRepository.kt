@@ -73,7 +73,7 @@ open class GooglePhotoRepository(
         return albums
     }
 
-    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryForRepo?):Pair<List<PhotoMetadata>,String?>{
+    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryRepo?):Pair<List<PhotoMetadataRepo>,String?>{
         val dateFilter =
             if(searchQuery?.startDate !== null && searchQuery?.endDate !== null)
                 ParamDateFilter(
@@ -124,8 +124,8 @@ open class GooglePhotoRepository(
         val responseDecoded = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)
         val resultNextPageToken = responseDecoded.nextPageToken
         Log.d("getNextPhotoMetadataList", responseDecoded.mediaItems?.get(0).toString())
-        val result: List<PhotoMetadata> = responseDecoded.mediaItems?.map{
-            PhotoMetadata(
+        val result: List<PhotoMetadataRepo> = responseDecoded.mediaItems?.map{
+            PhotoMetadataRepo(
                 ZonedDateTime.parse(it.mediaMetadata!!.creationTime),
                 it.id,
                 it.baseUrl,
@@ -139,7 +139,7 @@ open class GooglePhotoRepository(
     }
 
     override suspend fun getPhotoBitmap(
-        photo: PhotoMetadata,
+        photo: PhotoMetadataRepo,
         width: Int?,
         height: Int?,
         cropFlag: Boolean?
@@ -187,7 +187,7 @@ open class GooglePhotoRepository(
         }
     }
 
-    override fun getMediaAccessHeaderAndUrl(media: PhotoMetadata): Pair<PhotoRequestHeader, String>{
+    override fun getMediaAccessHeaderAndUrl(media: PhotoMetadataRepo): Pair<PhotoRequestHeader, String>{
         val headers: MutableMap<String, String> = HashMap()
         headers["Authorization"] = "Bearer $accessToken"
         headers["Accept-Ranges"] = "bytes";

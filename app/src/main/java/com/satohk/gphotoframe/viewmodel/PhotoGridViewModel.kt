@@ -7,10 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import com.satohk.gphotoframe.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -25,6 +22,14 @@ class PhotoGridViewModel(
     private var _dataLoadJob: Job? = null
     var lastDataSize: Int = 0
         private set
+    var focusIndex: Int = 0
+        set(value){
+            field = value
+            if(value >= dataSize.value - 12) {
+                loadNextImageList()
+            }
+        }
+    var firstVisibleItemIndex: Int = 0
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
@@ -32,6 +37,10 @@ class PhotoGridViewModel(
     val itemList:List<PhotoGridItem> get(){return _itemList}
     private val _dataSize = MutableStateFlow<Int>(0)
     val dataSize: StateFlow<Int> get() = _dataSize
+
+    val isSelectMode: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    var onChangeToPhotoViewListener: ((gridContents:GridContents, autoPlay:Boolean, position:Int) -> Unit)? = null
 
     private var _filteredPhotoList: FilteredPhotoList? = null
 
@@ -124,8 +133,20 @@ class PhotoGridViewModel(
         ))
     }
 
+    fun onClickItem(position: Int){
+        _gridContents?.run {
+            onChangeToPhotoViewListener?.invoke(this, false, position)
+        }
+    }
+
+    fun onClickSlideshowButton(){
+        _gridContents?.run {
+            onChangeToPhotoViewListener?.invoke(this, true, 0)
+        }
+    }
+
     data class PhotoGridItem(
-        val photoMetaData: PhotoMetadata
+        val photoMetaData: PhotoMetadataRepo
     ) {
         companion object {
             val DIFF_UTIL = object: DiffUtil.ItemCallback<PhotoGridItem>() {

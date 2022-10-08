@@ -14,7 +14,8 @@
     <color name="menu_bar_item_foreground_highlight">#FFFFFFFF</color>
     <color name="menu_bar_item_foreground">#88FFFFFF</color>
 
-    <color name="button_background">#ff222222</color>
+    <color name="button_background">#ff666666</color>
+    <color name="button_checked_background">#ff888888</color>
 
     <color name="selected_grid_item">#ffaa3f</color>
     <color name="default_grid_item">#3d3d3d</color>

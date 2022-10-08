@@ -8,7 +8,7 @@ class FilteredPhotoList(
     private val _repository: CachedPhotoRepository,
     private val _query: SearchQuery
 ){
-    private val _filteredPhotoMetadataList = mutableListOf<PhotoMetadata>()
+    private val _filteredPhotoMetadataList = mutableListOf<PhotoMetadataRepo>()
     private var _repositoryOffset = 0
     private var _preloadRepositoryOffset = 0
     private val _bulkLoadSize = 60
@@ -18,9 +18,9 @@ class FilteredPhotoList(
     var allLoaded: Boolean = false
         private set
 
-    val list: List<PhotoMetadata> get() = this._filteredPhotoMetadataList
+    val list: List<PhotoMetadataRepo> get() = this._filteredPhotoMetadataList
 
-    suspend fun getFilteredPhotoMetadataList(offset:Int, size:Int):List<PhotoMetadata>{
+    suspend fun getFilteredPhotoMetadataList(offset:Int, size:Int):List<PhotoMetadataRepo>{
         var remain = offset + size - _filteredPhotoMetadataList.size
 
         _scope.launch {
@@ -30,7 +30,7 @@ class FilteredPhotoList(
                     val preloadMetadataList = _repository.getPhotoMetadataList(
                         _preloadRepositoryOffset,
                         _bulkLoadSize,
-                        _query.queryForRepo
+                        _query.queryRepo
                     )
                     if (preloadMetadataList.isEmpty()) {
                         break
@@ -42,10 +42,10 @@ class FilteredPhotoList(
                 val metadataList = _repository.getPhotoMetadataList(
                     _repositoryOffset,
                     remain,
-                    _query.queryForRepo
+                    _query.queryRepo
                 )
 
-                if(metadataList.isEmpty() && _repository.photoMetadataListAllLoaded(_query.queryForRepo)){
+                if(metadataList.isEmpty() && _repository.photoMetadataListAllLoaded(_query.queryRepo)){
                     allLoaded = true
                 }
                 else {
@@ -71,7 +71,7 @@ class FilteredPhotoList(
     }
 
     var ct = 0
-    suspend private fun filterPhoto(photoMetadata: PhotoMetadata):Boolean{
+    suspend private fun filterPhoto(photoMetadata: PhotoMetadataRepo):Boolean{
         return true
 
         _repository.getPhotoBitmap(photoMetadata, _preloadPhotoSize, _preloadPhotoSize, false)

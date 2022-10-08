@@ -1,23 +1,20 @@
 package com.satohk.gphotoframe.repository
 
 import android.graphics.Bitmap
-import android.util.Log
 import android.util.LruCache
 import com.satohk.gphotoframe.model.Album
-import com.satohk.gphotoframe.model.PhotoMetadata
-import com.satohk.gphotoframe.model.SearchQueryForRepo
-import kotlinx.coroutines.Dispatchers
+import com.satohk.gphotoframe.model.PhotoMetadataRepo
+import com.satohk.gphotoframe.model.SearchQueryRepo
 import java.lang.Math.min
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 
 class CachedPhotoRepository(
     private val _repository: PhotoRepository
 ) {
     private class PhotoMetadataList(
         val pageToken: String?,
-        val photoMetadataList: MutableList<PhotoMetadata>,
+        val photoMetadataList: MutableList<PhotoMetadataRepo>,
         val allLoaded: Boolean
     ){
         val size: Int get() = photoMetadataList.size
@@ -43,12 +40,12 @@ class CachedPhotoRepository(
         return key
     }
 
-    fun photoMetadataListAllLoaded(searchQuery:SearchQueryForRepo?):Boolean{
+    fun photoMetadataListAllLoaded(searchQuery:SearchQueryRepo?):Boolean{
         val key = arg2str(searchQuery)
         return _photoMetadataCache.get(key).allLoaded
     }
 
-    suspend fun getPhotoMetadataList(offset:Int, size:Int, searchQuery:SearchQueryForRepo?):List<PhotoMetadata>{
+    suspend fun getPhotoMetadataList(offset:Int, size:Int, searchQuery:SearchQueryRepo?):List<PhotoMetadataRepo>{
         val key = arg2str(searchQuery)
         var list = _photoMetadataCache.get(key)
 
@@ -81,7 +78,7 @@ class CachedPhotoRepository(
         return _albumCache
     }
 
-    suspend fun getPhotoBitmap(photo: PhotoMetadata, width:Int?, height:Int?, cropFlag:Boolean?):Bitmap? {
+    suspend fun getPhotoBitmap(photo: PhotoMetadataRepo, width:Int?, height:Int?, cropFlag:Boolean?):Bitmap? {
         val key = arg2str(photo, width, height, cropFlag)
         var res = _photoBitmapCache.get(key)
         if(res == null){
@@ -103,7 +100,7 @@ class CachedPhotoRepository(
         return res
     }
 
-    fun getMediaAccessHeaderAndUrl(media: PhotoMetadata): Pair<PhotoRequestHeader, String> {
+    fun getMediaAccessHeaderAndUrl(media: PhotoMetadataRepo): Pair<PhotoRequestHeader, String> {
         return _repository.getMediaAccessHeaderAndUrl(media)
     }
 

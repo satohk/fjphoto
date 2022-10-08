@@ -12,10 +12,12 @@ import androidx.fragment.app.Fragment
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
+import android.widget.ToggleButton
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
+import com.satohk.gphotoframe.viewmodel.GridContents
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
@@ -27,78 +29,83 @@ import org.koin.androidx.viewmodel.ext.android.sharedViewModel
  */
 class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
     private val _viewModel by sharedViewModel<PhotoGridViewModel>()
-    private lateinit var _recyclerView: RecyclerView
-    private lateinit var _adapter: PhotoAdapter
-    private lateinit var _layoutManager: GridLayoutManager
     private val _numberOfColumns = 6
+    private lateinit var _recyclerView: RecyclerView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        initRecyclerView(view)
+
+        _viewModel.onChangeToPhotoViewListener = fun(gridContents:GridContents, autoPlay:Boolean, position:Int){
+            val action =
+                PhotoGridWithSideBarFragmentDirections.actionPhotoGridWithSidebarFragmentToPhotoFragment(
+                    gridContents,
+                    autoPlay,
+                    position
+                )
+            view.findNavController().navigate(action)
+        }
+
+        val slideShowButton = view.findViewById<Button>(R.id.playButton)
+        slideShowButton.setOnClickListener{ _viewModel.onClickSlideshowButton() }
+
+        val selectModeToggleButton = view.findViewById<ToggleButton>(R.id.selectModeToggleButton)
+        selectModeToggleButton.setOnCheckedChangeListener { _, isChecked -> _viewModel.isSelectMode.value = isChecked }
+        _viewModel.isSelectMode.value = selectModeToggleButton.isChecked
+    }
+
+    private fun initRecyclerView(view: View){
         // set up the RecyclerView
         _recyclerView = view.findViewById(R.id.photo_grid)
-        _layoutManager = GridLayoutManager(requireContext(), _numberOfColumns)
-        _recyclerView.layoutManager =_layoutManager
-        _adapter = PhotoAdapter(_viewModel.itemList)
-        _adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
+        val layoutManager = GridLayoutManager(requireContext(), _numberOfColumns)
+        _recyclerView.layoutManager = layoutManager
+        val adapter = PhotoAdapter(_viewModel.itemList)
+        adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
 
         // event handler
-        _adapter.onClick = fun(_:View?, position:Int){
+        adapter.onClick = fun(_:View?, position:Int){
             Log.i(
                 "TAG",
                 "You clicked number " + position
                     .toString() + ", which is at cell position " + position
             )
         }
-        _adapter.onFocus = fun(_:View?, position:Int) {
-            Log.d("menu onFocus",  position.toString())
-            if(position >= _viewModel.dataSize.value - 12) {
-                _viewModel.loadNextImageList()
-            }
+        adapter.onFocus = fun(_:View?, position:Int) {
+            _viewModel.focusIndex = position
+            Log.d("menu onFocus",  "position:${position.toString()} vislbleItemPos:${_viewModel.firstVisibleItemIndex}")
         }
-        _adapter.onKeyDown = fun(view:View?, position:Int, keyEvent: KeyEvent):Boolean{
+        _recyclerView.setOnScrollChangeListener {_, _, _, _, _ ->
+            _viewModel.firstVisibleItemIndex = (_recyclerView.layoutManager as GridLayoutManager).findFirstCompletelyVisibleItemPosition()
+            Log.d("menu onscroll",  "vislbleItemPos:${_viewModel.firstVisibleItemIndex}")
+        }
+        adapter.onKeyDown = fun(view:View?, position:Int, keyEvent: KeyEvent):Boolean{
             if(view != null) {
                 Log.i("keydown", view?.x.toString())
                 if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && (view.x < 10.0f)) {
                     _viewModel.goBack()
                 }
                 else if(keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_CENTER){
-                    val action =
-                        PhotoGridWithSideBarFragmentDirections.actionPhotoGridWithSidebarFragmentToPhotoFragment(
-                            _viewModel.gridContents!!,
-                            false,
-                            position
-                        )
-                    view.findNavController().navigate(action)
+                    _viewModel.onClickItem(position)
                 }
             }
             return false
         }
-        val slideShowButton = view.findViewById<Button>(R.id.playButton)
-        slideShowButton.setOnClickListener {
-            val action =
-                PhotoGridWithSideBarFragmentDirections.actionPhotoGridWithSidebarFragmentToPhotoFragment(
-                    _viewModel.gridContents!!,
-                    true,
-                    0
-                )
-                view.findNavController().navigate(action)
-        }
 
-        _adapter.loadThumbnail = fun(photoGridItem: PhotoGridViewModel.PhotoGridItem, width:Int?, height:Int?, callback:(bmp: Bitmap?)->Unit) {
+        adapter.loadThumbnail = fun(photoGridItem: PhotoGridViewModel.PhotoGridItem, width:Int?, height:Int?, callback:(bmp: Bitmap?)->Unit) {
             _viewModel.loadThumbnail(photoGridItem, width, height, callback)
         }
 
-        _recyclerView.adapter = _adapter
+        _recyclerView.adapter = adapter
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     _viewModel.dataSize.collect {
                         if (_viewModel.dataSize.value == 0) {
-                            _adapter.notifyItemRangeRemoved(0, _viewModel.lastDataSize)
+                            adapter.notifyItemRangeRemoved(0, _viewModel.lastDataSize)
                         } else {
-                            _adapter.notifyItemRangeInserted(
+                            adapter.notifyItemRangeInserted(
                                 _viewModel.lastDataSize,
                                 _viewModel.dataSize.value - _viewModel.lastDataSize
                             )
@@ -112,5 +119,19 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("_viewModel.focusIndex", _viewModel.focusIndex.toString())
+        setGridItemFocus()
+    }
+
+    private fun setGridItemFocus(){
+        _recyclerView.scrollToPosition(_viewModel.firstVisibleItemIndex)
+
+//        val holder = _recyclerView.findViewHolderForAdapterPosition(_viewModel.focusIndex)
+//                as PhotoAdapter.PhotoViewHolder?
+//        holder?.binding?.root?.requestFocus()
     }
 }

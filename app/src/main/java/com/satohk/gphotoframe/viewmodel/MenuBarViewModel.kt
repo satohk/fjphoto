@@ -59,12 +59,12 @@ class MenuBarViewModel(
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_PHOTO,
                                 SideBarAction(SideBarActionType.ENTER_GRID,
-                                    gridContents=GridContents(searchQuery= SearchQuery(SearchQueryForRepo(mediaType=MediaType.PHOTO))))
+                                    gridContents=GridContents(searchQuery= SearchQuery(SearchQueryRepo(mediaType=MediaType.PHOTO))))
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_MOVIE,
                                 SideBarAction(SideBarActionType.ENTER_GRID,
-                                    gridContents=GridContents(searchQuery=SearchQuery(SearchQueryForRepo(mediaType=MediaType.VIDEO))))
+                                    gridContents=GridContents(searchQuery=SearchQuery(SearchQueryRepo(mediaType=MediaType.VIDEO))))
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST,
@@ -93,7 +93,7 @@ class MenuBarViewModel(
                                 MenuBarItem(
                                     MenuBarItem.MenuBarItemType.ALBUM_ITEM,
                                     SideBarAction(SideBarActionType.ENTER_GRID,
-                                        gridContents=GridContents(searchQuery=SearchQuery(SearchQueryForRepo(album=album)))),
+                                        gridContents=GridContents(searchQuery=SearchQuery(SearchQueryRepo(album=album)))),
                                     album=album
                                 )
                             }
