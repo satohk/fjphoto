@@ -21,8 +21,8 @@ class PhotoSelector(
 
     private var _currentPoint: Int = _initIndex
 
-    private val _currentPhotoMetadata = MutableStateFlow<PhotoMetadataRepo?>(null)
-    val currentPhotoMetadata: StateFlow<PhotoMetadataRepo?> get() = _currentPhotoMetadata
+    private val _currentPhotoMetadata = MutableStateFlow<PhotoMetadataFromRepo?>(null)
+    val currentPhotoMetadata: StateFlow<PhotoMetadataFromRepo?> get() = _currentPhotoMetadata
 
     private suspend fun nextStep(step: Int, waitMillisec: Long) {
         val beginTime = System.nanoTime()

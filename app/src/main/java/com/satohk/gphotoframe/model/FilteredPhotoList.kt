@@ -8,7 +8,7 @@ class FilteredPhotoList(
     private val _repository: CachedPhotoRepository,
     private val _query: SearchQuery
 ){
-    private val _filteredPhotoMetadataList = mutableListOf<PhotoMetadataRepo>()
+    private val _filteredPhotoMetadataList = mutableListOf<PhotoMetadataFromRepo>()
     private var _repositoryOffset = 0
     private var _preloadRepositoryOffset = 0
     private val _bulkLoadSize = 60
@@ -18,9 +18,9 @@ class FilteredPhotoList(
     var allLoaded: Boolean = false
         private set
 
-    val list: List<PhotoMetadataRepo> get() = this._filteredPhotoMetadataList
+    val list: List<PhotoMetadataFromRepo> get() = this._filteredPhotoMetadataList
 
-    suspend fun getFilteredPhotoMetadataList(offset:Int, size:Int):List<PhotoMetadataRepo>{
+    suspend fun getFilteredPhotoMetadataList(offset:Int, size:Int):List<PhotoMetadataFromRepo>{
         var remain = offset + size - _filteredPhotoMetadataList.size
 
         _scope.launch {
@@ -71,7 +71,7 @@ class FilteredPhotoList(
     }
 
     var ct = 0
-    suspend private fun filterPhoto(photoMetadata: PhotoMetadataRepo):Boolean{
+    suspend private fun filterPhoto(photoMetadata: PhotoMetadataFromRepo):Boolean{
         return true
 
         _repository.getPhotoBitmap(photoMetadata, _preloadPhotoSize, _preloadPhotoSize, false)

@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PhotoMetadataRepo(
+data class PhotoMetadataFromRepo(
     @Serializable(with = ZonedDateTimeSerializer::class)
     val timestamp: ZonedDateTime,
     val id: String,
@@ -28,7 +28,7 @@ data class Album(
 )
 
 @Serializable
-data class SearchQueryRepo (
+data class SearchQueryForRepo (
     val album: Album? = null,
     val photoCategory: List<String>? = null,
     @Serializable(with = ZonedDateTimeSerializer::class)

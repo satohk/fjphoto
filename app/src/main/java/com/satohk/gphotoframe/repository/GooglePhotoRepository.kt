@@ -73,7 +73,29 @@ open class GooglePhotoRepository(
         return albums
     }
 
-    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryRepo?):Pair<List<PhotoMetadataRepo>,String?>{
+//    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryRepo?):Pair<List<PhotoMetadataRepo>,String?>{
+//        val url = "https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=100"
+//
+//        val response = this.httpGet(url)
+//        val responseBodyStr = response.body?.string()!!
+//        val responseDecoded = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)
+//        val resultNextPageToken = responseDecoded.nextPageToken
+//        Log.d("getNextPhotoMetadataList", responseDecoded.mediaItems?.get(0).toString())
+//        val result: List<PhotoMetadataRepo> = responseDecoded.mediaItems?.map{
+//            PhotoMetadataRepo(
+//                ZonedDateTime.parse(it.mediaMetadata!!.creationTime),
+//                it.id,
+//                it.baseUrl,
+//                it.productUrl,
+//                it.mimeType
+//            )
+//        } ?: listOf()
+//        response.body?.close()
+//        response.close()
+//        return Pair(result, resultNextPageToken)
+//    }
+
+    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryForRepo?):Pair<List<PhotoMetadataFromRepo>,String?>{
         val dateFilter =
             if(searchQuery?.startDate !== null && searchQuery?.endDate !== null)
                 ParamDateFilter(
@@ -124,8 +146,8 @@ open class GooglePhotoRepository(
         val responseDecoded = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)
         val resultNextPageToken = responseDecoded.nextPageToken
         Log.d("getNextPhotoMetadataList", responseDecoded.mediaItems?.get(0).toString())
-        val result: List<PhotoMetadataRepo> = responseDecoded.mediaItems?.map{
-            PhotoMetadataRepo(
+        val result: List<PhotoMetadataFromRepo> = responseDecoded.mediaItems?.map{
+            PhotoMetadataFromRepo(
                 ZonedDateTime.parse(it.mediaMetadata!!.creationTime),
                 it.id,
                 it.baseUrl,
@@ -139,7 +161,7 @@ open class GooglePhotoRepository(
     }
 
     override suspend fun getPhotoBitmap(
-        photo: PhotoMetadataRepo,
+        photo: PhotoMetadataFromRepo,
         width: Int?,
         height: Int?,
         cropFlag: Boolean?
@@ -187,7 +209,7 @@ open class GooglePhotoRepository(
         }
     }
 
-    override fun getMediaAccessHeaderAndUrl(media: PhotoMetadataRepo): Pair<PhotoRequestHeader, String>{
+    override fun getMediaAccessHeaderAndUrl(media: PhotoMetadataFromRepo): Pair<PhotoRequestHeader, String>{
         val headers: MutableMap<String, String> = HashMap()
         headers["Authorization"] = "Bearer $accessToken"
         headers["Accept-Ranges"] = "bytes";

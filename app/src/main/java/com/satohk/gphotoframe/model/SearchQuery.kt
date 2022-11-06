@@ -3,23 +3,25 @@ package com.satohk.gphotoframe.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SearchQueryLocal(
+data class SearchQueryForLocal(
     val aiFilterEnabled: Boolean = false,
     val aiFilterThreshold: Float = 0.0f,
-    val aiFilterReferenceData: List<PhotoMetadataRepo> = listOf()
+    val aiFilterReferenceData: List<PhotoMetadataFromRepo> = listOf()
 )
 
 @Serializable
 data class SearchQuery (
-    val queryRepo: SearchQueryRepo = SearchQueryRepo(),
-    val queryLocal: SearchQueryLocal = SearchQueryLocal()
+    val queryRepo: SearchQueryForRepo = SearchQueryForRepo(),
+    val queryLocal: SearchQueryForLocal = SearchQueryForLocal()
 )
 
-data class PhotoMetadataLocal(
+@Serializable
+data class PhotoMetadataFromLocal(
     val favorite: Boolean = false
 )
 
+@Serializable
 data class PhotoMetadata(
-    val metadataRepo: PhotoMetadataRepo,
-    val metadataLocal: PhotoMetadataLocal
+    val metadataRepo: PhotoMetadataFromRepo,
+    val metadataLocal: PhotoMetadataFromLocal
 )

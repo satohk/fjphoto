@@ -7,6 +7,7 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 
 import com.satohk.gphotoframe.model.AccountState
+import com.satohk.gphotoframe.model.PhotoMetadataStore
 import com.satohk.gphotoframe.viewmodel.*
 import org.koin.androidx.viewmodel.dsl.viewModel
 
@@ -22,7 +23,12 @@ class GPApplication : Application() {
         startKoin {
             androidContext(this@GPApplication)
             modules(modules)
+            initSingletonObjects()
         }
+    }
+
+    private fun initSingletonObjects(){
+        PhotoMetadataStore.filesDir = applicationContext.filesDir.toString()
     }
 
     private val modules: Module = module {

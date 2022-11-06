@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 
 
 class PhotoViewModel(
-    val _accountState: AccountState
+    private val _accountState: AccountState
 ) : ViewModel() {
 
     data class VideoRequest(
@@ -29,7 +29,7 @@ class PhotoViewModel(
     val currentVideoRequest: StateFlow<VideoRequest?> get() = _currentVideoRequest
     var photoWidth: Int = 1024
     var photoHeight: Int = 768
-    var currentPhotoMetadata: PhotoMetadataRepo? = null
+    var currentPhotoMetadata: PhotoMetadataFromRepo? = null
         private set
 
     private var _gridContents: GridContents? = null

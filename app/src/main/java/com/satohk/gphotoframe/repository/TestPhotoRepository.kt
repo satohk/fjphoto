@@ -12,11 +12,11 @@ class TestPhotoRepository(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO)
     : GooglePhotoRepository(accessToken, ioDispatcher){
 
-    var samplePhotoMetadataList: List<PhotoMetadataRepo>? = null
+    var samplePhotoMetadataList: List<PhotoMetadataFromRepo>? = null
     var sampleBitmap: Bitmap? = null
     var count: Int = 0
 
-    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryRepo?):Pair<List<PhotoMetadataRepo>,String?>{
+    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryForRepo?):Pair<List<PhotoMetadataFromRepo>,String?>{
         //return super.getNextPhotoMetadataList(pageSize, pageToken, searchQuery)
         if(samplePhotoMetadataList == null){
             val res = super.getNextPhotoMetadataList(pageSize, pageToken, searchQuery)
@@ -24,14 +24,14 @@ class TestPhotoRepository(
             return res
         }
         else{
-            val newList = samplePhotoMetadataList!!.map{PhotoMetadataRepo(it.timestamp, it.id+count.toString(), it.url, it.productUrl, it.mimeType)}
+            val newList = samplePhotoMetadataList!!.map{PhotoMetadataFromRepo(it.timestamp, it.id+count.toString(), it.url, it.productUrl, it.mimeType)}
             count += 1
             return Pair(newList, "nextToken")
         }
     }
 
     override suspend fun getPhotoBitmap(
-        photo: PhotoMetadataRepo,
+        photo: PhotoMetadataFromRepo,
         width: Int?,
         height: Int?,
         cropFlag: Boolean?

@@ -146,7 +146,7 @@ class PhotoGridViewModel(
     }
 
     data class PhotoGridItem(
-        val photoMetaData: PhotoMetadataRepo
+        val photoMetaData: PhotoMetadataFromRepo
     ) {
         companion object {
             val DIFF_UTIL = object: DiffUtil.ItemCallback<PhotoGridItem>() {
