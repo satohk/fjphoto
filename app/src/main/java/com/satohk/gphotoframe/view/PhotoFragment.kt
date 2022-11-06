@@ -2,20 +2,25 @@ package com.satohk.gphotoframe.view
 
 import android.animation.ObjectAnimator
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
+import android.widget.SimpleExpandableListAdapter
 import androidx.fragment.app.Fragment
-import androidx.leanback.widget.Visibility
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
+import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.LoadControl
 import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.trackselection.TrackSelector
 import com.google.android.exoplayer2.ui.StyledPlayerView
+import com.google.android.exoplayer2.upstream.DefaultAllocator
 import com.satohk.gphotoframe.R
 import com.satohk.gphotoframe.viewmodel.PhotoViewModel
 import kotlinx.android.synthetic.main.fragment_photo.*
@@ -48,27 +53,51 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         _showImageView = view.findViewById(R.id.imageView1)
         _hideImageView = view.findViewById(R.id.imageView2)
         _videoView = view.findViewById(R.id.videoView)
+        _videoView.controllerAutoShow = false
+
         _hideImageView.alpha = 0.0f
         _showImageView.setImageResource(R.drawable.blank_image)
 
-        view.focusable = View.FOCUSABLE
-        view.isFocusableInTouchMode = true;
-        view.setOnKeyListener { _: View, _: Int, keyEvent: KeyEvent ->
+        // focusをコントロールするためのダミーボタン
+        val dummyButton = view.findViewById<Button>(R.id.dummyButtonTop)
+        dummyButton.setOnKeyListener { _: View, _: Int, keyEvent: KeyEvent ->
             Log.d("PhotoFragment", "KeyEvent " + keyEvent.toString())
             if(keyEvent.action == KeyEvent.ACTION_DOWN) {
-                when(keyEvent.keyCode){
-                    KeyEvent.KEYCODE_DPAD_LEFT -> _viewModel.goPrev()
-                    KeyEvent.KEYCODE_DPAD_RIGHT -> _viewModel.goNext()
-                    else -> return@setOnKeyListener false
+                if(_videoView.visibility != View.VISIBLE) {
+                    when (keyEvent.keyCode) {
+                        KeyEvent.KEYCODE_DPAD_LEFT -> _viewModel.goPrev()
+                        KeyEvent.KEYCODE_DPAD_RIGHT -> _viewModel.goNext()
+                        else -> return@setOnKeyListener false
+                    }
+                    return@setOnKeyListener true
                 }
-                return@setOnKeyListener true
+                else{
+                    when (keyEvent.keyCode) {
+                        KeyEvent.KEYCODE_DPAD_DOWN -> _videoView.showController()
+                        KeyEvent.KEYCODE_DPAD_LEFT -> _viewModel.goPrev()
+                        KeyEvent.KEYCODE_DPAD_RIGHT -> _viewModel.goNext()
+                        else -> return@setOnKeyListener false
+                    }
+                    return@setOnKeyListener true
+                }
             }
             return@setOnKeyListener false
+        }
+
+        dummyButton.setOnFocusChangeListener { view, b ->
+            Log.d("PhotoFragment", "dummyButton focus " + b.toString())
+            if(b) {
+                if(_videoView.visibility == View.VISIBLE){
+                    _videoView.hideController()
+                }
+            }
         }
 
         _viewModel.currentPhoto.onEach{
             if(it != null) {
                 _videoView.visibility = View.INVISIBLE
+                _showImageView.visibility = View.VISIBLE
+                _hideImageView.visibility = View.VISIBLE
                 changeImage(it)
             }
         }.launchIn(viewLifecycleOwner.lifecycleScope)
@@ -76,10 +105,15 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         _viewModel.currentVideoRequest.onEach{ it ->
             if(it != null) {
                 _videoView.visibility = View.VISIBLE
+                _videoView.requestFocus()
+                _showImageView.visibility = View.INVISIBLE
+                _hideImageView.visibility = View.INVISIBLE
                 val mediaItem = MediaItem.fromUri(it.url)
-                _player?.setMediaItem(mediaItem)
-                _player?.playWhenReady = true
-                _player?.prepare()
+                _player?.let{
+                    it.setMediaItem(mediaItem)
+                    it.playWhenReady = true
+                    it.prepare()
+                }
             }
         }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
@@ -97,7 +131,31 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     }
 
     private fun initializeVideoPlayer() {
+        //Minimum Video you want to buffer while Playing
+        val MIN_BUFFER_DURATION = 2000
+        //Max Video you want to buffer during PlayBack
+        val MAX_BUFFER_DURATION = 10000
+        //Min Video you want to buffer before start Playing it
+        val MIN_PLAYBACK_START_BUFFER = 100
+        //Min video You want to buffer when user resumes video
+        val MIN_PLAYBACK_RESUME_BUFFER = 2000
+
+        val loadControl: LoadControl = DefaultLoadControl.Builder()
+            .setAllocator(DefaultAllocator(true, 16))
+            .setBufferDurationsMs(
+                MIN_BUFFER_DURATION,
+                MAX_BUFFER_DURATION,
+                MIN_PLAYBACK_START_BUFFER,
+                MIN_PLAYBACK_RESUME_BUFFER
+            )
+            .setTargetBufferBytes(-1)
+            .setPrioritizeTimeOverSizeThresholds(true).createDefaultLoadControl()
+
+        val trackSelector: TrackSelector = DefaultTrackSelector(this.context!!)
+
         _player = ExoPlayer.Builder(this.context!!)
+            .setTrackSelector(trackSelector)
+            .setLoadControl(loadControl)
             .build()
             .also { exoPlayer ->
                 _videoView.videoView.player = exoPlayer
