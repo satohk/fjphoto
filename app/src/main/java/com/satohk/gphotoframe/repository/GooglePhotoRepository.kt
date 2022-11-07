@@ -48,22 +48,17 @@ open class GooglePhotoRepository(
             val url = "https://photoslibrary.googleapis.com/v1/albums?pageSize=%d%s".format(pageSize, pageTokenStr)
             val res = httpGet(url)
 
-            if(res.isSuccessful){
-                val resBody = jsonDec.decodeFromString<AlbumsResponse>(res.body?.string()!!)
-                for(album in resBody.albums){
-                    albums.add(
-                        Album(album.id, album.title, album.coverPhotoBaseUrl)
-                    )
-                }
-                if(resBody.nextPageToken == null){
-                    exitLoop = true
-                }
-                else {
-                    pageToken = resBody.nextPageToken
-                }
+            val resBody = jsonDec.decodeFromString<AlbumsResponse>(res.body?.string()!!)
+            for(album in resBody.albums){
+                albums.add(
+                    Album(album.id, album.title, album.coverPhotoBaseUrl)
+                )
             }
-            else{
+            if(resBody.nextPageToken == null){
                 exitLoop = true
+            }
+            else {
+                pageToken = resBody.nextPageToken
             }
 
             res.body?.close()
@@ -72,28 +67,6 @@ open class GooglePhotoRepository(
 
         return albums
     }
-
-//    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryRepo?):Pair<List<PhotoMetadataRepo>,String?>{
-//        val url = "https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=100"
-//
-//        val response = this.httpGet(url)
-//        val responseBodyStr = response.body?.string()!!
-//        val responseDecoded = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)
-//        val resultNextPageToken = responseDecoded.nextPageToken
-//        Log.d("getNextPhotoMetadataList", responseDecoded.mediaItems?.get(0).toString())
-//        val result: List<PhotoMetadataRepo> = responseDecoded.mediaItems?.map{
-//            PhotoMetadataRepo(
-//                ZonedDateTime.parse(it.mediaMetadata!!.creationTime),
-//                it.id,
-//                it.baseUrl,
-//                it.productUrl,
-//                it.mimeType
-//            )
-//        } ?: listOf()
-//        response.body?.close()
-//        response.close()
-//        return Pair(result, resultNextPageToken)
-//    }
 
     override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryForRepo?):Pair<List<PhotoMetadataFromRepo>,String?>{
         val dateFilter =
@@ -134,14 +107,6 @@ open class GooglePhotoRepository(
         val url = "https://photoslibrary.googleapis.com/v1/mediaItems:search"
 
         val response = httpPost(url, requestBody)
-        if(!response.isSuccessful){
-            Log.i("http", "response is not ok . %s, %s".format(url, response.toString()))
-            Log.i("http", requestBody.toString())
-            response.body?.close()
-            response.close()
-            throw NetworkErrorException(response.message)
-            //return Pair(listOf(), null)
-        }
         val responseBodyStr = response.body?.string()!!
         val responseDecoded = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)
         val resultNextPageToken = responseDecoded.nextPageToken
@@ -166,39 +131,22 @@ open class GooglePhotoRepository(
         height: Int?,
         cropFlag: Boolean?
     ): Bitmap? {
-        try {
+        return try {
             val res = httpGet(makeImageUrl(photo.url, width, height, cropFlag))
-            if (!res.isSuccessful) {
-                Log.i("http", "response is not ok . %s, %s".format(photo.url, res.toString()))
-                res.body?.close()
-                res.close()
-                return null
-            }
-
             val body = res.body?.bytes()!!
             val bmp = BitmapFactory.decodeByteArray(body, 0, body.size)
             res.body?.close()
             res.close()
-            return bmp
-        }
-        catch(e: ConnectException){
+            bmp
+        } catch(e: ConnectException){
             Log.e("getPhotoBitmap", e.toString())
-            return null
+            null
         }
     }
 
     override suspend fun getAlbumCoverPhoto(album: Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {
         if(album.coverPhotoUrl != null) {
             val res = httpGet(makeImageUrl(album.coverPhotoUrl, width, height, cropFlag))
-            if (!res.isSuccessful) {
-                Log.i(
-                    "http",
-                    "response is not ok . %s, %s".format(album.coverPhotoUrl, res.toString())
-                )
-                res.body?.close()
-                res.close()
-                return null
-            }
             val body = res.body?.bytes()!!
             res.body?.close()
             res.close()
@@ -239,6 +187,15 @@ open class GooglePhotoRepository(
         withContext(ioDispatcher) {
             response = client.newCall(request).execute()
         }
+        if (!response!!.isSuccessful) {
+            Log.i(
+                "http",
+                "response is not ok . $url ${response.toString()}"
+            )
+            response!!.body?.close()
+            response!!.close()
+            throw NetworkErrorException(response!!.message)
+        }
         return response!!
     }
 
@@ -254,6 +211,15 @@ open class GooglePhotoRepository(
         var response: Response? = null
         withContext(ioDispatcher) {
             response = client.newCall(request).execute()
+        }
+        if (!response!!.isSuccessful) {
+            Log.i(
+                "http",
+                "response is not ok . $url ${response.toString()}"
+            )
+            response!!.body?.close()
+            response!!.close()
+            throw NetworkErrorException(response!!.message)
         }
         return response!!
     }

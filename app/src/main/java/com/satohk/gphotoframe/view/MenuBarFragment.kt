@@ -7,6 +7,8 @@ import android.view.KeyEvent
 import com.satohk.gphotoframe.*
 
 import android.view.View
+import android.widget.Button
+import android.widget.TextView
 import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -28,7 +30,14 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar), SideBarFragmentI
         super.onViewCreated(view, savedInstanceState)
         Log.d("MenuBarFragment", "onViewCreated")
 
-        // set up menubar
+        // init accouont button
+        val accountButton = view.findViewById<Button>(R.id.account_button)
+        accountButton.setCompoundDrawablePadding(20)
+        accountButton.setOnClickListener {
+            _viewModel.changeAccount()
+        }
+
+        // init menubar
         _recyclerView = view.findViewById<RecyclerView>(R.id.menu_bar)
         val numberOfColumns = 1
         _recyclerView.layoutManager =
@@ -65,12 +74,21 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar), SideBarFragmentI
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 Log.d("lifecycleScope", "_viewModel.itemList.collect")
-                _viewModel.itemList.collect() {
-                    _adapter.setList(_viewModel.itemList.value)
-                    _adapter.notifyDataSetChanged()
-                    if(_viewModel.itemList.value.size > 0) {
-                        setFocusToMenuBarItem(_viewModel.lastFocusIndex)
-                        _viewModel.changeFocus(_viewModel.lastFocusIndex)
+                launch {
+                    _viewModel.itemList.collect() {
+                        _adapter.setList(_viewModel.itemList.value)
+                        _adapter.notifyDataSetChanged()
+                        if(_viewModel.itemList.value.size > 0) {
+                            setFocusToMenuBarItem(_viewModel.lastFocusIndex)
+                            _viewModel.changeFocus(_viewModel.lastFocusIndex)
+                        }
+                    }
+                }
+                launch {
+                    _viewModel.activeUserName.collect() {
+                        it?.let {
+                            accountButton.text = it
+                        }
                     }
                 }
             }

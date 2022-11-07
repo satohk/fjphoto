@@ -2,14 +2,12 @@ package com.satohk.gphotoframe.view
 
 import android.animation.ObjectAnimator
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
-import android.widget.SimpleExpandableListAdapter
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs

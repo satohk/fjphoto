@@ -1,10 +1,13 @@
 package com.satohk.gphotoframe.repository
 
+import android.accounts.NetworkErrorException
 import android.graphics.Bitmap
 import android.util.LruCache
 import com.satohk.gphotoframe.model.Album
 import com.satohk.gphotoframe.model.PhotoMetadataFromRepo
 import com.satohk.gphotoframe.model.SearchQueryForRepo
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.lang.Math.min
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -12,6 +15,12 @@ import kotlinx.coroutines.sync.withLock
 class CachedPhotoRepository(
     private val _repository: PhotoRepository
 ) {
+    private val _errorOccured = MutableStateFlow(false)
+    val errorOccured: StateFlow<Boolean> get() = _errorOccured
+    fun setError(){
+        _errorOccured.value = true
+    }
+
     private class PhotoMetadataList(
         val pageToken: String?,
         val photoMetadataList: MutableList<PhotoMetadataFromRepo>,
@@ -50,21 +59,26 @@ class CachedPhotoRepository(
         var list = _photoMetadataCache.get(key)
 
         if((list == null) || (!list.allLoaded && list.size < offset + size)){
-            _mutex.withLock {
-                val pageToken = list?.pageToken
-                val bulkLoadSize = 60
-                val res = _repository.getNextPhotoMetadataList(
-                    bulkLoadSize, pageToken, searchQuery
-                )
-                val resultList = if(list == null) mutableListOf() else list.photoMetadataList
-                resultList.addAll(res.first)
-                val nextPageToken = res.second
-                list = PhotoMetadataList(nextPageToken, resultList, nextPageToken == null)
-                _photoMetadataCache.put(key, list)
+            try {
+                _mutex.withLock {
+                    val pageToken = list?.pageToken
+                    val bulkLoadSize = 60
+                    val res = _repository.getNextPhotoMetadataList(
+                        bulkLoadSize, pageToken, searchQuery
+                    )
+                    val resultList = if (list == null) mutableListOf() else list.photoMetadataList
+                    resultList.addAll(res.first)
+                    val nextPageToken = res.second
+                    list = PhotoMetadataList(nextPageToken, resultList, nextPageToken == null)
+                    _photoMetadataCache.put(key, list)
+                }
+            }
+            catch(e: NetworkErrorException){
+                setError()
             }
         }
 
-        return if(list.size >= offset){
+        return if((list != null) && (list.size >= offset)){
             list.photoMetadataList.subList(offset, min(offset + size, list.size))
         } else{
             listOf()
@@ -73,7 +87,12 @@ class CachedPhotoRepository(
 
     suspend fun getAlbumList():List<Album> {
         if(_albumCache.size == 0) {
-            _albumCache.addAll(_repository.getAlbumList())
+            try {
+                _albumCache.addAll(_repository.getAlbumList())
+            }
+            catch(e: NetworkErrorException){
+                setError()
+            }
         }
         return _albumCache
     }
@@ -82,9 +101,14 @@ class CachedPhotoRepository(
         val key = arg2str(photo, width, height, cropFlag)
         var res = _photoBitmapCache.get(key)
         if(res == null){
-            res = _repository.getPhotoBitmap(photo, width, height, cropFlag)
-            if(res != null) {
-                _photoBitmapCache.put(key, res)
+            try {
+                res = _repository.getPhotoBitmap(photo, width, height, cropFlag)
+                if(res != null) {
+                    _photoBitmapCache.put(key, res)
+                }
+            }
+            catch(e: NetworkErrorException){
+                setError()
             }
         }
         return res
@@ -94,8 +118,13 @@ class CachedPhotoRepository(
         val key = arg2str(album, width, height, cropFlag)
         var res = _albumCoverCache.get(key)
         if(res == null){
-            res = _repository.getAlbumCoverPhoto(album, width, height, cropFlag)
-            _albumCoverCache.put(key, res)
+            try {
+                res = _repository.getAlbumCoverPhoto(album, width, height, cropFlag)
+                _albumCoverCache.put(key, res)
+            }
+            catch(e: NetworkErrorException){
+                setError()
+            }
         }
         return res
     }

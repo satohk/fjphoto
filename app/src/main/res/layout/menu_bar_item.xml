@@ -16,7 +16,7 @@
             android:background="@color/menu_bar_item_background"
             android:contentDescription="@string/row_title_search"
             android:textAlignment="textStart"
-            android:textColor="@color/menu_bar_item_foreground"
+            android:textColor="@drawable/menu_bar_button"
             android:textAllCaps="false"/>
 
     </LinearLayout>

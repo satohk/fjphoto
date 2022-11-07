@@ -119,21 +119,8 @@ class MenuBarItemAdapter:
 
             buttonView.setOnFocusChangeListener { view, focused ->
                 if(view is TextView) {
-                    val context = binding.root.context
-                    val resource = binding.root.context.resources!!
-                    if (focused) {
-                        view.setTextColor(resource.getColor(
-                            R.color.menu_bar_item_foreground_highlight,
-                            context.theme
-                        ))
+                   if (focused) {
                         onFocus?.invoke(view, adapterPosition)
-                    } else {
-                        view.setTextColor(
-                            resource.getColor(
-                                R.color.menu_bar_item_foreground,
-                                context.theme
-                            )
-                        )
                     }
                 }
             }

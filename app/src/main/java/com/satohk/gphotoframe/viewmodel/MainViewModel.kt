@@ -22,6 +22,9 @@ class MainViewModel : ViewModel() {
                 if(account != null) {
                     _activeUserName.value = account.userName
                 }
+                else{
+                    _activeUserName.value = null
+                }
             }
         }
     }

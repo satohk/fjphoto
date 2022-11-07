@@ -37,10 +37,19 @@ class MenuBarViewModel(
     val lastFocusIndex: Int
         get() = _lastFocusIndexForSideBarType[sideBarType]!!
 
+    private val _activeUserName = MutableStateFlow<String?>(null)
+    val activeUserName: StateFlow<String?> get() = _activeUserName
+
 
     init {
         _lastFocusIndexForSideBarType[SideBarType.TOP] = 0
         _lastFocusIndexForSideBarType[SideBarType.ALBUM_LIST] = 0
+
+        viewModelScope.launch{
+            _accountState.activeAccount.collect { account ->
+                _activeUserName.value = account?.userName
+            }
+        }
     }
 
     fun initItemList(sideBarType: SideBarType) {
@@ -148,5 +157,9 @@ class MenuBarViewModel(
                 }
             }
         }
+    }
+
+    fun changeAccount(){
+        _accountState.setActiveAccount(null)
     }
 }
