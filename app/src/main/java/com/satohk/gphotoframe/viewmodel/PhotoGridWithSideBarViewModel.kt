@@ -1,7 +1,8 @@
 package com.satohk.gphotoframe.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.satohk.gphotoframe.model.*
+import com.satohk.gphotoframe.domain.*
+import com.satohk.gphotoframe.repository.entity.SearchQuery
 import kotlinx.coroutines.flow.*
 
 

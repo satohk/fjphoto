@@ -1,4 +1,4 @@
-package com.satohk.gphotoframe.model
+package com.satohk.gphotoframe.domain
 
 enum class ServiceProvider(val url: String){
     GOOGLE("com.google"),

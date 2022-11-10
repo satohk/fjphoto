@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.satohk.gphotoframe.model
+package com.satohk.gphotoframe.domain
 
 import android.graphics.Bitmap
 import android.util.Size

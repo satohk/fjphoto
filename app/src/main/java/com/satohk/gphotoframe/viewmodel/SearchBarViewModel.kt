@@ -1,28 +1,23 @@
 package com.satohk.gphotoframe.viewmodel
 
-import android.util.Log
-import android.widget.AdapterView.INVALID_POSITION
 import androidx.lifecycle.viewModelScope
-import com.satohk.gphotoframe.model.AccountState
-import com.satohk.gphotoframe.model.MediaType
-import com.satohk.gphotoframe.model.SearchQueryForRepo
-import com.satohk.gphotoframe.model.SearchQuery
+import com.satohk.gphotoframe.domain.AccountState
+import com.satohk.gphotoframe.repository.entity.MediaType
+import com.satohk.gphotoframe.repository.entity.SearchQuery
+import com.satohk.gphotoframe.repository.entity.SearchQueryRemote
 import kotlinx.coroutines.flow.*
-import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 
 
 class SearchBarViewModel(
     _accountState: AccountState
     ) : SideBarActionPublisherViewModel() {
 
-    private val _mediaType: String? get() = index2str(mediaTypeIndex.value, mediaTypes)
-    private val _contentType: String? get() = index2str(contentTypeIndex.value, contentTypes.value)
-    val fromDate: ZonedDateTime?  get() = str2date(fromDateStr.value)
-    val toDate: ZonedDateTime?  get() = str2date(toDateStr.value)
+    private val _mediaType: String? get() = Utils.spinnerIndex2str(mediaTypeIndex.value, mediaTypes)
+    private val _contentType: String? get() = Utils.spinnerIndex2str(contentTypeIndex.value, contentTypes.value)
+    val fromDate: ZonedDateTime?  get() = Utils.str2date(fromDateStr.value)
+    val toDate: ZonedDateTime?  get() = Utils.str2date(toDateStr.value)
 
     val mediaTypeIndex: MutableStateFlow<Int> = MutableStateFlow(0)
     val contentTypeIndex: MutableStateFlow<Int> = MutableStateFlow(0)
@@ -48,23 +43,6 @@ class SearchBarViewModel(
         toDateStr.onEach{ changeGridContents() }.launchIn(viewModelScope)
     }
 
-    private fun index2str(index: Int, values: List<String>):String?{
-        return if(index == INVALID_POSITION || index >= values.size) {
-            null
-        } else{
-            values[index]
-        }
-    }
-
-    private fun str2date(dateStr: String): ZonedDateTime?{
-        return try {
-            LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay(ZoneId.systemDefault())
-        } catch (e: DateTimeParseException) {
-            Log.d("str2date", e.toString())
-            null
-        }
-    }
-
     private fun getGridContents(): GridContents {
         val from = if (fromDate !== null) fromDate else ZonedDateTime.of(
             1,
@@ -88,7 +66,7 @@ class SearchBarViewModel(
         )
         return GridContents(
             searchQuery = SearchQuery(
-                queryRepo = SearchQueryForRepo(
+                queryRemote = SearchQueryRemote(
                     photoCategory = if (_contentType !== null) listOf(_contentType!!) else null,
                     startDate = from,
                     endDate = to,

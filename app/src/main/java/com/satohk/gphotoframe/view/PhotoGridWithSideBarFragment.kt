@@ -110,7 +110,11 @@ class PhotoGridWithSideBarFragment() : Fragment(R.layout.fragment_photo_grid_wit
             _sideBarFragment = searchBar
         }
         else if(sideBarType == SideBarType.SETTING){
-
+            val settingBar = SettingBarFragment()
+            childFragmentManager.beginTransaction()
+                .replace(R.id.sidebar_container, settingBar)
+                .commit()
+            _sideBarFragment = settingBar
         }
         else{ // Menu bar
             if(_sideBarFragment !is MenuBarFragment){

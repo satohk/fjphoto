@@ -74,24 +74,6 @@ class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
             datePickerDialog.show()
         }
 
-        val onFocusChange = fun(focusedView: View, focused: Boolean){
-            // focusのあたっているRowのテキストボックスをハイライト
-            val parentView = focusedView.parent
-            if(parentView !is TableRow){
-                return
-            }
-            parentView.children.forEach { child: View ->
-                if(child is TextView){
-                    child.setTextColor(this.resources.getColor(
-                        if(focused)
-                            R.color.menu_bar_item_foreground_highlight
-                        else
-                            R.color.menu_bar_item_foreground,
-                        this.context!!.theme
-                    ))
-                }
-            }
-        }
         val onKey = fun(view: View, i: Int, keyEvent: KeyEvent): Boolean {
             if(keyEvent.action == KeyEvent.ACTION_DOWN) {
                 if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
@@ -103,18 +85,7 @@ class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
             return false
         }
 
-        // set focus listener
-        val focusableViews: List<View> = listOf(
-            binding.spinnerMediaType,
-            binding.editTextFromDate,
-            binding.editTextToDate,
-            binding.spinnerContent,
-            binding.switchFavorite,
-            binding.buttonOK
-        )
-        focusableViews.forEach{v: View ->
-            v.setOnFocusChangeListener(onFocusChange)
-        }
+        Utils.initUITable(binding.table, this)
 
         // set key listener
         val keyHandleView: List<View> = listOf(

@@ -6,8 +6,8 @@ import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
-import com.satohk.gphotoframe.model.AccountState
-import com.satohk.gphotoframe.model.PhotoMetadataStore
+import com.satohk.gphotoframe.domain.AccountState
+import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataStore
 import com.satohk.gphotoframe.viewmodel.*
 import org.koin.androidx.viewmodel.dsl.viewModel
 
@@ -36,6 +36,7 @@ class GPApplication : Application() {
         viewModel { ChooseAccountViewModel( get() ) }
         viewModel { PhotoGridWithSideBarViewModel() }
         viewModel { PhotoGridViewModel( get() ) }
+        viewModel { SettingBarViewModel( get() ) }
         viewModel { SearchBarViewModel( get() ) }
         viewModel { MenuBarViewModel( get()) }
         viewModel { PhotoViewModel( get()) }

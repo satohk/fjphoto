@@ -1,4 +1,4 @@
-package com.satohk.gphotoframe.model
+package com.satohk.gphotoframe.repository.localrepository
 
 import android.util.Log
 import kotlinx.serialization.decodeFromString
@@ -7,18 +7,19 @@ import kotlinx.serialization.encodeToString
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
+import com.satohk.gphotoframe.repository.entity.PhotoMetadataLocal
 
 
 class PhotoMetadataStore(private val _fileNamePrefix:String) {
     private val _fileName = "photoMetadata.json"
-    private var _photoMetadataLocalMap = mutableMapOf<String, PhotoMetadataFromLocal>()
+    private var _photoMetadataLocalMap = mutableMapOf<String, PhotoMetadataLocal>()
 
     init{
         Log.d("PhotoMetadataStore.init", _fileNamePrefix)
         loadFromLocalFile()
     }
 
-    operator fun get(key: String): PhotoMetadataFromLocal {
+    operator fun get(key: String): PhotoMetadataLocal {
         return if(_photoMetadataLocalMap.containsKey(key)){
             _photoMetadataLocalMap[key]!!
         } else{
@@ -26,7 +27,7 @@ class PhotoMetadataStore(private val _fileNamePrefix:String) {
         }
     }
 
-    operator fun set(key: String, value:PhotoMetadataFromLocal){
+    operator fun set(key: String, value: PhotoMetadataLocal){
         if(value == defaultPhotoMetadat){
             _photoMetadataLocalMap.remove(key)
         }
@@ -50,7 +51,7 @@ class PhotoMetadataStore(private val _fileNamePrefix:String) {
         if(file.isFile){
             FileReader(file).use { reader ->
                 val content = reader.readText()
-                _photoMetadataLocalMap = Json.decodeFromString<MutableMap<String, PhotoMetadataFromLocal>>(content)
+                _photoMetadataLocalMap = Json.decodeFromString<MutableMap<String, PhotoMetadataLocal>>(content)
                 Log.d("loadFromLocalFile", _photoMetadataLocalMap.toString())
             }
         }
@@ -60,7 +61,7 @@ class PhotoMetadataStore(private val _fileNamePrefix:String) {
     }
 
     companion object {
-        val defaultPhotoMetadat = PhotoMetadataFromLocal(favorite = false)
+        val defaultPhotoMetadat = PhotoMetadataLocal(favorite = false)
         var filesDir: String = ""
     }
 }

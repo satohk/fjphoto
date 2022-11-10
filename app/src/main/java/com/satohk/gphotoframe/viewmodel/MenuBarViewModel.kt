@@ -3,7 +3,11 @@ package com.satohk.gphotoframe.viewmodel
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.viewModelScope
-import com.satohk.gphotoframe.model.*
+import com.satohk.gphotoframe.domain.*
+import com.satohk.gphotoframe.repository.entity.Album
+import com.satohk.gphotoframe.repository.entity.MediaType
+import com.satohk.gphotoframe.repository.entity.SearchQuery
+import com.satohk.gphotoframe.repository.entity.SearchQueryRemote
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -68,12 +72,16 @@ class MenuBarViewModel(
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_PHOTO,
                                 SideBarAction(SideBarActionType.ENTER_GRID,
-                                    gridContents=GridContents(searchQuery= SearchQuery(SearchQueryForRepo(mediaType=MediaType.PHOTO))))
+                                    gridContents=GridContents(searchQuery= SearchQuery(
+                                        SearchQueryRemote(mediaType= MediaType.PHOTO)
+                                    )))
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_MOVIE,
                                 SideBarAction(SideBarActionType.ENTER_GRID,
-                                    gridContents=GridContents(searchQuery=SearchQuery(SearchQueryForRepo(mediaType=MediaType.VIDEO))))
+                                    gridContents=GridContents(searchQuery=SearchQuery(
+                                        SearchQueryRemote(mediaType= MediaType.VIDEO)
+                                    )))
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST,
@@ -102,7 +110,9 @@ class MenuBarViewModel(
                                 MenuBarItem(
                                     MenuBarItem.MenuBarItemType.ALBUM_ITEM,
                                     SideBarAction(SideBarActionType.ENTER_GRID,
-                                        gridContents=GridContents(searchQuery=SearchQuery(SearchQueryForRepo(album=album)))),
+                                        gridContents=GridContents(searchQuery=SearchQuery(
+                                            SearchQueryRemote(album=album)
+                                        ))),
                                     album=album
                                 )
                             }

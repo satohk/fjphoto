@@ -1,7 +1,8 @@
-package com.satohk.gphotoframe.model
+package com.satohk.gphotoframe.domain
 
-import com.satohk.gphotoframe.repository.CachedPhotoRepository
-import com.satohk.gphotoframe.repository.GooglePhotoRepository
+import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataStore
+import com.satohk.gphotoframe.repository.remoterepository.CachedPhotoRepository
+import com.satohk.gphotoframe.repository.remoterepository.GooglePhotoRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +15,7 @@ class AccountState {
     private val _photoRepository = MutableStateFlow<CachedPhotoRepository?>(null)
     val photoRepository: StateFlow<CachedPhotoRepository?> get() = _photoRepository
 
-    var photoMetadataStore:PhotoMetadataStore? = null
+    var photoMetadataStore: PhotoMetadataStore? = null
         private set
 
     fun setActiveAccount(account: Account?){

@@ -1,22 +1,9 @@
-package com.satohk.gphotoframe.repository
+package com.satohk.gphotoframe.repository.remoterepository
 
 import android.accounts.NetworkErrorException
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
-import com.satohk.gphotoframe.model.*
-import com.satohk.gphotoframe.model.AlbumsResponse
-import com.satohk.gphotoframe.model.MediaItemsResponse
-import com.satohk.gphotoframe.model.MediaType
-import com.satohk.gphotoframe.model.ParamContentCategory
-import com.satohk.gphotoframe.model.ParamContentFilter
-import com.satohk.gphotoframe.model.ParamDate
-import com.satohk.gphotoframe.model.ParamDateFilter
-import com.satohk.gphotoframe.model.ParamDateRange
-import com.satohk.gphotoframe.model.ParamFilters
-import com.satohk.gphotoframe.model.ParamMediaType
-import com.satohk.gphotoframe.model.ParamMediaTypeFilter
-import com.satohk.gphotoframe.model.SearchParam
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -27,6 +14,10 @@ import kotlinx.serialization.json.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.ConnectException
+import com.satohk.gphotoframe.repository.entity.Album
+import com.satohk.gphotoframe.repository.entity.MediaType
+import com.satohk.gphotoframe.repository.entity.SearchQueryRemote
+import com.satohk.gphotoframe.repository.entity.PhotoMetadataRemote
 
 
 open class GooglePhotoRepository(
@@ -68,7 +59,8 @@ open class GooglePhotoRepository(
         return albums
     }
 
-    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryForRepo?):Pair<List<PhotoMetadataFromRepo>,String?>{
+    override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryRemote?)
+            : Pair<List<PhotoMetadataRemote>,String?>{
         val dateFilter =
             if(searchQuery?.startDate !== null && searchQuery?.endDate !== null)
                 ParamDateFilter(
@@ -111,8 +103,8 @@ open class GooglePhotoRepository(
         val responseDecoded = jsonDec.decodeFromString<MediaItemsResponse>(responseBodyStr)
         val resultNextPageToken = responseDecoded.nextPageToken
         Log.d("getNextPhotoMetadataList", responseDecoded.mediaItems?.get(0).toString())
-        val result: List<PhotoMetadataFromRepo> = responseDecoded.mediaItems?.map{
-            PhotoMetadataFromRepo(
+        val result: List<PhotoMetadataRemote> = responseDecoded.mediaItems?.map{
+            PhotoMetadataRemote(
                 ZonedDateTime.parse(it.mediaMetadata!!.creationTime),
                 it.id,
                 it.baseUrl,
@@ -126,7 +118,7 @@ open class GooglePhotoRepository(
     }
 
     override suspend fun getPhotoBitmap(
-        photo: PhotoMetadataFromRepo,
+        photo: PhotoMetadataRemote,
         width: Int?,
         height: Int?,
         cropFlag: Boolean?
@@ -157,7 +149,7 @@ open class GooglePhotoRepository(
         }
     }
 
-    override fun getMediaAccessHeaderAndUrl(media: PhotoMetadataFromRepo): Pair<PhotoRequestHeader, String>{
+    override fun getMediaAccessHeaderAndUrl(media: PhotoMetadataRemote): Pair<PhotoRequestHeader, String>{
         val headers: MutableMap<String, String> = HashMap()
         headers["Authorization"] = "Bearer $accessToken"
         headers["Accept-Ranges"] = "bytes";

@@ -1,4 +1,4 @@
-package com.satohk.gphotoframe.model
+package com.satohk.gphotoframe.domain
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

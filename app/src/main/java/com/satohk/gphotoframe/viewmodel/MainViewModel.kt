@@ -2,7 +2,7 @@ package com.satohk.gphotoframe.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.satohk.gphotoframe.model.AccountState
+import com.satohk.gphotoframe.domain.AccountState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect

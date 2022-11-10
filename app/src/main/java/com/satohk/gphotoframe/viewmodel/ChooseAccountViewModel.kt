@@ -1,10 +1,9 @@
 package com.satohk.gphotoframe.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.satohk.gphotoframe.model.AccountState
-import com.satohk.gphotoframe.model.Account
-import com.satohk.gphotoframe.model.ServiceProvider
-import org.koin.java.KoinJavaComponent.inject
+import com.satohk.gphotoframe.domain.AccountState
+import com.satohk.gphotoframe.domain.Account
+import com.satohk.gphotoframe.domain.ServiceProvider
 
 
 class ChooseAccountViewModel(

@@ -1,5 +1,6 @@
-package com.satohk.gphotoframe.model
+package com.satohk.gphotoframe.domain
 
+import com.satohk.gphotoframe.repository.entity.PhotoMetadata
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,8 +22,8 @@ class PhotoSelector(
 
     private var _currentPoint: Int = _initIndex
 
-    private val _currentPhotoMetadata = MutableStateFlow<PhotoMetadataFromRepo?>(null)
-    val currentPhotoMetadata: StateFlow<PhotoMetadataFromRepo?> get() = _currentPhotoMetadata
+    private val _currentPhotoMetadata = MutableStateFlow<PhotoMetadata?>(null)
+    val currentPhotoMetadata: StateFlow<PhotoMetadata?> get() = _currentPhotoMetadata
 
     private suspend fun nextStep(step: Int, waitMillisec: Long) {
         val beginTime = System.nanoTime()

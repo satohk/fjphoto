@@ -3,8 +3,9 @@ package com.satohk.gphotoframe.viewmodel
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.satohk.gphotoframe.model.*
-import com.satohk.gphotoframe.repository.CachedPhotoRepository
+import com.satohk.gphotoframe.domain.*
+import com.satohk.gphotoframe.repository.remoterepository.CachedPhotoRepository
+import com.satohk.gphotoframe.repository.entity.PhotoMetadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +30,7 @@ class PhotoViewModel(
     val currentVideoRequest: StateFlow<VideoRequest?> get() = _currentVideoRequest
     var photoWidth: Int = 1024
     var photoHeight: Int = 768
-    var currentPhotoMetadata: PhotoMetadataFromRepo? = null
+    var currentPhotoMetadata: PhotoMetadata? = null
         private set
 
     private var _gridContents: GridContents? = null
@@ -79,7 +80,7 @@ class PhotoViewModel(
         }
     }
 
-    private fun initPhotoSelector(repo:CachedPhotoRepository, contents:GridContents, slideShow: Boolean, showIndex: Int){
+    private fun initPhotoSelector(repo: CachedPhotoRepository, contents:GridContents, slideShow: Boolean, showIndex: Int){
         onStop()
 
         _filteredPhotoList = FilteredPhotoList(repo, contents.searchQuery)
@@ -91,12 +92,12 @@ class PhotoViewModel(
         )
 
         _photoSelector!!.currentPhotoMetadata.onEach {
-            if(it != null) {
-                currentPhotoMetadata = it
-                if(it.mimeType.startsWith("image")) {
+            it?.let{ metadata: PhotoMetadata ->
+                currentPhotoMetadata = metadata
+                if(metadata.metadataRemote.mimeType.startsWith("image")) {
                     withContext(Dispatchers.IO) {
                         val bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
-                            it!!,
+                            metadata.metadataRemote,
                             photoWidth,
                             photoHeight,
                             false
@@ -104,8 +105,8 @@ class PhotoViewModel(
                         _currentPhoto.value = bmp
                     }
                 }
-                else if(it.mimeType.startsWith("video")){
-                    val tmp = _accountState.photoRepository.value!!.getMediaAccessHeaderAndUrl(currentPhotoMetadata!!)
+                else if(metadata.metadataRemote.mimeType.startsWith("video")){
+                    val tmp = _accountState.photoRepository.value!!.getMediaAccessHeaderAndUrl(metadata.metadataRemote)
                     _currentVideoRequest.value = VideoRequest(
                         tmp.first,
                         tmp.second

@@ -1,19 +1,19 @@
-package com.satohk.gphotoframe.repository
+package com.satohk.gphotoframe.repository.remoterepository
 
 import android.accounts.NetworkErrorException
 import android.graphics.Bitmap
 import android.util.LruCache
-import com.satohk.gphotoframe.model.Album
-import com.satohk.gphotoframe.model.PhotoMetadataFromRepo
-import com.satohk.gphotoframe.model.SearchQueryForRepo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.lang.Math.min
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import com.satohk.gphotoframe.repository.entity.Album
+import com.satohk.gphotoframe.repository.entity.PhotoMetadataRemote
+import com.satohk.gphotoframe.repository.entity.SearchQueryRemote
 
 class CachedPhotoRepository(
-    private val _repository: PhotoRepository
+    private val _photoRepository: PhotoRepository
 ) {
     private val _errorOccured = MutableStateFlow(false)
     val errorOccured: StateFlow<Boolean> get() = _errorOccured
@@ -23,7 +23,7 @@ class CachedPhotoRepository(
 
     private class PhotoMetadataList(
         val pageToken: String?,
-        val photoMetadataList: MutableList<PhotoMetadataFromRepo>,
+        val photoMetadataList: MutableList<PhotoMetadataRemote>,
         val allLoaded: Boolean
     ){
         val size: Int get() = photoMetadataList.size
@@ -36,7 +36,7 @@ class CachedPhotoRepository(
 
     // 全listの要素数の合計をmaxSize以下とする
     private val _photoMetadataCache = object : LruCache<String, PhotoMetadataList>(10000) {
-        override fun sizeOf(key:String, metadataList:PhotoMetadataList):Int{
+        override fun sizeOf(key:String, metadataList: PhotoMetadataList):Int{
             return min(metadataList.size, this.maxSize())
         }
     }
@@ -49,12 +49,12 @@ class CachedPhotoRepository(
         return key
     }
 
-    fun photoMetadataListAllLoaded(searchQuery:SearchQueryForRepo?):Boolean{
+    fun photoMetadataListAllLoaded(searchQuery: SearchQueryRemote?):Boolean{
         val key = arg2str(searchQuery)
         return _photoMetadataCache.get(key).allLoaded
     }
 
-    suspend fun getPhotoMetadataList(offset:Int, size:Int, searchQuery:SearchQueryForRepo?):List<PhotoMetadataFromRepo>{
+    suspend fun getPhotoMetadataList(offset:Int, size:Int, searchQuery: SearchQueryRemote?):List<PhotoMetadataRemote>{
         val key = arg2str(searchQuery)
         var list = _photoMetadataCache.get(key)
 
@@ -63,7 +63,7 @@ class CachedPhotoRepository(
                 _mutex.withLock {
                     val pageToken = list?.pageToken
                     val bulkLoadSize = 60
-                    val res = _repository.getNextPhotoMetadataList(
+                    val res = _photoRepository.getNextPhotoMetadataList(
                         bulkLoadSize, pageToken, searchQuery
                     )
                     val resultList = if (list == null) mutableListOf() else list.photoMetadataList
@@ -88,7 +88,7 @@ class CachedPhotoRepository(
     suspend fun getAlbumList():List<Album> {
         if(_albumCache.size == 0) {
             try {
-                _albumCache.addAll(_repository.getAlbumList())
+                _albumCache.addAll(_photoRepository.getAlbumList())
             }
             catch(e: NetworkErrorException){
                 setError()
@@ -97,12 +97,12 @@ class CachedPhotoRepository(
         return _albumCache
     }
 
-    suspend fun getPhotoBitmap(photo: PhotoMetadataFromRepo, width:Int?, height:Int?, cropFlag:Boolean?):Bitmap? {
+    suspend fun getPhotoBitmap(photo: PhotoMetadataRemote, width:Int?, height:Int?, cropFlag:Boolean?):Bitmap? {
         val key = arg2str(photo, width, height, cropFlag)
         var res = _photoBitmapCache.get(key)
         if(res == null){
             try {
-                res = _repository.getPhotoBitmap(photo, width, height, cropFlag)
+                res = _photoRepository.getPhotoBitmap(photo, width, height, cropFlag)
                 if(res != null) {
                     _photoBitmapCache.put(key, res)
                 }
@@ -119,7 +119,7 @@ class CachedPhotoRepository(
         var res = _albumCoverCache.get(key)
         if(res == null){
             try {
-                res = _repository.getAlbumCoverPhoto(album, width, height, cropFlag)
+                res = _photoRepository.getAlbumCoverPhoto(album, width, height, cropFlag)
                 _albumCoverCache.put(key, res)
             }
             catch(e: NetworkErrorException){
@@ -129,11 +129,11 @@ class CachedPhotoRepository(
         return res
     }
 
-    fun getMediaAccessHeaderAndUrl(media: PhotoMetadataFromRepo): Pair<PhotoRequestHeader, String> {
-        return _repository.getMediaAccessHeaderAndUrl(media)
+    fun getMediaAccessHeaderAndUrl(media: PhotoMetadataRemote): Pair<PhotoRequestHeader, String> {
+        return _photoRepository.getMediaAccessHeaderAndUrl(media)
     }
 
     fun getCategoryList(): List<String>{
-        return _repository.getCategoryList()
+        return _photoRepository.getCategoryList()
     }
 }

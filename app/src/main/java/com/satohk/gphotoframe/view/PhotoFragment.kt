@@ -178,7 +178,9 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
             start()
         }
 
-        photoInfo.text = _viewModel.currentPhotoMetadata!!.timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE)
+        _viewModel.currentPhotoMetadata?.let {
+            photoInfo.text = it.metadataRemote.timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE)
+        }
 
         val tmp = _hideImageView
         _hideImageView = _showImageView

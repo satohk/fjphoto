@@ -5,11 +5,11 @@
     android:background="@color/menu_bar_background">
 
         <data>
-                <variable name="view_model" type="com.satohk.gphotoframe.viewmodel.SearchBarViewModel" />
+                <variable name="view_model" type="com.satohk.gphotoframe.viewmodel.SettingBarViewModel" />
         </data>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="@dimen/side_bar_width"
             android:layout_height="match_parent"
             android:orientation="vertical">
 
@@ -31,17 +31,16 @@
                                     android:id="@+id/textView"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Media Type"
-                                    android:textStyle="bold"/>
-
+                                    android:text="Show interval [sec]"
+                                    android:textStyle="bold" />
                                 <Spinner
-                                    android:id="@+id/spinnerMediaType"
+                                    android:id="@+id/spinnerSlideshowInterval"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:entries="@{view_model.mediaTypes}"
+                                    android:entries="@{view_model.slideshowIntervalList}"
                                     android:focusable="true"
                                     android:focusableInTouchMode="true"
-                                    android:selectedItemPosition="@={view_model.mediaTypeIndex}">
+                                    android:selectedItemPosition="@={view_model.slideshowIntervalIndex}">
 
                                         <requestFocus />
                                 </Spinner>
@@ -56,60 +55,21 @@
                                     android:id="@+id/textView2"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Date Begin"
-                                    android:textStyle="bold" />
-
-                                <EditText
-                                    android:id="@+id/editTextFromDate"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:ems="10"
-                                    android:inputType="date"
-                                    android:text="@={view_model.fromDateStr}"
-                                    android:onClick="showDatePickerDialog"/>
-
-                        </TableRow>
-
-                        <TableRow
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
-
-                                <TextView
-                                    android:id="@+id/textView6"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Date End"
-                                    android:textStyle="bold" />
-
-                                <EditText
-                                    android:id="@+id/editTextToDate"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:ems="10"
-                                    android:inputType="date"
-                                    android:text="@={view_model.toDateStr}"
-                                    android:onClick="showDatePickerDialog"/>
-                        </TableRow>
-
-                        <TableRow
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
-
-                                <TextView
-                                    android:id="@+id/textView4"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Content  Filter"
+                                    android:text="Column num"
                                     android:textStyle="bold" />
 
                                 <Spinner
-                                    android:id="@+id/spinnerContent"
+                                    android:id="@+id/spinnerColumnNum"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:selectedItemPosition="@={view_model.contentTypeIndex}"
-                                    android:entries="@{view_model.contentTypes}" />
+                                    android:entries="@{view_model.columnNumList}"
+                                    android:focusable="true"
+                                    android:focusableInTouchMode="true"
+                                    android:selectedItemPosition="@={view_model.columnNumIndex}">
+
+                                        <requestFocus />
+                                </Spinner>
+
                         </TableRow>
 
                         <TableRow
@@ -133,6 +93,7 @@
                                     android:textStyle="bold" />
 
                         </TableRow>
+
                         <TableRow
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"

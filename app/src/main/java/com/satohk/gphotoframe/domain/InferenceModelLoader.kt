@@ -1,4 +1,4 @@
-package com.satohk.gphotoframe.model
+package com.satohk.gphotoframe.domain
 
 import android.content.Context
 import org.tensorflow.lite.Interpreter

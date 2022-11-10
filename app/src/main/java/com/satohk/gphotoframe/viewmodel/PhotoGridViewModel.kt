@@ -4,7 +4,8 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DiffUtil
-import com.satohk.gphotoframe.model.*
+import com.satohk.gphotoframe.domain.*
+import com.satohk.gphotoframe.repository.entity.PhotoMetadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
@@ -114,7 +115,7 @@ class PhotoGridViewModel(
                 var bmp: Bitmap? = null
                 withContext(Dispatchers.IO) {
                     bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
-                        photoGridItem.photoMetaData,
+                        photoGridItem.photoMetaData.metadataRemote,
                         width,
                         height,
                         true
@@ -146,13 +147,13 @@ class PhotoGridViewModel(
     }
 
     data class PhotoGridItem(
-        val photoMetaData: PhotoMetadataFromRepo
+        val photoMetaData: PhotoMetadata
     ) {
         companion object {
             val DIFF_UTIL = object: DiffUtil.ItemCallback<PhotoGridItem>() {
                 override fun areItemsTheSame(oldItem: PhotoGridItem, newItem: PhotoGridItem)
                         : Boolean {
-                    return oldItem.photoMetaData.url == newItem.photoMetaData.url
+                    return oldItem.photoMetaData.metadataRemote.url == newItem.photoMetaData.metadataRemote.url
                 }
 
                 override fun areContentsTheSame(oldItem: PhotoGridItem, newItem: PhotoGridItem)

@@ -1,4 +1,4 @@
-package com.satohk.gphotoframe.model
+package com.satohk.gphotoframe.repository.remoterepository
 
 import kotlinx.serialization.Serializable
 import java.time.ZonedDateTime

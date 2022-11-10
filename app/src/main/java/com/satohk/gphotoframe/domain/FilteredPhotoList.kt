@@ -1,14 +1,18 @@
-package com.satohk.gphotoframe.model
+package com.satohk.gphotoframe.domain
 
 import android.util.Log
-import com.satohk.gphotoframe.repository.CachedPhotoRepository
+import com.satohk.gphotoframe.repository.remoterepository.CachedPhotoRepository
+import com.satohk.gphotoframe.repository.entity.PhotoMetadata
+import com.satohk.gphotoframe.repository.entity.PhotoMetadataLocal
+import com.satohk.gphotoframe.repository.entity.PhotoMetadataRemote
+import com.satohk.gphotoframe.repository.entity.SearchQuery
 import kotlinx.coroutines.*
 
 class FilteredPhotoList(
     private val _repository: CachedPhotoRepository,
     private val _query: SearchQuery
 ){
-    private val _filteredPhotoMetadataList = mutableListOf<PhotoMetadataFromRepo>()
+    private val _filteredPhotoMetadataList = mutableListOf<PhotoMetadata>()
     private var _repositoryOffset = 0
     private var _preloadRepositoryOffset = 0
     private val _bulkLoadSize = 60
@@ -18,9 +22,9 @@ class FilteredPhotoList(
     var allLoaded: Boolean = false
         private set
 
-    val list: List<PhotoMetadataFromRepo> get() = this._filteredPhotoMetadataList
+    val list: List<PhotoMetadata> get() = this._filteredPhotoMetadataList
 
-    suspend fun getFilteredPhotoMetadataList(offset:Int, size:Int):List<PhotoMetadataFromRepo>{
+    suspend fun getFilteredPhotoMetadataList(offset:Int, size:Int):List<PhotoMetadata>{
         var remain = offset + size - _filteredPhotoMetadataList.size
 
         _scope.launch {
@@ -30,7 +34,7 @@ class FilteredPhotoList(
                     val preloadMetadataList = _repository.getPhotoMetadataList(
                         _preloadRepositoryOffset,
                         _bulkLoadSize,
-                        _query.queryRepo
+                        _query.queryRemote
                     )
                     if (preloadMetadataList.isEmpty()) {
                         break
@@ -42,10 +46,10 @@ class FilteredPhotoList(
                 val metadataList = _repository.getPhotoMetadataList(
                     _repositoryOffset,
                     remain,
-                    _query.queryRepo
+                    _query.queryRemote
                 )
 
-                if(metadataList.isEmpty() && _repository.photoMetadataListAllLoaded(_query.queryRepo)){
+                if(metadataList.isEmpty() && _repository.photoMetadataListAllLoaded(_query.queryRemote)){
                     allLoaded = true
                 }
                 else {
@@ -53,7 +57,9 @@ class FilteredPhotoList(
                         async { filterPhoto(it) }
                     }.awaitAll()
                     val filteredList =
-                        metadataList.zip(filterResult).filter { it.second }.map { it.first }
+                        metadataList.zip(filterResult).filter { it.second }.map {
+                            PhotoMetadata(PhotoMetadataLocal(), it.first)
+                        }
                     _filteredPhotoMetadataList.addAll(filteredList)
                     remain -= filteredList.size
                     _repositoryOffset += metadataList.size
@@ -71,7 +77,7 @@ class FilteredPhotoList(
     }
 
     var ct = 0
-    suspend private fun filterPhoto(photoMetadata: PhotoMetadataFromRepo):Boolean{
+    suspend private fun filterPhoto(photoMetadata: PhotoMetadataRemote):Boolean{
         return true
 
         _repository.getPhotoBitmap(photoMetadata, _preloadPhotoSize, _preloadPhotoSize, false)
