@@ -106,6 +106,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
                 _videoView.requestFocus()
                 _showImageView.visibility = View.INVISIBLE
                 _hideImageView.visibility = View.INVISIBLE
+                Log.d("mediaItem", it.url)
                 val mediaItem = MediaItem.fromUri(it.url)
                 _player?.let{
                     it.setMediaItem(mediaItem)
