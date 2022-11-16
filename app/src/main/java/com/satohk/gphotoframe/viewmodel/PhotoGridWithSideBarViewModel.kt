@@ -1,8 +1,7 @@
 package com.satohk.gphotoframe.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.satohk.gphotoframe.domain.*
-import com.satohk.gphotoframe.repository.entity.SearchQuery
+import com.satohk.gphotoframe.repository.data.SearchQuery
 import kotlinx.coroutines.flow.*
 
 
@@ -27,6 +26,8 @@ class PhotoGridWithSideBarViewModel : ViewModel() {
                 }
                 SideBarActionType.ENTER_GRID -> {
                     _backStack.add(SideBarAction(SideBarActionType.LEAVE_GRID, null, null))
+                }
+                else -> {
                 }
             }
         }

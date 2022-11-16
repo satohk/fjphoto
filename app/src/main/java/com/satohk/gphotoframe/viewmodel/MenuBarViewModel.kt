@@ -4,10 +4,10 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.satohk.gphotoframe.domain.*
-import com.satohk.gphotoframe.repository.entity.Album
-import com.satohk.gphotoframe.repository.entity.MediaType
-import com.satohk.gphotoframe.repository.entity.SearchQuery
-import com.satohk.gphotoframe.repository.entity.SearchQueryRemote
+import com.satohk.gphotoframe.repository.data.Album
+import com.satohk.gphotoframe.repository.data.MediaType
+import com.satohk.gphotoframe.repository.data.SearchQuery
+import com.satohk.gphotoframe.repository.data.SearchQueryRemote
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -121,6 +121,9 @@ class MenuBarViewModel(
                     else{
                         Log.d("loadNextImageList", "_accountState.photoRepository.value is null")
                     }
+                }
+                else -> {
+
                 }
             }
         }

@@ -14,10 +14,10 @@ import kotlinx.serialization.json.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.ConnectException
-import com.satohk.gphotoframe.repository.entity.Album
-import com.satohk.gphotoframe.repository.entity.MediaType
-import com.satohk.gphotoframe.repository.entity.SearchQueryRemote
-import com.satohk.gphotoframe.repository.entity.PhotoMetadataRemote
+import com.satohk.gphotoframe.repository.data.Album
+import com.satohk.gphotoframe.repository.data.MediaType
+import com.satohk.gphotoframe.repository.data.SearchQueryRemote
+import com.satohk.gphotoframe.repository.data.PhotoMetadataRemote
 
 
 open class GooglePhotoRepository(

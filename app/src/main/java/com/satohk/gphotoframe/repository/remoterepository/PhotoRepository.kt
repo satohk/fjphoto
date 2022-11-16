@@ -1,9 +1,9 @@
 package com.satohk.gphotoframe.repository.remoterepository
 
 import android.graphics.Bitmap
-import com.satohk.gphotoframe.repository.entity.Album
-import com.satohk.gphotoframe.repository.entity.SearchQueryRemote
-import com.satohk.gphotoframe.repository.entity.PhotoMetadataRemote
+import com.satohk.gphotoframe.repository.data.Album
+import com.satohk.gphotoframe.repository.data.SearchQueryRemote
+import com.satohk.gphotoframe.repository.data.PhotoMetadataRemote
 
 typealias PhotoRequestHeader = Map<String, String>
 

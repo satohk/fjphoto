@@ -2,10 +2,10 @@ package com.satohk.gphotoframe.domain
 
 import android.util.Log
 import com.satohk.gphotoframe.repository.remoterepository.CachedPhotoRepository
-import com.satohk.gphotoframe.repository.entity.PhotoMetadata
-import com.satohk.gphotoframe.repository.entity.PhotoMetadataLocal
-import com.satohk.gphotoframe.repository.entity.PhotoMetadataRemote
-import com.satohk.gphotoframe.repository.entity.SearchQuery
+import com.satohk.gphotoframe.repository.data.PhotoMetadata
+import com.satohk.gphotoframe.repository.data.PhotoMetadataLocal
+import com.satohk.gphotoframe.repository.data.PhotoMetadataRemote
+import com.satohk.gphotoframe.repository.data.SearchQuery
 import kotlinx.coroutines.*
 
 class FilteredPhotoList(

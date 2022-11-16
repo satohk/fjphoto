@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DiffUtil
 import com.satohk.gphotoframe.domain.*
-import com.satohk.gphotoframe.repository.entity.PhotoMetadata
+import com.satohk.gphotoframe.repository.data.PhotoMetadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
@@ -38,6 +38,8 @@ class PhotoGridViewModel(
     val itemList:List<PhotoGridItem> get(){return _itemList}
     private val _dataSize = MutableStateFlow<Int>(0)
     val dataSize: StateFlow<Int> get() = _dataSize
+    private val _numColumns = MutableStateFlow<Int>(6)
+    val numColumns: StateFlow<Int> get() = _numColumns
 
     val isSelectMode: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -54,6 +56,9 @@ class PhotoGridViewModel(
                     setGridContents(tmp)
                 }
             }
+        }.launchIn(viewModelScope)
+        _accountState.settingRepository.setting.onEach {
+            this._numColumns.value = it.numPhotoGridColumns
         }.launchIn(viewModelScope)
     }
 

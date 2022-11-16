@@ -8,7 +8,7 @@ class SettingBarViewModel(
     _accountState: AccountState
     ) : SideBarActionPublisherViewModel() {
 
-    val slideshowIntervalIndex: MutableStateFlow<Int> = MutableStateFlow(2)
+    val slideshowIntervalIndex: MutableStateFlow<Int> = MutableStateFlow(9)
     private val _slideshowIntervalList: MutableStateFlow<List<String>>
         = MutableStateFlow(listOf(
             "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -32,7 +32,24 @@ class SettingBarViewModel(
 
     init{
         slideshowIntervalIndex.onEach {
+            Utils.spinnerIndex2str(it, _slideshowIntervalList.value)?.let { strVal ->
+                strVal.toIntOrNull()?.let { intVal ->
+                    _accountState.settingRepository.setSlideShowInterval(intVal)
+                }
+            }
+        }.launchIn(viewModelScope)
 
+        columnNumIndex.onEach {
+            Utils.spinnerIndex2str(it, _columnNumList.value)?.let { strVal ->
+                strVal.toIntOrNull()?.let { intVal ->
+                    _accountState.settingRepository.setNumPhotoGridColumns(intVal)
+                }
+            }
+        }.launchIn(viewModelScope)
+
+        _accountState.settingRepository.setting.onEach{
+            slideshowIntervalIndex.value = _slideshowIntervalList.value.indexOf(it.slideShowInterval.toString())
+            columnNumIndex.value = _columnNumList.value.indexOf(it.numPhotoGridColumns.toString())
         }.launchIn(viewModelScope)
     }
 

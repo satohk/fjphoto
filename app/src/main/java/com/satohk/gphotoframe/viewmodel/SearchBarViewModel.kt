@@ -2,9 +2,9 @@ package com.satohk.gphotoframe.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.satohk.gphotoframe.domain.AccountState
-import com.satohk.gphotoframe.repository.entity.MediaType
-import com.satohk.gphotoframe.repository.entity.SearchQuery
-import com.satohk.gphotoframe.repository.entity.SearchQueryRemote
+import com.satohk.gphotoframe.repository.data.MediaType
+import com.satohk.gphotoframe.repository.data.SearchQuery
+import com.satohk.gphotoframe.repository.data.SearchQueryRemote
 import kotlinx.coroutines.flow.*
 import java.time.ZoneId
 import java.time.ZonedDateTime

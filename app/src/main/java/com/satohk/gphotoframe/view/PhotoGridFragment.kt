@@ -58,8 +58,7 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
     private fun initRecyclerView(view: View){
         // set up the RecyclerView
         _recyclerView = view.findViewById(R.id.photo_grid)
-        val layoutManager = GridLayoutManager(requireContext(), _numberOfColumns)
-        _recyclerView.layoutManager = layoutManager
+        _recyclerView.layoutManager = GridLayoutManager(requireContext(), _viewModel.numColumns.value)
         val adapter = PhotoAdapter(_viewModel.itemList)
         adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
 
@@ -115,6 +114,11 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
                 launch{
                     _viewModel.loading.collect{
                         view.findViewById<ProgressBar>(R.id.progress).visibility = if(it) View.VISIBLE else View.INVISIBLE
+                    }
+                }
+                launch{
+                    _viewModel.numColumns.collect{
+                        _recyclerView.layoutManager = GridLayoutManager(requireContext(), it)
                     }
                 }
             }

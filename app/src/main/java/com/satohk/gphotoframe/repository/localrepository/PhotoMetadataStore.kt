@@ -7,7 +7,7 @@ import kotlinx.serialization.encodeToString
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
-import com.satohk.gphotoframe.repository.entity.PhotoMetadataLocal
+import com.satohk.gphotoframe.repository.data.PhotoMetadataLocal
 
 
 class PhotoMetadataStore(private val _fileNamePrefix:String) {

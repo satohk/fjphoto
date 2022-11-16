@@ -1,6 +1,6 @@
 package com.satohk.gphotoframe.domain
 
-import com.satohk.gphotoframe.repository.entity.PhotoMetadata
+import com.satohk.gphotoframe.repository.data.PhotoMetadata
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

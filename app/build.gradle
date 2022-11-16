@@ -64,6 +64,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.4.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.4.0'
+    implementation 'androidx.preference:preference:1.1.1'
     def coroutines_version = '1.3.9' //Kotlin coroutines用ライブラリ(async, await)のバージョン
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version" //Kotlin coroutines用ライブラリ(async, await)
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version" //Kotlin coroutines用ライブラリ(async, await)
@@ -86,4 +87,8 @@ dependencies {
     implementation "com.google.android.exoplayer:exoplayer-core:$expoplayer_version"
     implementation "com.google.android.exoplayer:exoplayer-dash:$expoplayer_version"
     implementation "com.google.android.exoplayer:exoplayer-ui:$expoplayer_version"
+
+    def room_version = "2.4.3"
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
 }

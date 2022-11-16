@@ -1,6 +1,6 @@
 package com.satohk.gphotoframe.viewmodel
 
-import com.satohk.gphotoframe.repository.entity.SearchQuery
+import com.satohk.gphotoframe.repository.data.SearchQuery
 import java.io.Serializable
 
 data class GridContents(

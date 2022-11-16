@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.StateFlow
 import java.lang.Math.min
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import com.satohk.gphotoframe.repository.entity.Album
-import com.satohk.gphotoframe.repository.entity.PhotoMetadataRemote
-import com.satohk.gphotoframe.repository.entity.SearchQueryRemote
+import com.satohk.gphotoframe.repository.data.Album
+import com.satohk.gphotoframe.repository.data.PhotoMetadataRemote
+import com.satohk.gphotoframe.repository.data.SearchQueryRemote
 
 class CachedPhotoRepository(
     private val _photoRepository: PhotoRepository
