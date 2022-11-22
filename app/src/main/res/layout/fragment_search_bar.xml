@@ -17,22 +17,21 @@
                     android:id="@+id/table"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/search_bar_margin"
                     android:layout_marginTop="@dimen/search_bar_margin"
-                    android:layout_marginEnd="@dimen/search_bar_margin"
                     android:layout_marginBottom="@dimen/search_bar_margin">
 
                         <TableRow
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
+                            android:padding="@dimen/menu_button_padding_left">
 
                                 <TextView
                                     android:id="@+id/textView"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Media Type"
-                                    android:textStyle="bold"/>
+                                    android:textColor="@color/menu_bar_button_text"
+                                    android:textStyle="bold" />
 
                                 <Spinner
                                     android:id="@+id/spinnerMediaType"
@@ -50,13 +49,15 @@
                         <TableRow
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
+                            android:layout_marginBottom="@dimen/search_bar_group_margin"
+                            android:paddingLeft="@dimen/menu_button_padding_left">
 
                                 <TextView
                                     android:id="@+id/textView2"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Date Begin"
+                                    android:textColor="@color/menu_bar_button_text"
                                     android:textStyle="bold" />
 
                                 <EditText
@@ -65,21 +66,24 @@
                                     android:layout_height="wrap_content"
                                     android:ems="10"
                                     android:inputType="date"
+                                    android:onClick="showDatePickerDialog"
                                     android:text="@={view_model.fromDateStr}"
-                                    android:onClick="showDatePickerDialog"/>
+                                    android:textColor="@color/menu_bar_button_text" />
 
                         </TableRow>
 
                         <TableRow
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
+                            android:layout_marginBottom="@dimen/search_bar_group_margin"
+                            android:paddingLeft="@dimen/menu_button_padding_left">
 
                                 <TextView
                                     android:id="@+id/textView6"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Date End"
+                                    android:textColor="@color/menu_bar_button_text"
                                     android:textStyle="bold" />
 
                                 <EditText
@@ -88,34 +92,38 @@
                                     android:layout_height="wrap_content"
                                     android:ems="10"
                                     android:inputType="date"
+                                    android:onClick="showDatePickerDialog"
                                     android:text="@={view_model.toDateStr}"
-                                    android:onClick="showDatePickerDialog"/>
+                                    android:textColor="@color/menu_bar_button_text" />
                         </TableRow>
 
                         <TableRow
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
+                            android:layout_marginBottom="@dimen/search_bar_group_margin"
+                            android:padding="@dimen/menu_button_padding_left">
 
                                 <TextView
                                     android:id="@+id/textView4"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Content  Filter"
+                                    android:textColor="@color/menu_bar_button_text"
                                     android:textStyle="bold" />
 
                                 <Spinner
                                     android:id="@+id/spinnerContent"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:selectedItemPosition="@={view_model.contentTypeIndex}"
-                                    android:entries="@{view_model.contentTypes}" />
+                                    android:entries="@{view_model.contentTypes}"
+                                    android:selectedItemPosition="@={view_model.contentTypeIndex}" />
                         </TableRow>
 
                         <TableRow
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
+                            android:layout_marginBottom="@dimen/search_bar_group_margin"
+                            android:padding="@dimen/menu_button_padding_left">
 
                                 <TextView
                                     android:id="@+id/textView7"
@@ -123,6 +131,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center_vertical"
                                     android:text="Favorite Only"
+                                    android:textColor="@color/menu_bar_button_text"
                                     android:textStyle="bold" />
 
                                 <Switch
@@ -133,15 +142,18 @@
                                     android:textStyle="bold" />
 
                         </TableRow>
+
                         <TableRow
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
+                            android:layout_marginBottom="@dimen/search_bar_group_margin"
+                            android:paddingLeft="@dimen/menu_button_padding_left">
 
                                 <Button
                                     android:id="@+id/buttonOK"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:background="@color/menu_bar_button_background"
                                     android:text="OK" />
                         </TableRow>
                 </TableLayout>

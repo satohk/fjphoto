@@ -17,22 +17,22 @@
                     android:id="@+id/table"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/search_bar_margin"
                     android:layout_marginTop="@dimen/search_bar_margin"
-                    android:layout_marginEnd="@dimen/search_bar_margin"
                     android:layout_marginBottom="@dimen/search_bar_margin">
 
                         <TableRow
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
+                            android:padding="@dimen/menu_button_padding_left">
 
                                 <TextView
                                     android:id="@+id/textView"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Show interval [sec]"
+                                    android:textColor="@color/menu_bar_button_text"
                                     android:textStyle="bold" />
+
                                 <Spinner
                                     android:id="@+id/spinnerSlideshowInterval"
                                     android:layout_width="match_parent"
@@ -49,13 +49,14 @@
                         <TableRow
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
+                            android:padding="@dimen/menu_button_padding_left">
 
                                 <TextView
                                     android:id="@+id/textView2"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Column num"
+                                    android:textColor="@color/menu_bar_button_text"
                                     android:textStyle="bold" />
 
                                 <Spinner
@@ -75,7 +76,7 @@
                         <TableRow
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
+                            android:padding="@dimen/menu_button_padding_left">
 
                                 <TextView
                                     android:id="@+id/textView7"
@@ -83,6 +84,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center_vertical"
                                     android:text="Favorite Only"
+                                    android:textColor="@color/menu_bar_button_text"
                                     android:textStyle="bold" />
 
                                 <Switch
@@ -103,6 +105,7 @@
                                     android:id="@+id/buttonOK"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:background="@color/menu_bar_button_background"
                                     android:text="OK" />
                         </TableRow>
                 </TableLayout>
