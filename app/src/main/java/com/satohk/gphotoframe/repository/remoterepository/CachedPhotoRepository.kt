@@ -2,6 +2,7 @@ package com.satohk.gphotoframe.repository.remoterepository
 
 import android.accounts.NetworkErrorException
 import android.graphics.Bitmap
+import android.util.Log
 import android.util.LruCache
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +18,8 @@ class CachedPhotoRepository(
 ) {
     private val _errorOccured = MutableStateFlow(false)
     val errorOccured: StateFlow<Boolean> get() = _errorOccured
-    fun setError(){
+    private fun setError(){
+        Log.d("CachedPhotoRepository.setError", "this=${this}")
         _errorOccured.value = true
     }
 

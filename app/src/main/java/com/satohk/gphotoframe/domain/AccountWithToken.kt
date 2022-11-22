@@ -4,8 +4,8 @@ enum class ServiceProvider(val url: String){
     GOOGLE("com.google"),
 }
 
-data class Account(
-    val serviceProvider: ServiceProvider,
+data class AccountWithToken(
+    val serviceProviderUrl: String,
     val userName: String,
     val accessToken: String
 )

@@ -10,7 +10,6 @@ import android.widget.Button
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.navArgs
 import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.LoadControl
@@ -20,6 +19,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelector
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.exoplayer2.upstream.DefaultAllocator
 import com.satohk.gphotoframe.R
+import com.satohk.gphotoframe.viewmodel.GridContents
 import com.satohk.gphotoframe.viewmodel.PhotoViewModel
 import kotlinx.android.synthetic.main.fragment_photo.*
 import kotlinx.android.synthetic.main.fragment_photo.view.*
@@ -33,20 +33,27 @@ import java.time.format.DateTimeFormatter
  * Loads a grid of cards with movies to browse.
  */
 class PhotoFragment() : Fragment(R.layout.fragment_photo) {
-    //private val _viewModel by sharedViewModel<PhotoGridWithSideBarViewModel>()
-    private val _args: PhotoFragmentArgs by navArgs()
     private val _viewModel by viewModel<PhotoViewModel>()
     private lateinit var _showImageView: ImageView
     private lateinit var _hideImageView: ImageView
     private lateinit var _videoView: StyledPlayerView
     private var _player: ExoPlayer? = null
+    private var _slideshowMode: Boolean = true
+    private var _startIndex: Int = 0
+    private var _contents: GridContents? = null  // If null, use the value set in Setting
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        Log.d("PhotoFragment", _args.slideShow.toString())
-        Log.d("PhotoFragment", _args.showIndex.toString())
-        Log.d("PhotoFragment", _args.contents.toString())
+        if(arguments != null) {
+            _slideshowMode = arguments!!.getBoolean("slideShow")
+            _startIndex = arguments!!.getInt("showIndex")
+            _contents = arguments!!.get("contents") as GridContents?
+        }
+
+        Log.d("PhotoFragment", _slideshowMode.toString())
+        Log.d("PhotoFragment", _startIndex.toString())
+        Log.d("PhotoFragment", _contents.toString())
 
         _showImageView = view.findViewById(R.id.imageView1)
         _hideImageView = view.findViewById(R.id.imageView2)
@@ -120,7 +127,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     override fun onStart() {
         super.onStart()
         initializeVideoPlayer()
-        _viewModel.onStart(_args.contents, _args.slideShow, _args.showIndex)
+        _viewModel.onStart(_contents, _slideshowMode, _startIndex)
     }
 
     override fun onStop() {
@@ -167,7 +174,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     }
 
     private fun changeImage(bmp: Bitmap){
-        val fadeDuration = if(_args.slideShow) 1500L else 0L // msec
+        val fadeDuration = if(_slideshowMode) 1500L else 0L // msec
 
         _hideImageView.setImageBitmap(bmp)
         ObjectAnimator.ofFloat(_hideImageView, "alpha", 1.0f).apply {

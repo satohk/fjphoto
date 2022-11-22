@@ -173,6 +173,6 @@ class MenuBarViewModel(
     }
 
     fun changeAccount(){
-        _accountState.setActiveAccount(null)
+        _accountState.setAccount(null)
     }
 }

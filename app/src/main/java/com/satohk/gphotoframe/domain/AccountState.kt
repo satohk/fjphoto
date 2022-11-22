@@ -1,6 +1,13 @@
 package com.satohk.gphotoframe.domain
 
-import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataStore
+import android.accounts.Account
+import android.accounts.AccountManager
+import android.accounts.AuthenticatorException
+import android.app.Activity
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
+import com.satohk.gphotoframe.R
 import com.satohk.gphotoframe.repository.localrepository.SettingRepository
 import com.satohk.gphotoframe.repository.remoterepository.CachedPhotoRepository
 import com.satohk.gphotoframe.repository.remoterepository.GooglePhotoRepository
@@ -10,9 +17,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import org.koin.java.KoinJavaComponent.inject
 
-class AccountState {
-    private val _activeAccount = MutableStateFlow<Account?>(null)
-    val activeAccount: StateFlow<Account?> get() = _activeAccount
+class AccountState(private val _context: Context) {
+    private val _activeAccount = MutableStateFlow<AccountWithToken?>(null)
+    val activeAccount: StateFlow<AccountWithToken?> get() = _activeAccount
 
     private val _photoRepository = MutableStateFlow<CachedPhotoRepository?>(null)
     val photoRepository: StateFlow<CachedPhotoRepository?> get() = _photoRepository
@@ -21,7 +28,24 @@ class AccountState {
 
     private val _scope = CoroutineScope(Job() + Dispatchers.IO)
 
-    fun setActiveAccount(account: Account?){
+    fun requestToken(providerUrl:String, userName:String, activity: Activity){
+        Log.d("setActiveAccount", "${providerUrl}, ${userName}")
+        val account = Account(userName, providerUrl)
+        val manager = AccountManager.get(_context)
+        val authTokenType = "oauth2:https://www.googleapis.com/auth/photoslibrary.readonly"
+        manager.getAuthToken(account, authTokenType, null, activity,
+            { accountManagerFuture ->
+                try {
+                    val result = accountManagerFuture.result
+                    val token = result.getString(AccountManager.KEY_AUTHTOKEN)
+                    setAccount(AccountWithToken(providerUrl, userName, token!!))
+                } catch (e: AuthenticatorException) {
+                    e.printStackTrace()
+                }
+            }, null)
+    }
+
+    fun setAccount(account:AccountWithToken?){
         _activeAccount.value = account
 
         account?.let {
@@ -32,12 +56,19 @@ class AccountState {
 
         val repo = this.makePhotoRepository(account)
         _photoRepository.value = repo
+        Log.d("setActiveAccount", "_photoRepository.value=${_photoRepository.value}")
 
         repo?.let { it ->
             val scope = CoroutineScope(Job() + Dispatchers.Main)
             scope.launch {
                 it.errorOccured.collect { error ->
-                    if(error) {
+                    if(error && _photoRepository.value != null) {
+                        Log.d("AccountState", "errorOccured. current account $_activeAccount.value")
+                        _activeAccount.value?.let {
+                            Toast.makeText(_context, _context.getText(R.string.msg_network_error), Toast.LENGTH_LONG).show()
+                            val manager = AccountManager.get(_context)
+                            manager.invalidateAuthToken(it.serviceProviderUrl, it.accessToken)
+                        }
                         _activeAccount.value = null
                         _photoRepository.value = null
                         scope.cancel()
@@ -45,15 +76,17 @@ class AccountState {
                 }
             }
         }
+
     }
 
-    private fun makePhotoRepository(account: Account?): CachedPhotoRepository? {
+    private fun makePhotoRepository(account: AccountWithToken?): CachedPhotoRepository? {
         if (account == null) {
             return null
         }
-        val repo = when (account.serviceProvider) {
-            ServiceProvider.GOOGLE -> GooglePhotoRepository(account.accessToken)
+        val repo = when (account.serviceProviderUrl) {
+            ServiceProvider.GOOGLE.url -> GooglePhotoRepository(account.accessToken)
             //ServiceProvider.GOOGLE -> TestPhotoRepository(account.accessToken)
+            else -> GooglePhotoRepository(account.accessToken)
         }
 
         return CachedPhotoRepository(repo)

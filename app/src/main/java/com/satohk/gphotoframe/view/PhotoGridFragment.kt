@@ -47,6 +47,9 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
             view.findNavController().navigate(action)
         }
 
+        val setToSlideshowButton = view.findViewById<Button>(R.id.setToSlideshowButton)
+        setToSlideshowButton.setOnClickListener { _viewModel.onClickSetToSlideshowButton() }
+
         val slideShowButton = view.findViewById<Button>(R.id.playButton)
         slideShowButton.setOnClickListener{ _viewModel.onClickSlideshowButton() }
 

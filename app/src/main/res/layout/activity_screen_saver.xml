@@ -2,19 +2,17 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_browse_fragment"
+    android:id="@+id/screen_saver_frame_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/default_background"
-    tools:context=".view.MainActivity"
+    tools:context=".view.ScreenSaverActivity"
     tools:deviceIds="tv"
     tools:ignore="MergeRootFrame">
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragmentContainerView"
-        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:id="@+id/fragmentContainerViewSreenSaver"
+        android:name="com.satohk.gphotoframe.view.PhotoFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:defaultNavHost="true"
-        app:navGraph="@navigation/nav_graph" />
+        android:layout_height="match_parent" />
 </FrameLayout>

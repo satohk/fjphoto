@@ -151,6 +151,14 @@ class PhotoGridViewModel(
         }
     }
 
+    fun onClickSetToSlideshowButton(){
+        _gridContents?.let{
+            viewModelScope.launch {
+                _accountState.settingRepository.setScreensaverSearchQuery(it.searchQuery)
+            }
+        }
+    }
+
     data class PhotoGridItem(
         val photoMetaData: PhotoMetadata
     ) {

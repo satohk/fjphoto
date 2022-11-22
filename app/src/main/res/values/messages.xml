@@ -1,0 +1,3 @@
+<resources>
+    <string name="msg_network_error">Communication error has occurred. Log in again.</string>
+</resources>

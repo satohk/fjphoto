@@ -1,8 +1,10 @@
 package com.satohk.gphotoframe.viewmodel
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.satohk.gphotoframe.domain.AccountState
+import com.satohk.gphotoframe.domain.ServiceProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -15,6 +17,8 @@ class MainViewModel : ViewModel() {
 
     private val _activeUserName = MutableStateFlow<String?>(null)
     val activeUserName: StateFlow<String?> get() = _activeUserName
+    private var _serviceProvider: ServiceProvider = ServiceProvider.GOOGLE
+    val serviceProviderUrl = _serviceProvider.url
 
     init{
         viewModelScope.launch{
@@ -27,5 +31,9 @@ class MainViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    fun setAccount(providerUrl:String, username:String, activity: Activity){
+        _accountState.requestToken(providerUrl, username, activity)
     }
 }

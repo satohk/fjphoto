@@ -33,7 +33,7 @@ class PhotoViewModel(
     var currentPhotoMetadata: PhotoMetadata? = null
         private set
 
-    private var _gridContents: GridContents? = null
+    private var _gridContents: GridContents = GridContents()
 
     private var _filteredPhotoList: FilteredPhotoList? = null
     private var _photoSelector: PhotoSelector? = null
@@ -48,12 +48,19 @@ class PhotoViewModel(
         }.launchIn(viewModelScope)
     }
 
-    fun onStart(gridContents: GridContents, slideShow: Boolean, showIndex: Int){
+    fun onStart(gridContents: GridContents?, slideShow: Boolean, showIndex: Int){
         if(_accountState.photoRepository.value != null){
-            _gridContents = gridContents
+            if (gridContents != null) {
+                _gridContents = gridContents
+            }
+            else{
+                _gridContents = GridContents(
+                    _accountState.settingRepository.setting.value.screensaverSearchQuery
+                )
+            }
             _slideShow = slideShow
             _showIndex = showIndex
-            initPhotoSelector(_accountState.photoRepository.value!!, gridContents, slideShow, showIndex)
+            initPhotoSelector(_accountState.photoRepository.value!!, _gridContents, _slideShow, _showIndex)
         }
     }
 
