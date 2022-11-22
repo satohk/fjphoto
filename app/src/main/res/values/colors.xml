@@ -21,4 +21,8 @@
     <color name="default_grid_item">#3d3d3d</color>
 
     <color name="blank_image">#000000</color>
+
+    <color name="menu_bar_button_text">#CCFFFFFF</color>
+    <color name="menu_bar_button_background">#00000000</color>
+    <color name="menu_bar_button_background_highlight">#88666666</color>
 </resources>

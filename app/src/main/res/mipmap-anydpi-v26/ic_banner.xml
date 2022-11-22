@@ -3,6 +3,6 @@
     <background android:drawable="@color/ic_banner_background"/>
     <foreground>
         <inset android:drawable="@mipmap/ic_banner_foreground"
-            android:inset="12%"/>
+            android:inset="20%"/>
     </foreground>
 </adaptive-icon>
