@@ -3,30 +3,30 @@
     <item android:state_enabled="false">
         <shape android:shape="rectangle"  >
             <corners android:radius="32dp" />
-            <solid android:color="@color/button_background"/>
+            <solid android:color="@color/menu_bar_button_background"/>
         </shape>
     </item>
     <item android:state_checked="true">
         <shape android:shape="rectangle"  >
             <corners android:radius="32dp" />
-            <solid android:color="@color/button_checked_background"/>
+            <solid android:color="@color/menu_bar_button_background_selected"/>
         </shape>
     </item>
     <item android:state_pressed="true" >
         <shape android:shape="rectangle"  >
             <corners android:radius="32dp" />
-            <solid android:color="@color/button_background"/>
+            <solid android:color="@color/menu_bar_button_background"/>
         </shape>
     </item>
     <item android:state_focused="true">
         <shape android:shape="rectangle"  >
             <corners android:radius="32dp" />
-            <solid android:color="@color/button_background"/>
+            <solid android:color="@color/menu_bar_button_background_highlight"/>
         </shape>
     </item>
     <item >
         <shape android:shape="rectangle"  >
-            <solid android:color="@color/menu_bar_background"/>
+            <solid android:color="@color/menu_bar_button_background"/>
             <corners android:radius="32dp" />
         </shape>
     </item>
