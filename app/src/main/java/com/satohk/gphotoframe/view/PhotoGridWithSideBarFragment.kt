@@ -94,7 +94,8 @@ class PhotoGridWithSideBarFragment() : Fragment(R.layout.fragment_photo_grid_wit
                         )
                     }
                     else{
-                        requireActivity().onBackPressed()
+                        Log.d("onBackPressedDispatcher", "requireActivity().onBackPressed()")
+                        requireActivity().finish()
                     }
                 }
             }

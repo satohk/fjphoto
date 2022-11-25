@@ -29,7 +29,6 @@ import org.koin.androidx.viewmodel.ext.android.sharedViewModel
  */
 class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
     private val _viewModel by sharedViewModel<PhotoGridViewModel>()
-    private val _numberOfColumns = 6
     private lateinit var _recyclerView: RecyclerView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -54,8 +53,8 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
         slideShowButton.setOnClickListener{ _viewModel.onClickSlideshowButton() }
 
         val selectModeToggleButton = view.findViewById<ToggleButton>(R.id.selectModeToggleButton)
-        selectModeToggleButton.setOnCheckedChangeListener { _, isChecked -> _viewModel.isSelectMode.value = isChecked }
-        _viewModel.isSelectMode.value = selectModeToggleButton.isChecked
+        selectModeToggleButton.setOnCheckedChangeListener { _, isChecked -> _viewModel.isSelectMode = isChecked }
+        _viewModel.isSelectMode = selectModeToggleButton.isChecked
     }
 
     private fun initRecyclerView(view: View){
@@ -67,11 +66,7 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
 
         // event handler
         adapter.onClick = fun(_:View?, position:Int){
-            Log.i(
-                "TAG",
-                "You clicked number " + position
-                    .toString() + ", which is at cell position " + position
-            )
+            _viewModel.onClickItem(position)
         }
         adapter.onFocus = fun(_:View?, position:Int) {
             _viewModel.focusIndex = position
@@ -83,7 +78,7 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
         }
         adapter.onKeyDown = fun(view:View?, position:Int, keyEvent: KeyEvent):Boolean{
             if(view != null) {
-                Log.i("keydown", view?.x.toString())
+                Log.d("keydown", view?.x.toString())
                 if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && (view.x < 10.0f)) {
                     _viewModel.goBack()
                 }
@@ -122,6 +117,13 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
                 launch{
                     _viewModel.numColumns.collect{
                         _recyclerView.layoutManager = GridLayoutManager(requireContext(), it)
+                    }
+                }
+                launch{
+                    _viewModel.changedItemIndex.collect{
+                        val holder = _recyclerView.findViewHolderForAdapterPosition(_viewModel.focusIndex)
+                            as PhotoAdapter.PhotoViewHolder?
+                        holder?.photoGridItem = _viewModel.itemList[it]
                     }
                 }
             }

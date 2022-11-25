@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DiffUtil
 import com.satohk.gphotoframe.domain.*
 import com.satohk.gphotoframe.repository.data.PhotoMetadata
+import com.satohk.gphotoframe.repository.data.PhotoMetadataLocal
+import com.satohk.gphotoframe.repository.data.SearchQuery
+import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
@@ -14,7 +17,8 @@ import kotlinx.coroutines.withContext
 
 
 class PhotoGridViewModel(
-    private val _accountState: AccountState
+    private val _accountState: AccountState,
+    private val _photoMetadataLocalRepository: PhotoMetadataLocalRepository
 ) : SideBarActionPublisherViewModel() {
     private var _gridContents: GridContents? = null
     val gridContents: GridContents? get() = _gridContents
@@ -40,8 +44,10 @@ class PhotoGridViewModel(
     val dataSize: StateFlow<Int> get() = _dataSize
     private val _numColumns = MutableStateFlow<Int>(6)
     val numColumns: StateFlow<Int> get() = _numColumns
+    private val _changedItemIndex = MutableSharedFlow<Int>()
+    val changedItemIndex = _changedItemIndex.asSharedFlow()
 
-    val isSelectMode: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    var isSelectMode: Boolean = false
 
     var onChangeToPhotoViewListener: ((gridContents:GridContents, autoPlay:Boolean, position:Int) -> Unit)? = null
 
@@ -91,7 +97,7 @@ class PhotoGridViewModel(
         }
     }
 
-    fun loadNextImageList() {
+    private fun loadNextImageList() {
         Log.i("loadNextImageList", "Thread  = %s(%d)".format(Thread.currentThread().name, Thread.currentThread().id))
         if((_accountState.photoRepository.value != null) && (_dataLoadJob == null) && (_gridContents != null) && (_filteredPhotoList != null)){
             _dataLoadJob = viewModelScope.launch {
@@ -140,8 +146,26 @@ class PhotoGridViewModel(
     }
 
     fun onClickItem(position: Int){
-        _gridContents?.run {
-            onChangeToPhotoViewListener?.invoke(this, false, position)
+        if(isSelectMode){
+            val newItem = PhotoGridItem(
+                PhotoMetadata(
+                    PhotoMetadataLocal(!_itemList[position].photoMetaData.metadataLocal.favorite),
+                    _itemList[position].photoMetaData.metadataRemote
+                )
+            )
+            _itemList[position] = newItem
+            viewModelScope.launch {
+                _photoMetadataLocalRepository.set(
+                    newItem.photoMetaData.metadataRemote.id,
+                    newItem.photoMetaData.metadataLocal
+                )
+                _changedItemIndex.emit(position)
+            }
+        }
+        else {
+            _gridContents?.run {
+                onChangeToPhotoViewListener?.invoke(this, false, position)
+            }
         }
     }
 

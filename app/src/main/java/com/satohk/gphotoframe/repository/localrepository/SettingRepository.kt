@@ -49,7 +49,7 @@ class SettingRepository(private val db: AppDatabase) {
         _userName = userName
     }
 
-    suspend fun save(newSetting: Setting){
+    private suspend fun save(newSetting: Setting){
         val format = Json { encodeDefaults = false }
         val screensaverSearchQueryStr = format.encodeToString(newSetting.screensaverSearchQuery)
         val settingEntity = SettingEntity(

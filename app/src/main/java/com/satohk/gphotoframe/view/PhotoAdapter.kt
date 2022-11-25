@@ -13,7 +13,7 @@ import android.util.Log
 import android.view.KeyEvent
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
 
-class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewModel.PhotoGridItem>):
+class PhotoAdapter internal constructor(private val _list: List<PhotoGridItem>):
     RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
 
     var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
@@ -34,14 +34,9 @@ class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewMod
 
     // binds the data
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
-        holder._position = position
-        holder.onClick = this.onClick
-        holder.onKeyDown = this.onKeyDown
-        holder.onFocus = this.onFocus
+        holder.position = position
         holder.binding.imageView.setImageResource(R.drawable.default_background)
-        loadThumbnail?.invoke(_list[position], 256, 256){
-            holder.setImage(it)
-        }
+        holder.photoGridItem = _list[position]
     }
 
     override fun getItemCount(): Int {
@@ -52,23 +47,38 @@ class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewMod
     class PhotoViewHolder internal constructor(binding: GridItemBinding)
         : RecyclerView.ViewHolder(binding.root) {
 
-        var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
-        var onClick: ((view:View?, position:Int) -> Unit)? = null
-        var onFocus: ((view:View?, position:Int) -> Unit)? = null
-
-        internal var _position: Int = 0
+        internal var position: Int = 0
         private val _binding: GridItemBinding
         internal val binding: GridItemBinding get() = _binding
+        private val _adapter: PhotoAdapter
+            get(){ return this.bindingAdapter as PhotoAdapter }
+
+        var photoGridItem: PhotoGridItem? = null
+            set(value){
+                value?.let {
+                    if (field == null || (field!!.photoMetaData.metadataRemote.id != value.photoMetaData.metadataRemote.id)) {
+                        _adapter.loadThumbnail?.invoke(value, 256, 256) {
+                            setImage(it)
+                        }
+                    }
+                    binding.aiIcon.visibility =
+                        if (value.photoMetaData.metadataLocal.favorite)
+                            View.VISIBLE
+                        else
+                            View.INVISIBLE
+                }
+                field = value
+            }
 
         init {
             itemView.setOnClickListener { view ->
-                onClick?.invoke(view, _position)
+                _adapter.onClick?.invoke(view, position)
             }
             itemView.setOnFocusChangeListener { view, b ->
                 if(b) {
                     view.setBackgroundColor(Color.WHITE)
-                    Log.d("setonfocuschange", _position.toString())
-                    onFocus?.invoke(view, _position)
+                    Log.d("setonfocuschange", position.toString())
+                    _adapter.onFocus?.invoke(view, position)
                 }
                 else{
                     view.setBackgroundResource(R.color.default_background)
@@ -76,9 +86,9 @@ class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewMod
             }
             itemView.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
                 if(keyEvent.action == KeyEvent.ACTION_DOWN) {
-                    return@setOnKeyListener onKeyDown?.invoke(
+                    return@setOnKeyListener _adapter.onKeyDown?.invoke(
                         view,
-                        _position,
+                        position,
                         keyEvent
                     ) == true
                 }
@@ -87,7 +97,7 @@ class PhotoAdapter internal constructor(private val _list: List<PhotoGridViewMod
             _binding = binding
         }
 
-        fun setImage(bitmap: Bitmap?){
+        private fun setImage(bitmap: Bitmap?){
             if(bitmap != null) {
                 binding.imageView.setImageBitmap(bitmap)
             }

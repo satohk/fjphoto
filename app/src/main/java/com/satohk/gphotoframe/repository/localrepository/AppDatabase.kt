@@ -28,13 +28,16 @@ data class PhotoMetadataEntity(
 @Dao
 interface PhotoMetadataDao {
     @Query("SELECT * FROM photo_metadata where id=:id")
-    fun findById(id: String): PhotoMetadataEntity
+    fun findById(id: String): List<PhotoMetadataEntity>
+
+    @Query("SELECT * FROM photo_metadata")
+    fun findAll(): List<PhotoMetadataEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun save(metadata: PhotoMetadataEntity)
 
-    @Delete
-    fun delete(metadata: PhotoMetadataEntity)
+    @Query("DELETE FROM photo_metadata where id=:id")
+    fun delete(id: String)
 }
 
 @Database(entities = [SettingEntity::class, PhotoMetadataEntity::class], version = 1, exportSchema=false)

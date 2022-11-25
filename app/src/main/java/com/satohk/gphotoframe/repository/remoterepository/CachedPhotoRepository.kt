@@ -10,12 +10,18 @@ import java.lang.Math.min
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import com.satohk.gphotoframe.repository.data.Album
+import com.satohk.gphotoframe.repository.data.PhotoMetadata
 import com.satohk.gphotoframe.repository.data.PhotoMetadataRemote
 import com.satohk.gphotoframe.repository.data.SearchQueryRemote
+import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepository
+import org.koin.java.KoinJavaComponent
 
 class CachedPhotoRepository(
     private val _photoRepository: PhotoRepository
 ) {
+    private val _photoMetadataLocalRepository: PhotoMetadataLocalRepository by
+                                KoinJavaComponent.inject(PhotoMetadataLocalRepository::class.java)
+
     private val _errorOccured = MutableStateFlow(false)
     val errorOccured: StateFlow<Boolean> get() = _errorOccured
     private fun setError(){
@@ -56,7 +62,7 @@ class CachedPhotoRepository(
         return _photoMetadataCache.get(key).allLoaded
     }
 
-    suspend fun getPhotoMetadataList(offset:Int, size:Int, searchQuery: SearchQueryRemote?):List<PhotoMetadataRemote>{
+    suspend fun getPhotoMetadataList(offset:Int, size:Int, searchQuery: SearchQueryRemote?):List<PhotoMetadata>{
         val key = arg2str(searchQuery)
         var list = _photoMetadataCache.get(key)
 
@@ -81,7 +87,13 @@ class CachedPhotoRepository(
         }
 
         return if((list != null) && (list.size >= offset)){
-            list.photoMetadataList.subList(offset, min(offset + size, list.size))
+            list.photoMetadataList.subList(offset, min(offset + size, list.size)).map{
+                it ->
+                PhotoMetadata(
+                    _photoMetadataLocalRepository.get(it.id),
+                    it
+                )
+            }
         } else{
             listOf()
         }
