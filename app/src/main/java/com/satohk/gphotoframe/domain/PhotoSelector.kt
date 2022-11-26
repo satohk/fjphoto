@@ -30,7 +30,7 @@ class PhotoSelector(
 
         // calc next point
         if (_selectMode == SelectMode.RANDOM) {
-            _currentPoint = (Math.random() * _photoList.list.size).toInt()
+            _currentPoint = (Math.random() * _photoList.size).toInt()
         } else { // sequential
             _currentPoint += step
         }
@@ -38,17 +38,17 @@ class PhotoSelector(
         // load
         if (!_photoList.allLoaded){
             val size = max(
-                _currentPoint - _photoList.list.size + _bulkLoadCount,
+                _currentPoint - _photoList.size + _bulkLoadCount,
                 _bulkLoadCount
             )
-            _photoList.getFilteredPhotoMetadataList(_photoList.list.size, size)
+            _photoList.loadNext(size)
         }
 
         // fix currentPoint
         if(_currentPoint < 0){
-            _currentPoint = _photoList.list.size - 1
+            _currentPoint = _photoList.size - 1
         }
-        else if (_currentPoint >= _photoList.list.size - 1){
+        else if (_currentPoint >= _photoList.size - 1){
             _currentPoint = 0
         }
 
@@ -57,8 +57,8 @@ class PhotoSelector(
         delay(max(waitMillisec - elapsedTimeMilliSec, 0))
 
         // set current photo
-        if(_currentPoint < _photoList.list.size) {
-            _currentPhotoMetadata.value = _photoList.list[_currentPoint]
+        if(_currentPoint < _photoList.size) {
+            _currentPhotoMetadata.value = _photoList[_currentPoint]
         }
     }
 

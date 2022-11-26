@@ -3,18 +3,19 @@ package com.satohk.gphotoframe.viewmodel
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.viewModelScope
-import androidx.recyclerview.widget.DiffUtil
 import com.satohk.gphotoframe.domain.*
 import com.satohk.gphotoframe.repository.data.PhotoMetadata
 import com.satohk.gphotoframe.repository.data.PhotoMetadataLocal
-import com.satohk.gphotoframe.repository.data.SearchQuery
 import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.logging.Filter
 
+
+typealias PhotoGridItem = PhotoMetadata
 
 class PhotoGridViewModel(
     private val _accountState: AccountState,
@@ -25,8 +26,6 @@ class PhotoGridViewModel(
     private val _readPageSize = 10
     private val _readNum = 6
     private var _dataLoadJob: Job? = null
-    var lastDataSize: Int = 0
-        private set
     var focusIndex: Int = 0
         set(value){
             field = value
@@ -38,8 +37,6 @@ class PhotoGridViewModel(
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
-    private val _itemList = mutableListOf<PhotoGridItem>()
-    val itemList:List<PhotoGridItem> get(){return _itemList}
     private val _dataSize = MutableStateFlow<Int>(0)
     val dataSize: StateFlow<Int> get() = _dataSize
     private val _numColumns = MutableStateFlow<Int>(6)
@@ -51,7 +48,7 @@ class PhotoGridViewModel(
 
     var onChangeToPhotoViewListener: ((gridContents:GridContents, autoPlay:Boolean, position:Int) -> Unit)? = null
 
-    private var _filteredPhotoList: FilteredPhotoList? = null
+    val gridItemList = PhotoGridItemList()
 
     init{
         _accountState.photoRepository.onEach {
@@ -81,9 +78,7 @@ class PhotoGridViewModel(
                 _dataLoadJob = null
 
                 _gridContents = gridContents
-                _filteredPhotoList = FilteredPhotoList(_accountState.photoRepository.value!!, gridContents.searchQuery)
-                _itemList.clear()
-                lastDataSize = dataSize.value
+                gridItemList._filteredPhotoList = FilteredPhotoList(_accountState.photoRepository.value!!, gridContents.searchQuery)
                 _dataLoadJob = null
                 _dataSize.emit(0)
                 _loading.emit(false)
@@ -93,23 +88,18 @@ class PhotoGridViewModel(
         else{
             // photoRepositoryが決定してから再度setGridContentsを呼び出すために、gridContentの値は保持しておく
             _gridContents = gridContents
-            _filteredPhotoList = null
+            gridItemList._filteredPhotoList = null
         }
     }
 
     private fun loadNextImageList() {
         Log.i("loadNextImageList", "Thread  = %s(%d)".format(Thread.currentThread().name, Thread.currentThread().id))
-        if((_accountState.photoRepository.value != null) && (_dataLoadJob == null) && (_gridContents != null) && (_filteredPhotoList != null)){
+        if((_accountState.photoRepository.value != null) && (_dataLoadJob == null) && (_gridContents != null) && (gridItemList._filteredPhotoList != null)){
             _dataLoadJob = viewModelScope.launch {
                 _loading.emit(true)
                 for(i in 1.._readNum) {
-                    val photoMetaList = _filteredPhotoList!!.getFilteredPhotoMetadataList(
-                        _itemList.size,
-                        _readPageSize
-                    )
-                    _itemList.addAll(photoMetaList.map { PhotoGridItem(it) })
-                    lastDataSize = _dataSize.value
-                    _dataSize.emit(_dataSize.value + photoMetaList.size)
+                    gridItemList.loadNext(_readPageSize)
+                    _dataSize.emit(gridItemList._filteredPhotoList!!.size)
                 }
                 _dataLoadJob = null
                 _loading.emit(false)
@@ -120,13 +110,13 @@ class PhotoGridViewModel(
         }
     }
 
-    fun loadThumbnail(photoGridItem: PhotoGridItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit) {
+    fun loadThumbnail(photoMetadata: PhotoMetadata, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit) {
         if(_accountState.photoRepository.value != null) {
             viewModelScope.launch {
                 var bmp: Bitmap? = null
                 withContext(Dispatchers.IO) {
                     bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
-                        photoGridItem.photoMetaData.metadataRemote,
+                        photoMetadata.metadataRemote,
                         width,
                         height,
                         true
@@ -147,19 +137,19 @@ class PhotoGridViewModel(
 
     fun onClickItem(position: Int){
         if(isSelectMode){
-            val newItem = PhotoGridItem(
-                PhotoMetadata(
-                    PhotoMetadataLocal(!_itemList[position].photoMetaData.metadataLocal.favorite),
-                    _itemList[position].photoMetaData.metadataRemote
+            gridItemList._filteredPhotoList?.let {
+                val newItem = PhotoMetadata(
+                    PhotoMetadataLocal(!it[position].metadataLocal.favorite),
+                    it[position].metadataRemote
                 )
-            )
-            _itemList[position] = newItem
-            viewModelScope.launch {
-                _photoMetadataLocalRepository.set(
-                    newItem.photoMetaData.metadataRemote.id,
-                    newItem.photoMetaData.metadataLocal
-                )
-                _changedItemIndex.emit(position)
+                it[position] = newItem
+                viewModelScope.launch {
+                    _photoMetadataLocalRepository.set(
+                        newItem.metadataRemote.id,
+                        newItem.metadataLocal
+                    )
+                    _changedItemIndex.emit(position)
+                }
             }
         }
         else {
@@ -183,21 +173,31 @@ class PhotoGridViewModel(
         }
     }
 
-    data class PhotoGridItem(
-        val photoMetaData: PhotoMetadata
-    ) {
-        companion object {
-            val DIFF_UTIL = object: DiffUtil.ItemCallback<PhotoGridItem>() {
-                override fun areItemsTheSame(oldItem: PhotoGridItem, newItem: PhotoGridItem)
-                        : Boolean {
-                    return oldItem.photoMetaData.metadataRemote.url == newItem.photoMetaData.metadataRemote.url
-                }
+    class PhotoGridItemList{
+        // If the list is changed in another thread and the size of the list changes before the RecyclerView is updated,
+        // an error will occur, so save the list size
 
-                override fun areContentsTheSame(oldItem: PhotoGridItem, newItem: PhotoGridItem)
-                        : Boolean {
-                    return oldItem == newItem
+        internal var _filteredPhotoList: FilteredPhotoList? = null
+            set(value){
+                field = value
+                size = if(_filteredPhotoList == null) {
+                    0
+                } else{
+                    _filteredPhotoList!!.size
                 }
             }
+
+        suspend fun loadNext(count:Int){
+            _filteredPhotoList?.let {
+                it.loadNext(count)
+                size = it.size
+            }
         }
+
+        operator fun get(i:Int):PhotoGridItem{
+            return _filteredPhotoList!![i]
+        }
+        var size:Int = 0
+            private set
     }
 }

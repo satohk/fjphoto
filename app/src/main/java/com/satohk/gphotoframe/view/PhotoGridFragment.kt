@@ -18,6 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import com.satohk.gphotoframe.viewmodel.GridContents
+import com.satohk.gphotoframe.viewmodel.PhotoGridItem
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
@@ -61,7 +62,7 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
         // set up the RecyclerView
         _recyclerView = view.findViewById(R.id.photo_grid)
         _recyclerView.layoutManager = GridLayoutManager(requireContext(), _viewModel.numColumns.value)
-        val adapter = PhotoAdapter(_viewModel.itemList)
+        val adapter = PhotoAdapter(_viewModel.gridItemList)
         adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
 
         // event handler
@@ -89,7 +90,7 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
             return false
         }
 
-        adapter.loadThumbnail = fun(photoGridItem: PhotoGridViewModel.PhotoGridItem, width:Int?, height:Int?, callback:(bmp: Bitmap?)->Unit) {
+        adapter.loadThumbnail = fun(photoGridItem: PhotoGridItem, width:Int?, height:Int?, callback:(bmp: Bitmap?)->Unit) {
             _viewModel.loadThumbnail(photoGridItem, width, height, callback)
         }
 
@@ -99,14 +100,7 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     _viewModel.dataSize.collect {
-                        if (_viewModel.dataSize.value == 0) {
-                            adapter.notifyItemRangeRemoved(0, _viewModel.lastDataSize)
-                        } else {
-                            adapter.notifyItemRangeInserted(
-                                _viewModel.lastDataSize,
-                                _viewModel.dataSize.value - _viewModel.lastDataSize
-                            )
-                        }
+                        adapter.notifyDataChange()
                     }
                 }
                 launch{
@@ -123,7 +117,7 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
                     _viewModel.changedItemIndex.collect{
                         val holder = _recyclerView.findViewHolderForAdapterPosition(_viewModel.focusIndex)
                             as PhotoAdapter.PhotoViewHolder?
-                        holder?.photoGridItem = _viewModel.itemList[it]
+                        holder?.photoGridItem = _viewModel.gridItemList[it]
                     }
                 }
             }
