@@ -66,11 +66,10 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
 
         var photoGridItem: PhotoGridItem? = null
             set(value){
+                Log.d("photoGridItem", "position=${position}, photoGridItem=${value?.metadataRemote?.url}")
                 value?.let {
-                    if (field == null || (field!!.metadataRemote.id != value.metadataRemote.id)) {
-                        _adapter?.loadThumbnail?.invoke(value, 256, 256) {
-                            setImage(it)
-                        }
+                    _adapter?.loadThumbnail?.invoke(value, 256, 256) {
+                        setImage(it)
                     }
                     binding.aiIcon.visibility =
                         if (value.metadataLocal.favorite)

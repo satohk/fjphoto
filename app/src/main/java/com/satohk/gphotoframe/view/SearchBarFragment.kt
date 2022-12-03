@@ -2,6 +2,7 @@ package com.satohk.gphotoframe.view
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -91,7 +92,7 @@ class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
         val keyHandleView: List<View> = listOf(
             binding.spinnerMediaType,
             binding.spinnerContent,
-            binding.switchFavorite,
+            binding.switchFilter,
             binding.buttonOK
         )
         keyHandleView.forEach{v: View ->
@@ -101,6 +102,11 @@ class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
         binding.buttonOK.setOnClickListener{_viewModel.enterToGrid()}
         binding.editTextFromDate.setOnClickListener(showDatePicker)
         binding.editTextToDate.setOnClickListener(showDatePicker)
+
+        binding.switchFilter.setOnClickListener {
+            Log.d("switchFilter onclick", binding.switchFilter.isChecked.toString())
+            _viewModel.enableFilter.value = binding.switchFilter.isChecked
+        }
     }
 
     override fun onFocus(){

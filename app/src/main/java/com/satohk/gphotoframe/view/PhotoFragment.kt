@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.webkit.WebView
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
@@ -96,7 +97,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         }
 
         dummyButton.setOnFocusChangeListener { view, b ->
-            Log.d("PhotoFragment", "dummyButton focus " + b.toString())
+            Log.d("PhotoFragment", "dummyButton focus $b")
             if(b) {
                 if(_currentMediaView is StyledPlayerView){
                     (_currentMediaView as StyledPlayerView).hideController()

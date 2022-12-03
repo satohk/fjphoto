@@ -4,14 +4,17 @@ import androidx.lifecycle.viewModelScope
 import com.satohk.gphotoframe.domain.AccountState
 import com.satohk.gphotoframe.repository.data.MediaType
 import com.satohk.gphotoframe.repository.data.SearchQuery
+import com.satohk.gphotoframe.repository.data.SearchQueryLocal
 import com.satohk.gphotoframe.repository.data.SearchQueryRemote
+import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepository
 import kotlinx.coroutines.flow.*
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
 
 class SearchBarViewModel(
-    _accountState: AccountState
+    _accountState: AccountState,
+    private val _photoMetadataLocalRepo: PhotoMetadataLocalRepository
     ) : SideBarActionPublisherViewModel() {
 
     private val _mediaType: String? get() = Utils.spinnerIndex2str(mediaTypeIndex.value, mediaTypes)
@@ -23,6 +26,7 @@ class SearchBarViewModel(
     val contentTypeIndex: MutableStateFlow<Int> = MutableStateFlow(0)
     val fromDateStr: MutableStateFlow<String> = MutableStateFlow("")
     val toDateStr: MutableStateFlow<String> = MutableStateFlow("")
+    val enableFilter = MutableStateFlow(false)
 
     private val _contentTypes: MutableStateFlow<List<String>> = MutableStateFlow(listOf())
     val contentTypes: StateFlow<List<String>> get() = _contentTypes
@@ -41,9 +45,10 @@ class SearchBarViewModel(
         contentTypeIndex.onEach{ changeGridContents() }.launchIn(viewModelScope)
         fromDateStr.onEach{ changeGridContents() }.launchIn(viewModelScope)
         toDateStr.onEach{ changeGridContents() }.launchIn(viewModelScope)
+        enableFilter.onEach{ changeGridContents() }.launchIn(viewModelScope)
     }
 
-    private fun getGridContents(): GridContents {
+    private suspend fun getGridContents(): GridContents {
         val from = if (fromDate !== null) fromDate else ZonedDateTime.of(
             1,
             1,
@@ -64,6 +69,7 @@ class SearchBarViewModel(
             0,
             ZoneId.systemDefault()
         )
+        val urlList = _photoMetadataLocalRepo.getAll().map{ it -> it.url}
         return GridContents(
             searchQuery = SearchQuery(
                 queryRemote = SearchQueryRemote(
@@ -71,6 +77,11 @@ class SearchBarViewModel(
                     startDate = from,
                     endDate = to,
                     mediaType = if (_mediaType !== null) MediaType.valueOf(_mediaType!!) else MediaType.ALL
+                ),
+                queryLocal = SearchQueryLocal(
+                    aiFilterEnabled=enableFilter.value,
+                    aiFilterThreshold=0.0f,
+                    aiFilterReferenceDataUrlList=urlList
                 )
             )
         )
@@ -92,7 +103,7 @@ class SearchBarViewModel(
         publishAction(action)
     }
 
-    private fun changeGridContents(){
+    private suspend fun changeGridContents(){
         val action = SideBarAction(
             SideBarActionType.CHANGE_GRID,
             gridContents = getGridContents()

@@ -10,11 +10,7 @@ class InferenceModelLoader(context: Context) {
         NnApiDelegate()
     }
 
-    private val labels by lazy {
-        FileUtil.loadLabels(context, LABELS_PATH)
-    }
-
-    private val tflite by lazy {
+    val tflite by lazy {
         Interpreter(
             FileUtil.loadMappedFile(context, MODEL_PATH),
             Interpreter.Options().addDelegate(nnApiDelegate))
@@ -26,7 +22,6 @@ class InferenceModelLoader(context: Context) {
     }
 
     companion object {
-        private const val MODEL_PATH = "coco_ssd_mobilenet_v1_1.0_quant.tflite"
-        private const val LABELS_PATH = "coco_ssd_mobilenet_v1_1.0_labels.txt"
+        private const val MODEL_PATH = "lite-model_imagenet_mobilenet_v3_small_100_224_feature_vector_5_default_1.tflite"
     }
 }

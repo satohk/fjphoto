@@ -37,6 +37,7 @@
                                     android:id="@+id/spinnerMediaType"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
+                                    android:layout_weight="1"
                                     android:entries="@{view_model.mediaTypes}"
                                     android:focusable="true"
                                     android:focusableInTouchMode="true"
@@ -64,6 +65,7 @@
                                     android:id="@+id/editTextFromDate"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
+                                    android:layout_weight="1"
                                     android:ems="10"
                                     android:inputType="date"
                                     android:onClick="showDatePickerDialog"
@@ -90,6 +92,7 @@
                                     android:id="@+id/editTextToDate"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
+                                    android:layout_weight="1"
                                     android:ems="10"
                                     android:inputType="date"
                                     android:onClick="showDatePickerDialog"
@@ -107,7 +110,7 @@
                                     android:id="@+id/textView4"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Content  Filter"
+                                    android:text="Content  Type"
                                     android:textColor="@color/menu_bar_button_text"
                                     android:textStyle="bold" />
 
@@ -115,6 +118,7 @@
                                     android:id="@+id/spinnerContent"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
+                                    android:layout_weight="1"
                                     android:entries="@{view_model.contentTypes}"
                                     android:selectedItemPosition="@={view_model.contentTypeIndex}" />
                         </TableRow>
@@ -130,17 +134,41 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center_vertical"
-                                    android:text="Favorite Only"
+                                    android:text="Filter"
                                     android:textColor="@color/menu_bar_button_text"
                                     android:textStyle="bold" />
 
                                 <Switch
-                                    android:id="@+id/switchFavorite"
+                                    android:id="@+id/switchFilter"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="left"
+                                    android:checked="false"
                                     android:textStyle="bold" />
 
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="@dimen/search_bar_group_margin"
+                            android:paddingLeft="@dimen/menu_button_padding_left"
+                            android:paddingTop="@dimen/search_bar_group_margin"
+                            android:paddingBottom="@dimen/search_bar_group_margin">
+
+                                <TextView
+                                    android:id="@+id/textView3"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical"
+                                    android:textColor="@color/menu_bar_button_text"
+                                    android:textStyle="bold" />
+
+                                <SeekBar
+                                    android:id="@+id/seekBar"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1" />
                         </TableRow>
 
                         <TableRow

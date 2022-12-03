@@ -5,15 +5,16 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TableRow
 import android.widget.*
-import androidx.core.view.children
 import androidx.fragment.app.*
-import com.satohk.gphotoframe.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.satohk.gphotoframe.databinding.FragmentSettingBarBinding
 import com.satohk.gphotoframe.viewmodel.SettingBarViewModel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
-import java.util.*
 
 
 /**
@@ -64,7 +65,25 @@ class SettingBarFragment() : Fragment(), SideBarFragmentInterface {
             v.setOnKeyListener(onKey)
         }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    _viewModel.displayMessageId.collect { it ->
+                        it?.let { messageId ->
+                            Toast.makeText(context, getText(messageId), Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+                launch {
+                    _viewModel.inTraining.collect {
+                        binding.trainProgressBar.visibility = if(it) View.VISIBLE else View.INVISIBLE
+                    }
+                }
+            }
+        }
+
         binding.buttonOK.setOnClickListener{_viewModel.enterToGrid()}
+        binding.buttonTrain.setOnClickListener { _viewModel.doTrainAIModel() }
     }
 
     override fun onFocus(){

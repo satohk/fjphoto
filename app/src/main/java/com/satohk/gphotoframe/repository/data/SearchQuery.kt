@@ -34,7 +34,7 @@ data class SearchQueryRemote (
 data class SearchQueryLocal(
     val aiFilterEnabled: Boolean = false,
     val aiFilterThreshold: Float = 0.0f,
-    val aiFilterReferenceData: List<PhotoMetadata> = listOf()
+    val aiFilterReferenceDataUrlList: List<String> = listOf()
 )
 
 @Serializable

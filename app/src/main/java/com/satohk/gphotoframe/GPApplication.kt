@@ -9,6 +9,9 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 
 import com.satohk.gphotoframe.domain.AccountState
+import com.satohk.gphotoframe.domain.InferenceModel
+import com.satohk.gphotoframe.domain.InferenceModelLoader
+import com.satohk.gphotoframe.domain.VisualInspector
 import com.satohk.gphotoframe.repository.localrepository.AppDatabase
 import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepository
 import com.satohk.gphotoframe.repository.localrepository.SettingRepository
@@ -36,10 +39,13 @@ class GPApplication : Application() {
         single { Room.databaseBuilder(applicationContext, AppDatabase::class.java, "gphotoframe").build() }
         single { SettingRepository( get() ) }
         single { PhotoMetadataLocalRepository( get() ) }
+        single { InferenceModelLoader(applicationContext) }
+        single { InferenceModel( get() ) }
+        single { VisualInspector( get() ) }
         viewModel { PhotoGridWithSideBarViewModel() }
         viewModel { PhotoGridViewModel( get(), get() ) }
         viewModel { SettingBarViewModel( get() ) }
-        viewModel { SearchBarViewModel( get() ) }
+        viewModel { SearchBarViewModel( get(), get() ) }
         viewModel { MenuBarViewModel( get()) }
         viewModel { PhotoViewModel( get()) }
     }

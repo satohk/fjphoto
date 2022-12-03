@@ -64,7 +64,7 @@ class PhotoViewModel(
         }
     }
 
-    fun getAvailablePlayer(): ExoPlayer {
+    private fun getAvailablePlayer(): ExoPlayer {
         for(player in _videoPlayers){
             if(_currentMedia.value.videoPlayer != player){
                 return player
@@ -142,7 +142,7 @@ class PhotoViewModel(
                 else if(metadata.metadataRemote.mimeType.startsWith("video")){
                     val tmp = _accountState.photoRepository.value!!.getMediaAccessHeaderAndUrl(metadata.metadataRemote)
                     val mediaUrl = tmp.second
-                    val mediaItem = MediaItem.fromUri("https://www.google.com/aaa")//mediaUrl)
+                    val mediaItem = MediaItem.fromUri(mediaUrl)
                     _currentPlayer = getAvailablePlayer()
                     _currentPlayer?.let { player ->
                         player.setMediaItem(mediaItem)

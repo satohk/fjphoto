@@ -19,71 +19,50 @@ package com.satohk.gphotoframe.domain
 import android.graphics.Bitmap
 import android.util.Size
 import android.graphics.RectF
+import android.util.Log
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.ops.ResizeOp
-import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
 import org.tensorflow.lite.support.common.ops.NormalizeOp
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import java.nio.ByteBuffer
 
 
-class InferenceModel(private val tflite: Interpreter, private val labels: List<String>) {
+class InferenceModel(
+        modelLoader: InferenceModelLoader
+    ) {
+    private val tflite = modelLoader.tflite
 
-    /** Abstraction object that wraps a prediction output in an easy to parse way */
-    data class ObjectPrediction(val location: RectF, val label: String, val score: Float)
-
-    private val locations = arrayOf(Array(OBJECT_COUNT) { FloatArray(4) })
-    private val labelIndices =  arrayOf(FloatArray(OBJECT_COUNT))
-    private val scores =  arrayOf(FloatArray(OBJECT_COUNT))
-
-    private val tfImageBuffer = TensorImage(DataType.UINT8)
+    private val tfImageBuffer = TensorImage(DataType.FLOAT32)
 
     private val tfImageProcessor by lazy {
-        val cropSize = minOf(512, 512)
         ImageProcessor.Builder()
-            .add(ResizeWithCropOrPadOp(cropSize, cropSize))
             .add(ResizeOp(
                 tfInputSize.height, tfInputSize.width, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR))
-            .add(NormalizeOp(0f, 1f))
+            .add(NormalizeOp(0f, 255f))
             .build()
     }
 
-    private val tfInputSize by lazy {
+    val tfInputSize by lazy {
         val inputIndex = 0
         val inputShape = tflite.getInputTensor(inputIndex).shape()
         Size(inputShape[2], inputShape[1]) // Order of axis is: {1, height, width, 3}
     }
 
-    private val outputBuffer = mapOf(
-        0 to locations,
-        1 to labelIndices,
-        2 to scores,
-        3 to FloatArray(1)
-    )
-
-    private val predictions get() = (0 until OBJECT_COUNT).map {
-        ObjectPrediction(
-
-            // The locations are an array of [0, 1] floats for [top, left, bottom, right]
-            location = locations[0][it].let {
-                RectF(it[1], it[0], it[3], it[2])
-            },
-
-            // SSD Mobilenet V1 Model assumes class 0 is background class
-            // in label file and class labels start from 1 to number_of_classes + 1,
-            // while outputClasses correspond to class index from 0 to number_of_classes
-            label = labels[1 + labelIndices[0][it].toInt()],
-
-            // Score is a single value of [0, 1]
-            score = scores[0][it]
-        )
+    val tfOutputSize by lazy {
+        val outputShape = tflite.getOutputTensor(0).shape()
+        outputShape[0] * outputShape[1]
     }
 
-    fun predict(bitmap: Bitmap): List<ObjectPrediction>{
+
+
+    fun predict(bitmap: Bitmap): FloatArray{
         val tfImage =  tfImageProcessor.process(tfImageBuffer.apply { load(bitmap) })
-        tflite.runForMultipleInputsOutputs(arrayOf(tfImage.buffer), outputBuffer)
-        return predictions
+        val output = TensorBuffer.createFixedSize(intArrayOf(1, 1024), DataType.FLOAT32)
+        tflite.run(tfImage.buffer, output.buffer)
+        return output.floatArray
     }
 
     companion object {

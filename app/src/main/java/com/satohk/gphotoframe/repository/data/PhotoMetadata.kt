@@ -8,6 +8,8 @@ import java.time.ZonedDateTime
 
 @Serializable
 data class PhotoMetadataLocal(
+    val id: String,
+    val url: String,
     val favorite: Boolean = false
 )
 
