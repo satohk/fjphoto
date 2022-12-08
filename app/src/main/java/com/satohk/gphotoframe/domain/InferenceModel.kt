@@ -18,16 +18,12 @@ package com.satohk.gphotoframe.domain
 
 import android.graphics.Bitmap
 import android.util.Size
-import android.graphics.RectF
-import android.util.Log
 import org.tensorflow.lite.DataType
-import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
-import java.nio.ByteBuffer
 
 
 class InferenceModel(

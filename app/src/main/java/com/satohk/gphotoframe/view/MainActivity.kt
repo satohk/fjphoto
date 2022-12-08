@@ -11,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.satohk.gphotoframe.R
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.collect
 
 import com.satohk.gphotoframe.viewmodel.MainViewModel
 
@@ -58,7 +57,7 @@ class MainActivity : FragmentActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode === 101 && resultCode === RESULT_OK) {
+        if (requestCode == 101 && resultCode == RESULT_OK) {
             val name = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!
             val type = data?.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE)!!
             _viewModel.setAccount(type, name, this)

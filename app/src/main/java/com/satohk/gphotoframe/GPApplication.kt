@@ -17,6 +17,7 @@ import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepos
 import com.satohk.gphotoframe.repository.localrepository.SettingRepository
 import com.satohk.gphotoframe.viewmodel.*
 import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.java.KoinJavaComponent
 
 
 class GPApplication : Application() {
@@ -25,6 +26,13 @@ class GPApplication : Application() {
         Log.d("GPApplication", "onCreate")
         super.onCreate()
         setupKoin()
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+
+        val inferenceModelLoader: InferenceModelLoader by KoinJavaComponent.inject(InferenceModelLoader::class.java)
+        inferenceModelLoader.close()
     }
 
     private fun setupKoin() {

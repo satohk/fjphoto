@@ -27,6 +27,7 @@ open class GooglePhotoRepository(
     private val jsonDec = Json{ignoreUnknownKeys=true}
     private val client = OkHttpClient()
 
+    @OptIn(ExperimentalSerializationApi::class)
     override suspend fun getAlbumList():List<Album> {
         val pageSize = 50
         var pageToken:String? = null
@@ -59,10 +60,11 @@ open class GooglePhotoRepository(
         return albums
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryRemote?)
             : Pair<List<PhotoMetadataRemote>,String?>{
         val dateFilter =
-            if(searchQuery?.startDate !== null && searchQuery?.endDate !== null)
+            if(searchQuery?.startDate != null && searchQuery.endDate != null)
                 ParamDateFilter(
                     ranges=listOf(
                         ParamDateRange(
@@ -175,20 +177,19 @@ open class GooglePhotoRepository(
             .url(url)
             .addHeader("Authorization", "Bearer $accessToken")
             .build()
-        var response: Response? = null
-        withContext(ioDispatcher) {
-            response = client.newCall(request).execute()
+        val response: Response = withContext(ioDispatcher) {
+            client.newCall(request).execute()
         }
-        if (!response!!.isSuccessful) {
+        if (!response.isSuccessful) {
             Log.i(
                 "http",
-                "response is not ok . $url ${response.toString()}"
+                "response is not ok . $url $response"
             )
-            response!!.body?.close()
-            response!!.close()
-            throw NetworkErrorException(response!!.message)
+            response.body?.close()
+            response.close()
+            throw NetworkErrorException(response.message)
         }
-        return response!!
+        return response
     }
 
     private suspend fun httpPost(url: String, requestBody: String): Response {
@@ -200,20 +201,19 @@ open class GooglePhotoRepository(
                                 .addHeader("Authorization", "Bearer $accessToken")
                                 .post(postBody)
                                 .build()
-        var response: Response? = null
-        withContext(ioDispatcher) {
-            response = client.newCall(request).execute()
+        val response: Response = withContext(ioDispatcher) {
+            client.newCall(request).execute()
         }
-        if (!response!!.isSuccessful) {
+        if (!response.isSuccessful) {
             Log.i(
                 "http",
-                "response is not ok . $url ${response.toString()}"
+                "response is not ok . $url $response"
             )
-            response!!.body?.close()
-            response!!.close()
-            throw NetworkErrorException(response!!.message)
+            response.body?.close()
+            response.close()
+            throw NetworkErrorException(response.message)
         }
-        return response!!
+        return response
     }
 
     override fun getCategoryList(): List<String>{

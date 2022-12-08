@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -31,6 +32,7 @@ class SettingRepository(private val db: AppDatabase) {
         save(newSetting)
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     suspend fun load(userName: String){
         val settings = withContext(ioDispatcher) {
             db.settingDao().findByUserName(userName)
@@ -49,6 +51,7 @@ class SettingRepository(private val db: AppDatabase) {
         _userName = userName
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     private suspend fun save(newSetting: Setting){
         val format = Json { encodeDefaults = false }
         val screensaverSearchQueryStr = format.encodeToString(newSetting.screensaverSearchQuery)

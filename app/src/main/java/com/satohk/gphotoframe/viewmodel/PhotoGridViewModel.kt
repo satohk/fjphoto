@@ -12,7 +12,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.logging.Filter
 
 
 typealias PhotoGridItem = PhotoMetadata
@@ -113,17 +112,16 @@ class PhotoGridViewModel(
     fun loadThumbnail(photoMetadata: PhotoMetadata, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit) {
         if(_accountState.photoRepository.value != null) {
             viewModelScope.launch {
-                var bmp: Bitmap? = null
-                withContext(Dispatchers.IO) {
-                    bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
+                val bmp: Bitmap? = withContext(Dispatchers.IO) {
+                    _accountState.photoRepository.value!!.getPhotoBitmap(
                         photoMetadata.metadataRemote,
                         width,
                         height,
                         true
                     )
                 }
-                if(bmp != null) {
-                    callback.invoke(bmp)
+                bmp?.let {
+                    callback.invoke(it)
                 }
             }
         }

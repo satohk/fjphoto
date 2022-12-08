@@ -7,16 +7,11 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TableRow
 import android.widget.*
-import androidx.core.view.children
 import androidx.fragment.app.*
-import com.satohk.gphotoframe.*
 import com.satohk.gphotoframe.databinding.FragmentSearchBarBinding
-import com.satohk.gphotoframe.viewmodel.MenuBarViewModel
 import com.satohk.gphotoframe.viewmodel.SearchBarViewModel
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
-import org.koin.java.KoinJavaComponent.inject
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -75,7 +70,7 @@ class SearchBarFragment() : Fragment(), SideBarFragmentInterface {
             datePickerDialog.show()
         }
 
-        val onKey = fun(view: View, i: Int, keyEvent: KeyEvent): Boolean {
+        val onKey = fun(_: View, _: Int, keyEvent: KeyEvent): Boolean {
             if(keyEvent.action == KeyEvent.ACTION_DOWN) {
                 if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                     _viewModel.enterToGrid()

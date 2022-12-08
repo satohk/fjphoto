@@ -100,10 +100,8 @@ class MenuBarFragment() : Fragment(R.layout.fragment_menu_bar), SideBarFragmentI
     }
 
     private fun setFocusToMenuBarItem(index: Int){
-        if(_recyclerView != null) {
-            val holder = _recyclerView.findViewHolderForAdapterPosition(index)
-                    as MenuBarItemAdapter.MenuBarItemViewHolder?
-            holder?.binding?.root?.requestFocus()
-        }
+        val holder = _recyclerView.findViewHolderForAdapterPosition(index)
+                as MenuBarItemAdapter.MenuBarItemViewHolder?
+        holder?.binding?.root?.requestFocus()
     }
 }

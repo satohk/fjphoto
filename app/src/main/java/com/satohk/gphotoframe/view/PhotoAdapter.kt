@@ -94,7 +94,7 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
                     view.setBackgroundResource(R.color.default_background)
                 }
             }
-            itemView.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
+            itemView.setOnKeyListener { view: View, _: Int, keyEvent: KeyEvent ->
                 if(keyEvent.action == KeyEvent.ACTION_DOWN) {
                     return@setOnKeyListener _adapter?.onKeyDown?.invoke(
                         view,

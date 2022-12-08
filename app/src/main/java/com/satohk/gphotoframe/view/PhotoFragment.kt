@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
-import android.webkit.WebView
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
@@ -22,7 +21,6 @@ import com.satohk.gphotoframe.R
 import com.satohk.gphotoframe.viewmodel.GridContents
 import com.satohk.gphotoframe.viewmodel.PhotoViewModel
 import kotlinx.android.synthetic.main.fragment_photo.*
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.time.format.DateTimeFormatter
@@ -96,7 +94,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
             return@setOnKeyListener false
         }
 
-        dummyButton.setOnFocusChangeListener { view, b ->
+        dummyButton.setOnFocusChangeListener { _, b ->
             Log.d("PhotoFragment", "dummyButton focus $b")
             if(b) {
                 if(_currentMediaView is StyledPlayerView){
@@ -135,26 +133,26 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     }
 
     private fun initializeVideoPlayer() {
-        val MIN_BUFFER_DURATION = 2000      //Minimum Video you want to buffer while Playing
-        val MAX_BUFFER_DURATION = 10000     //Max Video you want to buffer during PlayBack
-        val MIN_PLAYBACK_START_BUFFER = 100 //Min Video you want to buffer before start Playing it
-        val MIN_PLAYBACK_RESUME_BUFFER = 2000   //Min video You want to buffer when user resumes video
+        val minBufferDuration = 2000      //Minimum Video you want to buffer while Playing
+        val maxBufferDuration = 10000     //Max Video you want to buffer during PlayBack
+        val minPlaybackStartBuffer = 100 //Min Video you want to buffer before start Playing it
+        val minPlaybackResumeBuffer = 2000   //Min video You want to buffer when user resumes video
 
         for(videoView in _videoViews) {
             val loadControl: LoadControl = DefaultLoadControl.Builder()
                 .setAllocator(DefaultAllocator(true, 16))
                 .setBufferDurationsMs(
-                    MIN_BUFFER_DURATION,
-                    MAX_BUFFER_DURATION,
-                    MIN_PLAYBACK_START_BUFFER,
-                    MIN_PLAYBACK_RESUME_BUFFER
+                    minBufferDuration,
+                    maxBufferDuration,
+                    minPlaybackStartBuffer,
+                    minPlaybackResumeBuffer
                 )
                 .setTargetBufferBytes(-1)
                 .setPrioritizeTimeOverSizeThresholds(true).createDefaultLoadControl()
 
-            val trackSelector: TrackSelector = DefaultTrackSelector(this.context!!)
+            val trackSelector: TrackSelector = DefaultTrackSelector(this.requireContext())
 
-            val player = ExoPlayer.Builder(this.context!!)
+            val player = ExoPlayer.Builder(this.requireContext())
                 .setTrackSelector(trackSelector)
                 .setLoadControl(loadControl)
                 .build()
@@ -182,7 +180,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         if(media.bitmap != null){ // next media is bitmap
             for(imageView in _imageViews){
                 if(imageView != _currentMediaView){
-                    imageView.setImageBitmap(media.bitmap!!)
+                    imageView.setImageBitmap(media.bitmap)
                     nextView = imageView
                 }
             }

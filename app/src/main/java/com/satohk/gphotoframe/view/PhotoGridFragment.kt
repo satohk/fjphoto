@@ -21,7 +21,6 @@ import com.satohk.gphotoframe.viewmodel.GridContents
 import com.satohk.gphotoframe.viewmodel.PhotoGridItem
 import com.satohk.gphotoframe.viewmodel.PhotoGridViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.collect
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
 
@@ -78,9 +77,9 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
             Log.d("menu onscroll",  "vislbleItemPos:${_viewModel.firstVisibleItemIndex}")
         }
         adapter.onKeyDown = fun(view:View?, position:Int, keyEvent: KeyEvent):Boolean{
-            if(view != null) {
-                Log.d("keydown", view?.x.toString())
-                if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && (view.x < 10.0f)) {
+            view?.let {
+                Log.d("keydown", it.x.toString())
+                if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && (it.x < 10.0f)) {
                     _viewModel.goBack()
                 }
                 else if(keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_CENTER){
@@ -132,9 +131,5 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
 
     private fun setGridItemFocus(){
         _recyclerView.scrollToPosition(_viewModel.firstVisibleItemIndex)
-
-//        val holder = _recyclerView.findViewHolderForAdapterPosition(_viewModel.focusIndex)
-//                as PhotoAdapter.PhotoViewHolder?
-//        holder?.binding?.root?.requestFocus()
     }
 }

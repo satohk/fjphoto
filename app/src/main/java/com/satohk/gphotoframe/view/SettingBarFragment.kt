@@ -13,7 +13,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.satohk.gphotoframe.databinding.FragmentSettingBarBinding
 import com.satohk.gphotoframe.viewmodel.SettingBarViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.collect
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
 
@@ -43,7 +42,7 @@ class SettingBarFragment() : Fragment(), SideBarFragmentInterface {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val onKey = fun(view: View, i: Int, keyEvent: KeyEvent): Boolean {
+        val onKey = fun(_: View, _: Int, keyEvent: KeyEvent): Boolean {
             if(keyEvent.action == KeyEvent.ACTION_DOWN) {
                 if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                     _viewModel.enterToGrid()

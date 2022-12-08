@@ -50,7 +50,6 @@ class MenuBarItemAdapter:
             MenuBarItem.MenuBarItemType.SEARCH -> R.drawable.search_icon
             MenuBarItem.MenuBarItemType.SETTING -> R.drawable.setting_icon
             MenuBarItem.MenuBarItemType.ALBUM_ITEM -> R.drawable.all_media_icon
-            else -> 0
         }
         val captionId = when(item.itemType){
             MenuBarItem.MenuBarItemType.SHOW_ALL -> R.string.menu_item_title_all
@@ -82,8 +81,8 @@ class MenuBarItemAdapter:
         }
 
         loadIcon?.invoke(item, 96, 96){
-            if(it != null){
-                Log.d("debug", "loaded bmp :width=%d, height=%d".format(it?.width, it?.height))
+            it?.let {
+                Log.d("debug", "loaded bmp :width=%d, height=%d".format(it.width, it.height))
                 val drawable = BitmapDrawable(it)
                 holder.binding.button.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
                 holder.binding.button.setCompoundDrawablePadding(20)
@@ -125,7 +124,7 @@ class MenuBarItemAdapter:
                 }
             }
 
-            buttonView.setOnKeyListener { view: View, i: Int, keyEvent: KeyEvent ->
+            buttonView.setOnKeyListener { view: View, _: Int, keyEvent: KeyEvent ->
                 if(keyEvent.action == KeyEvent.ACTION_DOWN) {
                     return@setOnKeyListener onKeyDown?.invoke(
                         view,
