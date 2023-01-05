@@ -13,7 +13,7 @@ import java.time.ZonedDateTime
 
 
 class SearchBarViewModel(
-    _accountState: AccountState,
+    private val _accountState: AccountState,
     private val _photoMetadataLocalRepo: PhotoMetadataLocalRepository
     ) : SideBarActionPublisherViewModel() {
 
@@ -71,7 +71,9 @@ class SearchBarViewModel(
             0,
             ZoneId.systemDefault()
         )
-        val selectedIdList = _photoMetadataLocalRepo.getAll().map{ it -> it.id}
+        val selectedIdList = if(_accountState.activeAccount.value != null)
+                                _photoMetadataLocalRepo.getAll(_accountState.activeAccount.value!!.accountId).map{it.id}
+                            else listOf()
         return GridContents(
             searchQuery = SearchQuery(
                 queryRemote = SearchQueryRemote(

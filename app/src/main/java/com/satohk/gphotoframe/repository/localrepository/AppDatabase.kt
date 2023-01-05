@@ -19,9 +19,13 @@ interface SettingDao {
     fun save(setting: SettingEntity)
 }
 
-@Entity(tableName = "photo_metadata")
+@Entity(
+    tableName = "photo_metadata",
+    indices = [Index(value = ["account_id"])]
+)
 data class PhotoMetadataEntity(
     @PrimaryKey @ColumnInfo(name = "id") val id: String,
+    @ColumnInfo(name = "account_id") val accountId: String,
     @ColumnInfo(name = "favorite") val favorite: Boolean
 )
 
@@ -30,8 +34,8 @@ interface PhotoMetadataDao {
     @Query("SELECT * FROM photo_metadata where id=:id")
     fun findById(id: String): List<PhotoMetadataEntity>
 
-    @Query("SELECT * FROM photo_metadata")
-    fun findAll(): List<PhotoMetadataEntity>
+    @Query("SELECT * FROM photo_metadata WHERE account_id=:accountId")
+    fun findAll(accountId: String): List<PhotoMetadataEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun save(metadata: PhotoMetadataEntity)

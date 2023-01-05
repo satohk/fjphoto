@@ -7,5 +7,7 @@ enum class ServiceProvider(val url: String){
 data class AccountWithToken(
     val serviceProviderUrl: String,
     val userName: String,
-    val accessToken: String
-)
+    val accessToken: String){
+
+    val accountId: String get() = "${userName}@${serviceProviderUrl}"
+}

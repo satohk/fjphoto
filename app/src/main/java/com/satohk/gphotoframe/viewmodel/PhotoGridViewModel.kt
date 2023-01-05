@@ -145,6 +145,7 @@ class PhotoGridViewModel(
                 viewModelScope.launch {
                     _photoMetadataLocalRepository.set(
                         newItem.metadataRemote.id,
+                        _accountState.activeAccount.value!!.accountId,
                         newItem.metadataLocal
                     )
                     _changedItemIndex.emit(position)
