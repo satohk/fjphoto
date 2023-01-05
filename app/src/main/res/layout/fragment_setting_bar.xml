@@ -79,25 +79,6 @@
                             android:layout_marginBottom="@dimen/search_bar_group_margin">
 
                                 <Button
-                                    android:id="@+id/buttonTrain"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:background="@color/menu_bar_button_background"
-                                    android:text="Train" />
-
-                                <ProgressBar
-                                    android:id="@+id/trainProgressBar"
-                                    style="?android:attr/progressBarStyle"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content" />
-                        </TableRow>
-
-                        <TableRow
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
-
-                                <Button
                                     android:id="@+id/buttonOK"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"

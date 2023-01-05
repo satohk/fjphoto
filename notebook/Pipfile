@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "*"
+pandas = "*"
+jupyterlab = "*"
+kotlin-jupyter-kernel = "*"
+pysqlite3 = "*"
+matplotlib = "*"
+scikit-learn = "*"
+tflite-runtime = "*"
+tensorflow = "*"
+tflite = "*"
+tflite-support = "*"
+tensorflow-datasets = "*"
+opencv-python = "*"
+fiftyone = "*"
+deeplake = "*"
+optuna = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

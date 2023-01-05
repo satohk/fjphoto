@@ -73,16 +73,10 @@ class SettingBarFragment() : Fragment(), SideBarFragmentInterface {
                         }
                     }
                 }
-                launch {
-                    _viewModel.inTraining.collect {
-                        binding.trainProgressBar.visibility = if(it) View.VISIBLE else View.INVISIBLE
-                    }
-                }
             }
         }
 
         binding.buttonOK.setOnClickListener{_viewModel.enterToGrid()}
-        binding.buttonTrain.setOnClickListener { _viewModel.doTrainAIModel() }
     }
 
     override fun onFocus(){

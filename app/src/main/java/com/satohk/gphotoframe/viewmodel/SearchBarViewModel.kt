@@ -27,6 +27,7 @@ class SearchBarViewModel(
     val fromDateStr: MutableStateFlow<String> = MutableStateFlow("")
     val toDateStr: MutableStateFlow<String> = MutableStateFlow("")
     val enableFilter = MutableStateFlow(false)
+    val filterThreshold: MutableStateFlow<Int> = MutableStateFlow(5)
 
     private val _contentTypes: MutableStateFlow<List<String>> = MutableStateFlow(listOf())
     val contentTypes: StateFlow<List<String>> get() = _contentTypes
@@ -46,6 +47,7 @@ class SearchBarViewModel(
         fromDateStr.onEach{ changeGridContents() }.launchIn(viewModelScope)
         toDateStr.onEach{ changeGridContents() }.launchIn(viewModelScope)
         enableFilter.onEach{ changeGridContents() }.launchIn(viewModelScope)
+        filterThreshold.onEach { changeGridContents() }.launchIn(viewModelScope)
     }
 
     private suspend fun getGridContents(): GridContents {
@@ -69,7 +71,7 @@ class SearchBarViewModel(
             0,
             ZoneId.systemDefault()
         )
-        val urlList = _photoMetadataLocalRepo.getAll().map{ it -> it.url}
+        val selectedIdList = _photoMetadataLocalRepo.getAll().map{ it -> it.id}
         return GridContents(
             searchQuery = SearchQuery(
                 queryRemote = SearchQueryRemote(
@@ -80,8 +82,8 @@ class SearchBarViewModel(
                 ),
                 queryLocal = SearchQueryLocal(
                     aiFilterEnabled=enableFilter.value,
-                    aiFilterThreshold=0.0f,
-                    aiFilterReferenceDataUrlList=urlList
+                    aiFilterThreshold= filterThreshold.value.toFloat() / 10.0f,
+                    aiFilterReferenceDataIdList=selectedIdList
                 )
             )
         )

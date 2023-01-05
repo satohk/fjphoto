@@ -23,6 +23,7 @@ import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.common.ops.NormalizeOp
+import org.tensorflow.lite.support.common.ops.CastOp
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 
 
@@ -31,10 +32,9 @@ class InferenceModel(
     ) {
     private val tflite = modelLoader.tflite
 
-    private val tfImageBuffer = TensorImage(DataType.FLOAT32)
-
     private val tfImageProcessor by lazy {
         ImageProcessor.Builder()
+            .add(CastOp(DataType.FLOAT32))
             .add(ResizeOp(
                 tfInputSize.height, tfInputSize.width, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR))
             .add(NormalizeOp(0f, 255f))
@@ -55,7 +55,9 @@ class InferenceModel(
 
 
     fun predict(bitmap: Bitmap): FloatArray{
-        val tfImage =  tfImageProcessor.process(tfImageBuffer.apply { load(bitmap) })
+        val tfImageBuffer = TensorImage(DataType.UINT8)
+        tfImageBuffer.load(bitmap)
+        val tfImage =  tfImageProcessor.process(tfImageBuffer)
         val output = TensorBuffer.createFixedSize(intArrayOf(1, 1024), DataType.FLOAT32)
         tflite.run(tfImage.buffer, output.buffer)
         return output.floatArray

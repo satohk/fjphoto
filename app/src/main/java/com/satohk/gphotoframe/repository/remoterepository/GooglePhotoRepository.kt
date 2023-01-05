@@ -119,6 +119,20 @@ open class GooglePhotoRepository(
         return Pair(result, resultNextPageToken)
     }
 
+    override suspend fun getPhotoMetadata(photoId: String):PhotoMetadataRemote{
+        val url = "https://photoslibrary.googleapis.com/v1/mediaItems/%s".format(photoId)
+        val response = httpGet(url)
+        val responseBodyStr = response.body?.string()!!
+        val responseDecoded = jsonDec.decodeFromString<MediaItem>(responseBodyStr)
+        return PhotoMetadataRemote(
+            ZonedDateTime.parse(responseDecoded.mediaMetadata!!.creationTime),
+            responseDecoded.id,
+            responseDecoded.baseUrl,
+            responseDecoded.productUrl,
+            responseDecoded.mimeType
+        )
+    }
+
     override suspend fun getPhotoBitmap(
         photo: PhotoMetadataRemote,
         width: Int?,

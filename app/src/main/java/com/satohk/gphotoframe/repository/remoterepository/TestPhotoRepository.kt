@@ -31,6 +31,10 @@ class TestPhotoRepository(
         }
     }
 
+    override suspend fun getPhotoMetadata(photoId: String):PhotoMetadataRemote{
+        return samplePhotoMetadataList!!.first()
+    }
+
     override suspend fun getPhotoBitmap(
         photo: PhotoMetadataRemote,
         width: Int?,

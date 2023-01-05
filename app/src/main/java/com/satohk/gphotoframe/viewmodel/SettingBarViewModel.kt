@@ -1,23 +1,12 @@
 package com.satohk.gphotoframe.viewmodel
 
-import android.graphics.Bitmap
 import androidx.lifecycle.viewModelScope
-import com.satohk.gphotoframe.R
 import com.satohk.gphotoframe.domain.AccountState
-import com.satohk.gphotoframe.domain.FilteredPhotoList
-import com.satohk.gphotoframe.domain.VisualInspector
-import com.satohk.gphotoframe.repository.data.SearchQuery
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.koin.java.KoinJavaComponent
 
 class SettingBarViewModel(
     private val _accountState: AccountState
     ) : SideBarActionPublisherViewModel() {
-
-    private val _visualInspector: VisualInspector by KoinJavaComponent.inject(VisualInspector::class.java)
 
     val slideshowIntervalIndex: MutableStateFlow<Int> = MutableStateFlow(9)
     private val _slideshowIntervalList: MutableStateFlow<List<String>>
@@ -43,10 +32,6 @@ class SettingBarViewModel(
 
     private val _displayMessageId = MutableSharedFlow<Int>()
     val displayMessageId: SharedFlow<Int?> get() = _displayMessageId
-
-    private val _inTraining = MutableStateFlow<Boolean>(false)
-    val inTraining: StateFlow<Boolean> get() = _inTraining
-
 
     init{
         slideshowIntervalIndex.onEach {
@@ -85,29 +70,5 @@ class SettingBarViewModel(
             gridContents = null
         )
         publishAction(action)
-    }
-
-    fun doTrainAIModel(){
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                _displayMessageId.emit(R.string.msg_started_learning)
-                _inTraining.value = true
-                val photoList = FilteredPhotoList(_accountState.photoRepository.value!!, SearchQuery())
-                photoList.loadNext(100)
-                val bmpList = mutableListOf<Bitmap>()
-                for(i in 0 until photoList.size){
-                    val bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
-                        photoList[i].metadataRemote,
-                        _visualInspector.inputImageSize.width,
-                        _visualInspector.inputImageSize.width,
-                        true
-                    )
-                    bmp?.let{ bmpList.add(it) }
-                }
-                _visualInspector.calcWholeFeatures(bmpList)
-                _displayMessageId.emit(R.string.msg_finished_learning)
-                _inTraining.value = false
-            }
-        }
     }
 }

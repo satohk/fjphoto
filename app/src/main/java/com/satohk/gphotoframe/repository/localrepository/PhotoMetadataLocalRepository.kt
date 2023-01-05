@@ -19,7 +19,7 @@ class PhotoMetadataLocalRepository(private val db: AppDatabase) {
             db.photoMetadataDao().findById(key)
         }
         return if (res.isNotEmpty()) {
-            PhotoMetadataLocal(res.first().id, res.first().url, res.first().favorite)
+            PhotoMetadataLocal(res.first().id, res.first().favorite)
         } else {
             defaultPhotoMetadata
         }
@@ -27,7 +27,7 @@ class PhotoMetadataLocalRepository(private val db: AppDatabase) {
 
     suspend fun getAll(): List<PhotoMetadataLocal> {
         return withContext(ioDispatcher) {
-            db.photoMetadataDao().findAll().map{it -> PhotoMetadataLocal(it.id, it.url, it.favorite)}
+            db.photoMetadataDao().findAll().map{it -> PhotoMetadataLocal(it.id, it.favorite)}
         }
     }
 
@@ -36,12 +36,12 @@ class PhotoMetadataLocalRepository(private val db: AppDatabase) {
             if (value.favorite == defaultPhotoMetadata.favorite) {
                 db.photoMetadataDao().delete(key)
             } else {
-                db.photoMetadataDao().save(PhotoMetadataEntity(key, value.url, value.favorite))
+                db.photoMetadataDao().save(PhotoMetadataEntity(key, value.favorite))
             }
         }
     }
 
     companion object {
-        val defaultPhotoMetadata = PhotoMetadataLocal(id="", url="", favorite = false)
+        val defaultPhotoMetadata = PhotoMetadataLocal(id="", favorite = false)
     }
 }

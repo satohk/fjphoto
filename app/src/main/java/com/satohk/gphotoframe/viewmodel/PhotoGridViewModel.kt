@@ -66,6 +66,7 @@ class PhotoGridViewModel(
 
 
     fun setGridContents(gridContents: GridContents){
+        Log.d("setGridContents", gridContents.toString())
         if(_accountState.photoRepository.value != null) {
             if(gridContents == _gridContents){
                 return
@@ -137,7 +138,7 @@ class PhotoGridViewModel(
         if(isSelectMode){
             gridItemList._filteredPhotoList?.let {
                 val newItem = PhotoMetadata(
-                    PhotoMetadataLocal(it[position].metadataRemote.id, it[position].metadataRemote.url, !it[position].metadataLocal.favorite),
+                    PhotoMetadataLocal(it[position].metadataRemote.id, !it[position].metadataLocal.favorite),
                     it[position].metadataRemote
                 )
                 it[position] = newItem

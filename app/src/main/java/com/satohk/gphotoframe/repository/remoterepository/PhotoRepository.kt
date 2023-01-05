@@ -11,6 +11,7 @@ interface PhotoRepository{
     suspend fun getAlbumList():List<Album>
     suspend fun getPhotoBitmap(photo: PhotoMetadataRemote, width:Int?, height:Int?, cropFlag:Boolean?):Bitmap?
     suspend fun getAlbumCoverPhoto(album: Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap?
+    suspend fun getPhotoMetadata(photoId: String):PhotoMetadataRemote
     suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryRemote?):Pair<List<PhotoMetadataRemote>,String?>
     fun getMediaAccessHeaderAndUrl(media: PhotoMetadataRemote): Pair<PhotoRequestHeader, String>
 

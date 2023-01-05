@@ -38,9 +38,11 @@ class FilteredPhotoList(
 
     private suspend fun initVisualInspectorAnchor(){
         val images = mutableListOf<Bitmap>()
-        for(url in _query.queryLocal.aiFilterReferenceDataUrlList){
+        for(photoId in _query.queryLocal.aiFilterReferenceDataIdList){
+            val metadata = _repository.getPhotoMetadata(photoId)
+            Log.d("initVisualInspectorAnchor", metadata.toString())
             val image = _repository.getPhotoBitmap(
-                PhotoMetadataRemote(ZonedDateTime.now(), "", url, "", ""),
+                metadata,
                 _visualInspector.inputImageSize.width,
                 _visualInspector.inputImageSize.width,
                 true
@@ -55,7 +57,7 @@ class FilteredPhotoList(
 
         if(!allLoaded){
             _scope.launch {
-                if(!_visualInspectorAnchorInitialized){
+                if(!_visualInspectorAnchorInitialized && _query.queryLocal.aiFilterEnabled){
                     initVisualInspectorAnchor()
                     _visualInspectorAnchorInitialized = true
                 }
@@ -85,11 +87,19 @@ class FilteredPhotoList(
                         allLoaded = true
                     }
                     else {
-                        val filterResult = metadataList.map { it ->
+                        // load bmp async
+                        val bmpList = metadataList.map { it ->
                             async {
-                                val bmp = _repository.getPhotoBitmap(it.metadataRemote, _preloadPhotoSize, _preloadPhotoSize, true)
-                                filterPhoto(it, bmp!!) }
+                                _repository.getPhotoBitmap(it.metadataRemote, _preloadPhotoSize, _preloadPhotoSize, true)}
                         }.awaitAll()
+
+                        // ai filter sync
+                        Log.d("loadNext", "begin filter")
+                        val filterResult = bmpList.map {
+                            filterPhoto(it!!)
+                        }
+                        Log.d("loadNext", "end filter")
+
                         val filteredList = metadataList.zip(filterResult).filter { it.second }.map { it.first }
                         _filteredPhotoMetadataList.addAll(filteredList)
                         remain -= filteredList.size
@@ -101,12 +111,11 @@ class FilteredPhotoList(
         Log.d("_filteredPhotoMetadataList.size", _filteredPhotoMetadataList.size.toString())
     }
 
-    private fun filterPhoto(photoMetadata: PhotoMetadata, bmp: Bitmap):Boolean{
+    private fun filterPhoto(bmp: Bitmap):Boolean{
         return if(_query.queryLocal.aiFilterEnabled){
             val score = _visualInspector.calcImageScore(bmp)
-            Log.d("filterPhoto score=", score.toString())
-            score > 2    // test
-            //!photoMetadata.metadataLocal.favorite
+            Log.d("filterPhoto",  "score=${score}, threshold=${_query.queryLocal.aiFilterThreshold}")
+            score > _query.queryLocal.aiFilterThreshold
         } else {
             true
         }

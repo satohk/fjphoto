@@ -31,3 +31,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+*.tar
+.ipynb_checkpoints

@@ -111,6 +111,10 @@ class CachedPhotoRepository(
         return _albumCache
     }
 
+    suspend fun getPhotoMetadata(photoId: String):PhotoMetadataRemote{
+        return _photoRepository.getPhotoMetadata(photoId)
+    }
+
     suspend fun getPhotoBitmap(photo: PhotoMetadataRemote, width:Int?, height:Int?, cropFlag:Boolean?):Bitmap? {
         val key = arg2str(photo, width, height, cropFlag)
         var res = _photoBitmapCache.get(key)

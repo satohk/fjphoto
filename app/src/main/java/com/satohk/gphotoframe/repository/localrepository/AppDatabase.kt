@@ -22,7 +22,6 @@ interface SettingDao {
 @Entity(tableName = "photo_metadata")
 data class PhotoMetadataEntity(
     @PrimaryKey @ColumnInfo(name = "id") val id: String,
-    @ColumnInfo(name = "url") val url: String,
     @ColumnInfo(name = "favorite") val favorite: Boolean
 )
 
