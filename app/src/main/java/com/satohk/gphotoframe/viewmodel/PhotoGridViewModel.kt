@@ -12,6 +12,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.java.KoinJavaComponent
+import java.util.logging.Filter
 
 
 typealias PhotoGridItem = PhotoMetadata
@@ -20,11 +22,13 @@ class PhotoGridViewModel(
     private val _accountState: AccountState,
     private val _photoMetadataLocalRepository: PhotoMetadataLocalRepository
 ) : SideBarActionPublisherViewModel() {
+    private val _filteredPhotoList: FilteredPhotoList by KoinJavaComponent.inject(FilteredPhotoList::class.java)
     private var _gridContents: GridContents? = null
     val gridContents: GridContents? get() = _gridContents
     private val _readPageSize = 10
     private val _readNum = 6
-    private var _dataLoadJob: Job? = null
+    private val _readPageSizeWhenAiFilterEnabled = 1
+    private val _readNumWhenAiFilterEnabled = 60
     var focusIndex: Int = 0
         set(value){
             field = value
@@ -71,15 +75,11 @@ class PhotoGridViewModel(
             if(gridContents == _gridContents){
                 return
             }
-            viewModelScope.launch {
-                // stop dataload job
-                _dataLoadJob?.cancel()
-                _dataLoadJob?.join()
-                _dataLoadJob = null
 
+            viewModelScope.launch {
                 _gridContents = gridContents
-                gridItemList._filteredPhotoList = FilteredPhotoList(_accountState.photoRepository.value!!, gridContents.searchQuery)
-                _dataLoadJob = null
+                _filteredPhotoList.setParameter(_accountState.photoRepository.value!!, gridContents.searchQuery)
+                gridItemList._filteredPhotoList = _filteredPhotoList
                 _dataSize.emit(0)
                 _loading.emit(false)
                 loadNextImageList()
@@ -94,15 +94,22 @@ class PhotoGridViewModel(
 
     private fun loadNextImageList() {
         Log.i("loadNextImageList", "Thread  = %s(%d)".format(Thread.currentThread().name, Thread.currentThread().id))
-        if((_accountState.photoRepository.value != null) && (_dataLoadJob == null) && (_gridContents != null) && (gridItemList._filteredPhotoList != null)){
-            _dataLoadJob = viewModelScope.launch {
+        if((_accountState.photoRepository.value != null) && (_gridContents != null) && (gridItemList._filteredPhotoList != null)){
+            viewModelScope.launch {
+                val readNum = if(_gridContents!!.searchQuery.queryLocal.aiFilterEnabled) _readNumWhenAiFilterEnabled
+                                else _readNum
+                val readPageSize = if(_gridContents!!.searchQuery.queryLocal.aiFilterEnabled) _readPageSizeWhenAiFilterEnabled
+                    else _readPageSize
+
+                var skipped = false
                 _loading.emit(true)
-                for(i in 1.._readNum) {
-                    gridItemList.loadNext(_readPageSize)
+                for(i in 1..readNum) {
+                    skipped = !gridItemList.loadNext(readPageSize)
                     _dataSize.emit(gridItemList._filteredPhotoList!!.size)
                 }
-                _dataLoadJob = null
-                _loading.emit(false)
+                if(!skipped) {
+                    _loading.emit(false)
+                }
             }
         }
         else{
@@ -187,11 +194,13 @@ class PhotoGridViewModel(
                 }
             }
 
-        suspend fun loadNext(count:Int){
+        suspend fun loadNext(count:Int): Boolean{
+            var res = false
             _filteredPhotoList?.let {
-                it.loadNext(count)
+                res = it.loadNext(count)
                 size = it.size
             }
+            return res
         }
 
         operator fun get(i:Int):PhotoGridItem{

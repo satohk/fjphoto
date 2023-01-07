@@ -4,30 +4,42 @@ import android.graphics.Bitmap
 import android.util.Log
 import com.satohk.gphotoframe.repository.remoterepository.CachedPhotoRepository
 import com.satohk.gphotoframe.repository.data.PhotoMetadata
-import com.satohk.gphotoframe.repository.data.PhotoMetadataRemote
 import com.satohk.gphotoframe.repository.data.SearchQuery
 import kotlinx.coroutines.*
-import org.koin.java.KoinJavaComponent
-import java.time.ZonedDateTime
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class FilteredPhotoList(
-    private val _repository: CachedPhotoRepository,
-    private val _query: SearchQuery
+    private val _visualInspector: VisualInspector
 ){
+    private lateinit var _repository: CachedPhotoRepository
+    private lateinit var _query: SearchQuery
+    private var _parameterChanged: Boolean = false
     private val _filteredPhotoMetadataList = mutableListOf<PhotoMetadata>()
     private var _repositoryOffset = 0
     private var _preloadRepositoryOffset = 0
     private val _bulkLoadSize = 60
-    private val _preloadPhotoSize = 256
-    private val _scope = CoroutineScope(Job() + Dispatchers.Default)
-
-    private val _visualInspector: VisualInspector by KoinJavaComponent.inject(VisualInspector::class.java)
-    private var _visualInspectorAnchorInitialized = false
+    private val _loadingMutex = Mutex()
+    private var _cancelLoad = false
 
     var allLoaded: Boolean = false
         private set
 
     val size: Int get() = this._filteredPhotoMetadataList.size
+
+    suspend fun setParameter(repository: CachedPhotoRepository, query: SearchQuery){
+        _cancelLoad = true
+        _loadingMutex.withLock {
+            _query = query
+            _repository = repository
+            _filteredPhotoMetadataList.clear()
+            _repositoryOffset = 0
+            _preloadRepositoryOffset = 0
+
+            _parameterChanged = true
+            _cancelLoad = false
+        }
+    }
 
     operator fun get(i:Int): PhotoMetadata{
         return _filteredPhotoMetadataList[i]
@@ -44,7 +56,7 @@ class FilteredPhotoList(
             val image = _repository.getPhotoBitmap(
                 metadata,
                 _visualInspector.inputImageSize.width,
-                _visualInspector.inputImageSize.width,
+                _visualInspector.inputImageSize.height,
                 true
             )
             image?.let{ images.add(it) }
@@ -52,17 +64,25 @@ class FilteredPhotoList(
         _visualInspector.setAnchorImage(images)
     }
 
-    suspend fun loadNext(size:Int) {
+    suspend fun loadNext(size:Int): Boolean {
+        Log.d("loadNext", "start")
         var remain = size
 
-        if(!allLoaded){
-            _scope.launch {
-                if(!_visualInspectorAnchorInitialized && _query.queryLocal.aiFilterEnabled){
-                    initVisualInspectorAnchor()
-                    _visualInspectorAnchorInitialized = true
+        if(allLoaded) {
+            return false
+        }
+        Log.d("loadNext", "_mutex.isLocked == ${_loadingMutex.isLocked}")
+        if(_loadingMutex.tryLock()){
+            Log.d("loadNext", " in lock")
+            withContext(Dispatchers.Default){
+                if(_parameterChanged) {
+                    _parameterChanged = false
+                    if(_query.queryLocal.aiFilterEnabled) {
+                        initVisualInspectorAnchor()
+                    }
                 }
 
-                while(remain > 0){
+                while(remain > 0 && !_cancelLoad){
                     // bulkLoadSizeごとにあらかじめCacheにロードしておく
                     if(_repositoryOffset >= _preloadRepositoryOffset) {
                         val preloadMetadataList = _repository.getPhotoMetadataList(
@@ -90,7 +110,11 @@ class FilteredPhotoList(
                         // load bmp async
                         val bmpList = metadataList.map { it ->
                             async {
-                                _repository.getPhotoBitmap(it.metadataRemote, _preloadPhotoSize, _preloadPhotoSize, true)}
+                                _repository.getPhotoBitmap(
+                                    it.metadataRemote,
+                                    _visualInspector.inputImageSize.width,
+                                    _visualInspector.inputImageSize.height,
+                                    true)}
                         }.awaitAll()
 
                         // ai filter sync
@@ -106,9 +130,14 @@ class FilteredPhotoList(
                         _repositoryOffset += metadataList.size
                     }
                 }
-            }.join()
+            }
+            _loadingMutex.unlock()
+            Log.d("loadNext", " end lock _mutex.isLocked == ${_loadingMutex.isLocked}")
+            return true
         }
-        Log.d("_filteredPhotoMetadataList.size", _filteredPhotoMetadataList.size.toString())
+        else{
+            return false
+        }
     }
 
     private fun filterPhoto(bmp: Bitmap):Boolean{

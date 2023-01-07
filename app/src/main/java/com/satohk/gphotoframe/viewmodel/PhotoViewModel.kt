@@ -16,9 +16,9 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.satohk.gphotoframe.R
 import kotlinx.coroutines.flow.*
+import org.koin.java.KoinJavaComponent
 
 
 class PhotoViewModel(
@@ -41,7 +41,7 @@ class PhotoViewModel(
 
     private var _gridContents: GridContents? = null
 
-    private var _filteredPhotoList: FilteredPhotoList? = null
+    private val _filteredPhotoList: FilteredPhotoList by KoinJavaComponent.inject(FilteredPhotoList::class.java)
     private var _photoSelector: PhotoSelector? = null
     private var _slideShow: Boolean = true
     private var _showIndex: Int = 0
@@ -86,7 +86,14 @@ class PhotoViewModel(
             }
             _slideShow = slideShow
             _showIndex = showIndex
-            initPhotoSelector(_accountState.photoRepository.value!!, this._gridContents!!, _slideShow, _showIndex)
+            viewModelScope.launch {
+                initPhotoSelector(
+                    _accountState.photoRepository.value!!,
+                    this@PhotoViewModel._gridContents!!,
+                    _slideShow,
+                    _showIndex
+                )
+            }
         }
     }
 
@@ -113,12 +120,12 @@ class PhotoViewModel(
         }
     }
 
-    private fun initPhotoSelector(repo: CachedPhotoRepository, contents:GridContents, slideShow: Boolean, showIndex: Int){
+    private suspend fun initPhotoSelector(repo: CachedPhotoRepository, contents:GridContents, slideShow: Boolean, showIndex: Int){
         onStop()
 
-        _filteredPhotoList = FilteredPhotoList(repo, contents.searchQuery)
+        _filteredPhotoList.setParameter(repo, contents.searchQuery)
         _photoSelector = PhotoSelector(
-            _filteredPhotoList!!,
+            _filteredPhotoList,
             PhotoSelector.SelectMode.SEQUENTIAL,
             10000,
             showIndex

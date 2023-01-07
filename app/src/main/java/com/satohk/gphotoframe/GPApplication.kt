@@ -3,15 +3,12 @@ package com.satohk.gphotoframe
 import android.app.Application
 import android.util.Log
 import androidx.room.Room
+import com.satohk.gphotoframe.domain.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
-import com.satohk.gphotoframe.domain.AccountState
-import com.satohk.gphotoframe.domain.InferenceModel
-import com.satohk.gphotoframe.domain.InferenceModelLoader
-import com.satohk.gphotoframe.domain.VisualInspector
 import com.satohk.gphotoframe.repository.localrepository.AppDatabase
 import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepository
 import com.satohk.gphotoframe.repository.localrepository.SettingRepository
@@ -50,6 +47,7 @@ class GPApplication : Application() {
         single { InferenceModelLoader(applicationContext) }
         single { InferenceModel( get() ) }
         single { VisualInspector( get() ) }
+        single { FilteredPhotoList( get() ) }
         viewModel { PhotoGridWithSideBarViewModel() }
         viewModel { PhotoGridViewModel( get(), get() ) }
         viewModel { SettingBarViewModel( get() ) }
