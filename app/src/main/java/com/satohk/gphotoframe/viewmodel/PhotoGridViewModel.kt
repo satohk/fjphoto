@@ -105,7 +105,9 @@ class PhotoGridViewModel(
                 _loading.emit(true)
                 for(i in 1..readNum) {
                     skipped = !gridItemList.loadNext(readPageSize)
-                    _dataSize.emit(gridItemList._filteredPhotoList!!.size)
+                    if(!skipped) {
+                        _dataSize.emit(gridItemList._filteredPhotoList!!.size)
+                    }
                 }
                 if(!skipped) {
                     _loading.emit(false)

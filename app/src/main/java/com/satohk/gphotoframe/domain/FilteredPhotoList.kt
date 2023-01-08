@@ -2,8 +2,10 @@ package com.satohk.gphotoframe.domain
 
 import android.graphics.Bitmap
 import android.util.Log
+import android.util.LruCache
 import com.satohk.gphotoframe.repository.remoterepository.CachedPhotoRepository
 import com.satohk.gphotoframe.repository.data.PhotoMetadata
+import com.satohk.gphotoframe.repository.data.PhotoMetadataRemote
 import com.satohk.gphotoframe.repository.data.SearchQuery
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -20,8 +22,9 @@ class FilteredPhotoList(
     private var _preloadRepositoryOffset = 0
     private val _bulkLoadSize = 60
     private val _loadingMutex = Mutex()
-    private var _cancelLoad = false
+    private val _scoreCache = ScoreCache(_visualInspector)
 
+    private var _cancelLoad = false
     var allLoaded: Boolean = false
         private set
 
@@ -29,12 +32,14 @@ class FilteredPhotoList(
 
     suspend fun setParameter(repository: CachedPhotoRepository, query: SearchQuery){
         _cancelLoad = true
+
         _loadingMutex.withLock {
             _query = query
             _repository = repository
             _filteredPhotoMetadataList.clear()
             _repositoryOffset = 0
             _preloadRepositoryOffset = 0
+            _scoreCache.setParameter(_repository)
 
             _parameterChanged = true
             _cancelLoad = false
@@ -46,22 +51,6 @@ class FilteredPhotoList(
     }
     operator fun set(i:Int, value:PhotoMetadata){
         _filteredPhotoMetadataList[i] = value
-    }
-
-    private suspend fun initVisualInspectorAnchor(){
-        val images = mutableListOf<Bitmap>()
-        for(photoId in _query.queryLocal.aiFilterReferenceDataIdList){
-            val metadata = _repository.getPhotoMetadata(photoId)
-            Log.d("initVisualInspectorAnchor", metadata.toString())
-            val image = _repository.getPhotoBitmap(
-                metadata,
-                _visualInspector.inputImageSize.width,
-                _visualInspector.inputImageSize.height,
-                true
-            )
-            image?.let{ images.add(it) }
-        }
-        _visualInspector.setAnchorImage(images)
     }
 
     suspend fun loadNext(size:Int): Boolean {
@@ -78,7 +67,7 @@ class FilteredPhotoList(
                 if(_parameterChanged) {
                     _parameterChanged = false
                     if(_query.queryLocal.aiFilterEnabled) {
-                        initVisualInspectorAnchor()
+                        _scoreCache.setAnchorImages(_query.queryLocal.aiFilterReferenceDataIdList)
                     }
                 }
 
@@ -108,21 +97,9 @@ class FilteredPhotoList(
                     }
                     else {
                         // load bmp async
-                        val bmpList = metadataList.map { it ->
-                            async {
-                                _repository.getPhotoBitmap(
-                                    it.metadataRemote,
-                                    _visualInspector.inputImageSize.width,
-                                    _visualInspector.inputImageSize.height,
-                                    true)}
-                        }.awaitAll()
-
-                        // ai filter sync
-                        Log.d("loadNext", "begin filter")
-                        val filterResult = bmpList.map {
-                            filterPhoto(it!!)
+                        val filterResult = metadataList.map{
+                            filterPhoto(it)
                         }
-                        Log.d("loadNext", "end filter")
 
                         val filteredList = metadataList.zip(filterResult).filter { it.second }.map { it.first }
                         _filteredPhotoMetadataList.addAll(filteredList)
@@ -140,13 +117,61 @@ class FilteredPhotoList(
         }
     }
 
-    private fun filterPhoto(bmp: Bitmap):Boolean{
+    private suspend fun filterPhoto(metadata: PhotoMetadata):Boolean{
         return if(_query.queryLocal.aiFilterEnabled){
-            val score = _visualInspector.calcImageScore(bmp)
-            Log.d("filterPhoto",  "score=${score}, threshold=${_query.queryLocal.aiFilterThreshold}")
+            val score = _scoreCache.get(metadata.metadataRemote)
             score > _query.queryLocal.aiFilterThreshold
         } else {
             true
+        }
+    }
+
+    class ScoreCache(private val _visualInspector: VisualInspector) {
+        private lateinit var _repository: CachedPhotoRepository
+        private val _cache = LruCache<String, Float>(1024*1024)
+        private var _anchorIdList: List<String>? = null
+
+        fun setParameter(repository: CachedPhotoRepository){
+            _repository = repository
+        }
+
+        suspend fun setAnchorImages(idList:List<String>){
+            val images = mutableListOf<Bitmap>()
+            for(photoId in idList){
+                val metadata = _repository.getPhotoMetadata(photoId)
+                Log.d("initVisualInspectorAnchor", metadata.toString())
+                val image = loadBmp(metadata)
+                image?.let{ images.add(it) }
+            }
+            _visualInspector.setAnchorImage(images)
+
+            if(!idList.equals(_anchorIdList)){
+                // clear cache
+                _cache.evictAll()
+            }
+            _anchorIdList = idList
+        }
+
+        suspend fun get(metadata:PhotoMetadataRemote): Float {
+            var score = _cache.get(metadata.id)
+            if(score == null){
+                val bmp = loadBmp(metadata)
+                score = if(bmp == null){
+                    10000f
+                } else {
+                    _visualInspector.calcImageScore(bmp)
+                }
+                _cache.put(metadata.id, score)
+            }
+            return score
+        }
+
+        private suspend fun loadBmp(metadata: PhotoMetadataRemote): Bitmap?{
+            return _repository.getPhotoBitmap(
+                metadata,
+                _visualInspector.inputImageSize.width,
+                _visualInspector.inputImageSize.height,
+                true)
         }
     }
 }
