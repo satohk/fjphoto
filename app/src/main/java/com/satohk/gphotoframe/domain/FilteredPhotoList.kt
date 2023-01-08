@@ -6,6 +6,7 @@ import android.util.LruCache
 import com.satohk.gphotoframe.repository.remoterepository.CachedPhotoRepository
 import com.satohk.gphotoframe.repository.data.PhotoMetadata
 import com.satohk.gphotoframe.repository.data.PhotoMetadataRemote
+import com.satohk.gphotoframe.repository.data.PhotoMetadataTemp
 import com.satohk.gphotoframe.repository.data.SearchQuery
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -97,11 +98,18 @@ class FilteredPhotoList(
                     }
                     else {
                         // load bmp async
-                        val filterResult = metadataList.map{
-                            filterPhoto(it)
+                        val filteredList = if(_query.queryLocal.aiFilterEnabled){
+                            val scoreList = metadataList.map{_scoreCache.get(it.metadataRemote)}
+                            metadataList
+                                .zip(scoreList)
+                                .filter{it.second > _query.queryLocal.aiFilterThreshold}
+                                .map{ it.first.setTemp(PhotoMetadataTemp(it.second))
+                            }
+                        }
+                        else{
+                            metadataList.map{it.setTemp(null)}
                         }
 
-                        val filteredList = metadataList.zip(filterResult).filter { it.second }.map { it.first }
                         _filteredPhotoMetadataList.addAll(filteredList)
                         remain -= filteredList.size
                         _repositoryOffset += metadataList.size
@@ -114,15 +122,6 @@ class FilteredPhotoList(
         }
         else{
             return false
-        }
-    }
-
-    private suspend fun filterPhoto(metadata: PhotoMetadata):Boolean{
-        return if(_query.queryLocal.aiFilterEnabled){
-            val score = _scoreCache.get(metadata.metadataRemote)
-            score > _query.queryLocal.aiFilterThreshold
-        } else {
-            true
         }
     }
 

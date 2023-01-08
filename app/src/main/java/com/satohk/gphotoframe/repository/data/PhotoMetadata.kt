@@ -22,10 +22,21 @@ data class PhotoMetadataRemote(
 )
 
 @Serializable
+data class PhotoMetadataTemp(
+    val aiScore: Float,
+)
+
+@Serializable
 data class PhotoMetadata(
     val metadataLocal: PhotoMetadataLocal,
-    val metadataRemote: PhotoMetadataRemote
+    val metadataRemote: PhotoMetadataRemote,
+    var metadataTemp: PhotoMetadataTemp? = null
 ){
+    fun setTemp(temp: PhotoMetadataTemp?): PhotoMetadata{
+        metadataTemp = temp
+        return this
+    }
+
     companion object {
         val DIFF_UTIL = object: DiffUtil.ItemCallback<PhotoMetadata>() {
             override fun areItemsTheSame(oldItem: PhotoMetadata, newItem: PhotoMetadata)

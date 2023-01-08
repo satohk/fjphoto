@@ -20,13 +20,12 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
     var onClick: ((view:View?, position:Int) -> Unit)? = null
     var onFocus: ((view:View?, position:Int) -> Unit)? = null
     var loadThumbnail: ((photoGridItem: PhotoGridItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit)->Unit)? = null
-    var _lastSize = 0
+    private var _lastSize = 0
 
     // inflates the cell layout from xml when needed
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val view = GridItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        val viewHolder = PhotoViewHolder(view)
-        return viewHolder
+        return PhotoViewHolder(view)
     }
 
     // binds the data
@@ -76,6 +75,14 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
                             View.VISIBLE
                         else
                             View.INVISIBLE
+
+                    if(!value.metadataLocal.favorite && value.metadataTemp != null){
+                        binding.textItemInfo.text = "%.2f".format(value.metadataTemp!!.aiScore)
+                        binding.textItemInfo.visibility = View.VISIBLE
+                    }
+                    else{
+                        binding.textItemInfo.visibility = View.INVISIBLE
+                    }
                 }
                 field = value
             }
