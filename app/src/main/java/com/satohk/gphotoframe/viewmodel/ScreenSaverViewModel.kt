@@ -12,7 +12,9 @@ import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 
 
-class MainViewModel(private val _accountState: AccountState) : ViewModel() {
+class ScreenSaverViewModel : ViewModel() {
+    private val _accountState: AccountState by inject(AccountState::class.java)
+
     private val _activeUserName = MutableStateFlow<String?>(null)
     val activeUserName: StateFlow<String?> get() = _activeUserName
     private var _serviceProvider: ServiceProvider = ServiceProvider.GOOGLE

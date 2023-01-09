@@ -15,6 +15,7 @@ import com.satohk.gphotoframe.repository.data.PhotoMetadataRemote
 import com.satohk.gphotoframe.repository.data.SearchQueryRemote
 import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepository
 import org.koin.java.KoinJavaComponent
+import java.util.concurrent.TimeoutException
 
 class CachedPhotoRepository(
     private val _photoRepository: PhotoRepository
@@ -22,11 +23,11 @@ class CachedPhotoRepository(
     private val _photoMetadataLocalRepository: PhotoMetadataLocalRepository by
                                 KoinJavaComponent.inject(PhotoMetadataLocalRepository::class.java)
 
-    private val _errorOccured = MutableStateFlow(false)
-    val errorOccured: StateFlow<Boolean> get() = _errorOccured
-    private fun setError(){
-        Log.d("CachedPhotoRepository.setError", "this=${this}")
-        _errorOccured.value = true
+    private val _lastError = MutableStateFlow(ErrorType.ERR_NONE)
+    val lastError: StateFlow<ErrorType> get() = _lastError
+    private fun setError(err: ErrorType){
+        Log.d("CachedPhotoRepository.setError", "this=${this}, type=${err}")
+        _lastError.value = err
     }
 
     private class PhotoMetadataList(
@@ -82,7 +83,10 @@ class CachedPhotoRepository(
                 }
             }
             catch(e: NetworkErrorException){
-                setError()
+                setError(ErrorType.ERR_COMMUNICATION)
+            }
+            catch(e: TimeoutException){
+                setError(ErrorType.ERR_TIMEOUT)
             }
         }
 
@@ -105,7 +109,10 @@ class CachedPhotoRepository(
                 _albumCache.addAll(_photoRepository.getAlbumList())
             }
             catch(e: NetworkErrorException){
-                setError()
+                setError(ErrorType.ERR_COMMUNICATION)
+            }
+            catch(e: TimeoutException){
+                setError(ErrorType.ERR_TIMEOUT)
             }
         }
         return _albumCache
@@ -126,7 +133,10 @@ class CachedPhotoRepository(
                 }
             }
             catch(e: NetworkErrorException){
-                setError()
+                setError(ErrorType.ERR_COMMUNICATION)
+            }
+            catch(e: TimeoutException){
+                setError(ErrorType.ERR_TIMEOUT)
             }
         }
         return res
@@ -141,7 +151,10 @@ class CachedPhotoRepository(
                 _albumCoverCache.put(key, res)
             }
             catch(e: NetworkErrorException){
-                setError()
+                setError(ErrorType.ERR_COMMUNICATION)
+            }
+            catch(e: TimeoutException){
+                setError(ErrorType.ERR_TIMEOUT)
             }
         }
         return res
@@ -153,5 +166,11 @@ class CachedPhotoRepository(
 
     fun getCategoryList(): List<String>{
         return _photoRepository.getCategoryList()
+    }
+
+    enum class ErrorType{
+        ERR_NONE,
+        ERR_COMMUNICATION,
+        ERR_TIMEOUT
     }
 }

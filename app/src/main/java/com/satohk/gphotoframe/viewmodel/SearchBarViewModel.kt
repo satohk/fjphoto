@@ -86,7 +86,9 @@ class SearchBarViewModel(
                     aiFilterEnabled=enableFilter.value,
                     aiFilterThreshold= filterThreshold.value.toFloat() / 10.0f,
                     aiFilterReferenceDataIdList=selectedIdList
-                )
+                ),
+                userName = _accountState.activeAccount.value?.userName,
+                serviceProviderUrl = _accountState.activeAccount.value?.serviceProviderUrl
             )
         )
     }

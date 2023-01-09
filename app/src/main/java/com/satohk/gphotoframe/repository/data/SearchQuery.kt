@@ -40,5 +40,7 @@ data class SearchQueryLocal(
 @Serializable
 data class SearchQuery (
     val queryRemote: SearchQueryRemote = SearchQueryRemote(),
-    val queryLocal: SearchQueryLocal = SearchQueryLocal()
+    val queryLocal: SearchQueryLocal = SearchQueryLocal(),
+    val serviceProviderUrl: String? = null,
+    val userName: String? = null
 )

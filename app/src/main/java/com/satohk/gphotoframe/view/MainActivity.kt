@@ -1,24 +1,28 @@
 package com.satohk.gphotoframe.view
 
 import android.accounts.AccountManager
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.viewModels
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.gms.common.AccountPicker
 import com.satohk.gphotoframe.R
 import kotlinx.coroutines.launch
 
 import com.satohk.gphotoframe.viewmodel.MainViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
  * Loads [PhotoGridFragment].
  */
 class MainActivity : FragmentActivity() {
-    private val _viewModel: MainViewModel by viewModels()
+
+    private val _viewModel by viewModel<MainViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,27 +43,19 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun chooseAccount(){
-        val accountTypes = arrayOf(_viewModel.serviceProviderUrl)
-        val intent = AccountManager.newChooseAccountIntent(
-            null,
-            null,
-            accountTypes,
-            false,
-            null,
-            null,
-            null,
-            null
+        val accountTypes = listOf(_viewModel.serviceProviderUrl)
+        val intent = AccountPicker.newChooseAccountIntent(
+            AccountPicker.AccountChooserOptions.Builder().setAllowableAccountsTypes(accountTypes).build()
         )
-
-        startActivityForResult(intent, 101)
+        _resultLauncher.launch(intent)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == 101 && resultCode == RESULT_OK) {
+    private val _resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // There are no request codes
+            val data: Intent? = result.data
             val name = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!
-            val type = data?.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE)!!
+            val type = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE)!!
             _viewModel.setAccount(type, name, this)
         }
     }

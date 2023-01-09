@@ -17,7 +17,7 @@ class SettingRepository(private val db: AppDatabase) {
 
     private val _setting = MutableStateFlow(Setting())
     val setting: StateFlow<Setting> get() = _setting
-    private var _userName: String = ""
+    private val _id = "1"
 
     suspend fun setSlideShowInterval(value:Int){
         val newSetting = Setting(value, setting.value.numPhotoGridColumns, setting.value.screensaverSearchQuery)
@@ -33,9 +33,9 @@ class SettingRepository(private val db: AppDatabase) {
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    suspend fun load(userName: String){
+    suspend fun load(){
         val settings = withContext(ioDispatcher) {
-            db.settingDao().findByUserName(userName)
+            db.settingDao().findById(_id)
         }
 
         if(settings.isNotEmpty()){
@@ -47,8 +47,6 @@ class SettingRepository(private val db: AppDatabase) {
                 settingEntity.numPhotoGridColumns,
                 searchQuery)
         }
-
-        _userName = userName
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -56,7 +54,7 @@ class SettingRepository(private val db: AppDatabase) {
         val format = Json { encodeDefaults = false }
         val screensaverSearchQueryStr = format.encodeToString(newSetting.screensaverSearchQuery)
         val settingEntity = SettingEntity(
-            _userName,
+            _id,
             newSetting.slideShowInterval,
             newSetting.numPhotoGridColumns,
             screensaverSearchQueryStr

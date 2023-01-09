@@ -4,7 +4,7 @@ import androidx.room.*
 
 @Entity(tableName = "settings")
 data class SettingEntity(
-    @PrimaryKey @ColumnInfo(name = "id") val userName: String,
+    @PrimaryKey @ColumnInfo(name = "id") val id: String,
     @ColumnInfo(name = "slide_show_interval") val slideShowInterval: Int,
     @ColumnInfo(name = "num_photoGrid_columns") val numPhotoGridColumns: Int,
     @ColumnInfo(name = "screensaver_search_query") val screensaverSearchQuery: String
@@ -12,8 +12,8 @@ data class SettingEntity(
 
 @Dao
 interface SettingDao {
-    @Query("SELECT * FROM settings where id=:userName")
-    fun findByUserName(userName: String): List<SettingEntity>
+    @Query("SELECT * FROM settings where id=:id")
+    fun findById(id: String): List<SettingEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun save(setting: SettingEntity)

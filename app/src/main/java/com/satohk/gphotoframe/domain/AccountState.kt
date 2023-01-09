@@ -14,7 +14,6 @@ import com.satohk.gphotoframe.repository.remoterepository.GooglePhotoRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import org.koin.java.KoinJavaComponent.inject
 
 class AccountState(private val _context: Context) {
@@ -48,12 +47,6 @@ class AccountState(private val _context: Context) {
     fun setAccount(account:AccountWithToken?){
         _activeAccount.value = account
 
-        account?.let {
-            _scope.launch {
-                settingRepository.load(it.userName)
-            }
-        }
-
         val repo = this.makePhotoRepository(account)
         _photoRepository.value = repo
         Log.d("setActiveAccount", "_photoRepository.value=${_photoRepository.value}")
@@ -61,17 +54,22 @@ class AccountState(private val _context: Context) {
         repo?.let { it ->
             val scope = CoroutineScope(Job() + Dispatchers.Main)
             scope.launch {
-                it.errorOccured.collect { error ->
-                    if(error && _photoRepository.value != null) {
+                it.lastError.collect { error ->
+                    if(_photoRepository.value != null) {
                         Log.d("AccountState", "errorOccured. current account $_activeAccount.value")
-                        _activeAccount.value?.let {
-                            Toast.makeText(_context, _context.getText(R.string.msg_network_error), Toast.LENGTH_LONG).show()
-                            val manager = AccountManager.get(_context)
-                            manager.invalidateAuthToken(it.serviceProviderUrl, it.accessToken)
+                        if(error == CachedPhotoRepository.ErrorType.ERR_COMMUNICATION){
+                            _activeAccount.value?.let {
+                                Toast.makeText(_context, _context.getText(R.string.msg_network_error), Toast.LENGTH_LONG).show()
+                                val manager = AccountManager.get(_context)
+                                manager.invalidateAuthToken(it.serviceProviderUrl, it.accessToken)
+                            }
+                            _activeAccount.value = null
+                            _photoRepository.value = null
+                            scope.cancel()
                         }
-                        _activeAccount.value = null
-                        _photoRepository.value = null
-                        scope.cancel()
+                        else if(error == CachedPhotoRepository.ErrorType.ERR_TIMEOUT){
+                            Toast.makeText(_context, _context.getText(R.string.msg_timeout_error), Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }

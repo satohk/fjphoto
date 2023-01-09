@@ -67,20 +67,27 @@ class MenuBarViewModel(
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_ALL,
                                 SideBarAction(SideBarActionType.ENTER_GRID,
-                                            gridContents=GridContents())
+                                            gridContents=GridContents(searchQuery= SearchQuery(
+                                                userName = _accountState.activeAccount.value?.userName,
+                                                serviceProviderUrl = _accountState.activeAccount.value?.serviceProviderUrl
+                                            )))
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_PHOTO,
                                 SideBarAction(SideBarActionType.ENTER_GRID,
                                     gridContents=GridContents(searchQuery= SearchQuery(
-                                        SearchQueryRemote(mediaType= MediaType.PHOTO)
+                                        SearchQueryRemote(mediaType= MediaType.PHOTO),
+                                        userName = _accountState.activeAccount.value?.userName,
+                                        serviceProviderUrl = _accountState.activeAccount.value?.serviceProviderUrl
                                     )))
                             ),
                             MenuBarItem(
                                 MenuBarItem.MenuBarItemType.SHOW_MOVIE,
                                 SideBarAction(SideBarActionType.ENTER_GRID,
                                     gridContents=GridContents(searchQuery=SearchQuery(
-                                        SearchQueryRemote(mediaType= MediaType.VIDEO)
+                                        SearchQueryRemote(mediaType= MediaType.VIDEO),
+                                        userName = _accountState.activeAccount.value?.userName,
+                                        serviceProviderUrl = _accountState.activeAccount.value?.serviceProviderUrl
                                     )))
                             ),
                             MenuBarItem(
@@ -110,9 +117,13 @@ class MenuBarViewModel(
                                 MenuBarItem(
                                     MenuBarItem.MenuBarItemType.ALBUM_ITEM,
                                     SideBarAction(SideBarActionType.ENTER_GRID,
-                                        gridContents=GridContents(searchQuery=SearchQuery(
-                                            SearchQueryRemote(album=album)
-                                        ))),
+                                        gridContents=GridContents(
+                                            searchQuery=SearchQuery(
+                                                SearchQueryRemote(album=album),
+                                                userName = _accountState.activeAccount.value?.userName,
+                                                serviceProviderUrl = _accountState.activeAccount.value?.serviceProviderUrl
+                                            )
+                                        )),
                                     album=album
                                 )
                             }

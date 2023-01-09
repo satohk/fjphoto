@@ -1,5 +1,6 @@
 <resources>
     <string name="msg_network_error">通信エラーが発生しました。再ログインします。</string>
+    <string name="msg_timeout_error">通信がタイムアウトしました。</string>
     <string name="msg_video_load_error">動画ロードに失敗しました。</string>
     <string name="msg_started_learning">学習を開始しました。</string>
     <string name="msg_finished_learning">学習を正常終了しました.</string>

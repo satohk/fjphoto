@@ -13,6 +13,10 @@ import com.satohk.gphotoframe.repository.localrepository.AppDatabase
 import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepository
 import com.satohk.gphotoframe.repository.localrepository.SettingRepository
 import com.satohk.gphotoframe.viewmodel.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.java.KoinJavaComponent
 
@@ -23,6 +27,8 @@ class GPApplication : Application() {
         Log.d("GPApplication", "onCreate")
         super.onCreate()
         setupKoin()
+
+        modulesAsyncInit()
     }
 
     override fun onTerminate() {
@@ -48,11 +54,21 @@ class GPApplication : Application() {
         single { InferenceModel( get() ) }
         single { VisualInspector( get() ) }
         single { FilteredPhotoList( get() ) }
+        viewModel { MainViewModel( get()) }
         viewModel { PhotoGridWithSideBarViewModel() }
         viewModel { PhotoGridViewModel( get(), get() ) }
         viewModel { SettingBarViewModel( get() ) }
         viewModel { SearchBarViewModel( get(), get() ) }
         viewModel { MenuBarViewModel( get()) }
         viewModel { PhotoViewModel( get()) }
+    }
+
+    private fun modulesAsyncInit(){
+        val scope = CoroutineScope(Job() + Dispatchers.IO)
+
+        val settingRepository: SettingRepository by KoinJavaComponent.inject(SettingRepository::class.java)
+        scope.launch{
+            settingRepository.load()
+        }
     }
 }

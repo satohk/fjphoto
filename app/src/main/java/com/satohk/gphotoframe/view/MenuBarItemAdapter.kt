@@ -83,7 +83,8 @@ class MenuBarItemAdapter:
         loadIcon?.invoke(item, 96, 96){
             it?.let {
                 Log.d("debug", "loaded bmp :width=%d, height=%d".format(it.width, it.height))
-                val drawable = BitmapDrawable(it)
+                val drawable =
+                    BitmapDrawable(it)
                 holder.binding.button.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
                 holder.binding.button.setCompoundDrawablePadding(20)
             }

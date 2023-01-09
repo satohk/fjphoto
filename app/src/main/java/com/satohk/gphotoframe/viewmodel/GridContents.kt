@@ -4,5 +4,5 @@ import com.satohk.gphotoframe.repository.data.SearchQuery
 import java.io.Serializable
 
 data class GridContents(
-    val searchQuery: SearchQuery = SearchQuery()
+    val searchQuery: SearchQuery
 ) : Serializable{}
