@@ -25,10 +25,8 @@ class AccountState(private val _context: Context) {
 
     val settingRepository: SettingRepository by inject(SettingRepository::class.java)
 
-    private val _scope = CoroutineScope(Job() + Dispatchers.IO)
-
     fun requestToken(providerUrl:String, userName:String, activity: Activity){
-        Log.d("setActiveAccount", "${providerUrl}, ${userName}")
+        Log.d("setActiveAccount", "accountType='$providerUrl', username='$userName'")
         val account = Account(userName, providerUrl)
         val manager = AccountManager.get(_context)
         val authTokenType = "oauth2:https://www.googleapis.com/auth/photoslibrary.readonly"
@@ -39,6 +37,8 @@ class AccountState(private val _context: Context) {
                     val token = result.getString(AccountManager.KEY_AUTHTOKEN)
                     setAccount(AccountWithToken(providerUrl, userName, token!!))
                 } catch (e: AuthenticatorException) {
+                    Log.d("getAuthToken callback", "exception:${e.message}")
+                    Log.d("getAuthToken callback", "exception:${e}")
                     e.printStackTrace()
                 }
             }, null)
@@ -56,7 +56,7 @@ class AccountState(private val _context: Context) {
             scope.launch {
                 it.lastError.collect { error ->
                     if(_photoRepository.value != null) {
-                        Log.d("AccountState", "errorOccured. current account $_activeAccount.value")
+                        Log.d("AccountState", "errorOccured. error=$error, current account ${_activeAccount.value}")
                         if(error == CachedPhotoRepository.ErrorType.ERR_COMMUNICATION){
                             _activeAccount.value?.let {
                                 Toast.makeText(_context, _context.getText(R.string.msg_network_error), Toast.LENGTH_LONG).show()

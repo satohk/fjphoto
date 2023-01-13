@@ -36,15 +36,18 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".view.ScreenSaverActivity"
-            android:taskAffinity="com.satohk.gphotoframe.screensaver" />
+            android:taskAffinity="com.satohk.gphotoframe.screensaver"
+            android:networkSecurityConfig="@xml/network_security_config" />
 
         <service
             android:name=".service.ScreenSaverService"
             android:exported="true"
             android:icon="@mipmap/ic_banner"
             android:label="@string/app_name"
+            android:networkSecurityConfig="@xml/network_security_config"
             android:permission="android.permission.BIND_DREAM_SERVICE">
             <intent-filter>
                 <action android:name="android.service.dreams.DreamService" />

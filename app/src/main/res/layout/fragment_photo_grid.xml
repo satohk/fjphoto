@@ -54,8 +54,8 @@
                 android:checked="false"
                 android:text="select"
                 android:textColor="@color/menu_bar_button_text"
-                android:textOff="select mode"
-                android:textOn="select mode" />
+                android:textOff="select"
+                android:textOn="select" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

@@ -15,7 +15,7 @@ import com.satohk.gphotoframe.repository.data.PhotoMetadataRemote
 import com.satohk.gphotoframe.repository.data.SearchQueryRemote
 import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepository
 import org.koin.java.KoinJavaComponent
-import java.util.concurrent.TimeoutException
+import java.net.SocketTimeoutException
 
 class CachedPhotoRepository(
     private val _photoRepository: PhotoRepository
@@ -85,7 +85,7 @@ class CachedPhotoRepository(
             catch(e: NetworkErrorException){
                 setError(ErrorType.ERR_COMMUNICATION)
             }
-            catch(e: TimeoutException){
+            catch(e: SocketTimeoutException){
                 setError(ErrorType.ERR_TIMEOUT)
             }
         }
@@ -111,7 +111,7 @@ class CachedPhotoRepository(
             catch(e: NetworkErrorException){
                 setError(ErrorType.ERR_COMMUNICATION)
             }
-            catch(e: TimeoutException){
+            catch(e: SocketTimeoutException){
                 setError(ErrorType.ERR_TIMEOUT)
             }
         }
@@ -135,7 +135,7 @@ class CachedPhotoRepository(
             catch(e: NetworkErrorException){
                 setError(ErrorType.ERR_COMMUNICATION)
             }
-            catch(e: TimeoutException){
+            catch(e: SocketTimeoutException){
                 setError(ErrorType.ERR_TIMEOUT)
             }
         }
@@ -153,7 +153,7 @@ class CachedPhotoRepository(
             catch(e: NetworkErrorException){
                 setError(ErrorType.ERR_COMMUNICATION)
             }
-            catch(e: TimeoutException){
+            catch(e: SocketTimeoutException){
                 setError(ErrorType.ERR_TIMEOUT)
             }
         }

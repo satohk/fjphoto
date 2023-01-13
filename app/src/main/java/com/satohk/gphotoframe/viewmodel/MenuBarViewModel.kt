@@ -60,81 +60,105 @@ class MenuBarViewModel(
         this.sideBarType = sideBarType
         _itemList.value = listOf()
         viewModelScope.launch {
-            when (sideBarType) {
-                SideBarType.TOP -> {
-                    _itemList.emit(
-                        listOf(
-                            MenuBarItem(
-                                MenuBarItem.MenuBarItemType.SHOW_ALL,
-                                SideBarAction(SideBarActionType.ENTER_GRID,
-                                            gridContents=GridContents(searchQuery= SearchQuery(
-                                                userName = _accountState.activeAccount.value?.userName,
-                                                serviceProviderUrl = _accountState.activeAccount.value?.serviceProviderUrl
-                                            )))
-                            ),
-                            MenuBarItem(
-                                MenuBarItem.MenuBarItemType.SHOW_PHOTO,
-                                SideBarAction(SideBarActionType.ENTER_GRID,
-                                    gridContents=GridContents(searchQuery= SearchQuery(
-                                        SearchQueryRemote(mediaType= MediaType.PHOTO),
-                                        userName = _accountState.activeAccount.value?.userName,
-                                        serviceProviderUrl = _accountState.activeAccount.value?.serviceProviderUrl
-                                    )))
-                            ),
-                            MenuBarItem(
-                                MenuBarItem.MenuBarItemType.SHOW_MOVIE,
-                                SideBarAction(SideBarActionType.ENTER_GRID,
-                                    gridContents=GridContents(searchQuery=SearchQuery(
-                                        SearchQueryRemote(mediaType= MediaType.VIDEO),
-                                        userName = _accountState.activeAccount.value?.userName,
-                                        serviceProviderUrl = _accountState.activeAccount.value?.serviceProviderUrl
-                                    )))
-                            ),
-                            MenuBarItem(
-                                MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST,
-                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
-                                    sideBarType=SideBarType.ALBUM_LIST)
-                            ),
-                            MenuBarItem(
-                                MenuBarItem.MenuBarItemType.SEARCH,
-                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
-                                    sideBarType=SideBarType.SEARCH)
-                            ),
-                            MenuBarItem(
-                                MenuBarItem.MenuBarItemType.SETTING,
-                                SideBarAction(SideBarActionType.CHANGE_SIDEBAR,
-                                    sideBarType=SideBarType.SETTING)
-                            ),
-                        )
-                    )
-                }
-                SideBarType.ALBUM_LIST -> {
-                    if (_accountState.photoRepository.value != null) {
-                        val albumList = _accountState.photoRepository.value!!.getAlbumList()
-
+            _accountState.activeAccount.collect { account ->
+                when (sideBarType) {
+                    SideBarType.TOP -> {
                         _itemList.emit(
-                            albumList.map { album ->
+                            listOf(
                                 MenuBarItem(
-                                    MenuBarItem.MenuBarItemType.ALBUM_ITEM,
-                                    SideBarAction(SideBarActionType.ENTER_GRID,
-                                        gridContents=GridContents(
-                                            searchQuery=SearchQuery(
-                                                SearchQueryRemote(album=album),
-                                                userName = _accountState.activeAccount.value?.userName,
-                                                serviceProviderUrl = _accountState.activeAccount.value?.serviceProviderUrl
+                                    MenuBarItem.MenuBarItemType.SHOW_ALL,
+                                    SideBarAction(
+                                        SideBarActionType.ENTER_GRID,
+                                        gridContents = GridContents(
+                                            searchQuery = SearchQuery(
+                                                userName = account?.userName,
+                                                serviceProviderUrl = account?.serviceProviderUrl
                                             )
-                                        )),
-                                    album=album
-                                )
-                            }
+                                        )
+                                    )
+                                ),
+                                MenuBarItem(
+                                    MenuBarItem.MenuBarItemType.SHOW_PHOTO,
+                                    SideBarAction(
+                                        SideBarActionType.ENTER_GRID,
+                                        gridContents = GridContents(
+                                            searchQuery = SearchQuery(
+                                                SearchQueryRemote(mediaType = MediaType.PHOTO),
+                                                userName = account?.userName,
+                                                serviceProviderUrl = account?.serviceProviderUrl
+                                            )
+                                        )
+                                    )
+                                ),
+                                MenuBarItem(
+                                    MenuBarItem.MenuBarItemType.SHOW_MOVIE,
+                                    SideBarAction(
+                                        SideBarActionType.ENTER_GRID,
+                                        gridContents = GridContents(
+                                            searchQuery = SearchQuery(
+                                                SearchQueryRemote(mediaType = MediaType.VIDEO),
+                                                userName = account?.userName,
+                                                serviceProviderUrl = account?.serviceProviderUrl
+                                            )
+                                        )
+                                    )
+                                ),
+                                MenuBarItem(
+                                    MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST,
+                                    SideBarAction(
+                                        SideBarActionType.CHANGE_SIDEBAR,
+                                        sideBarType = SideBarType.ALBUM_LIST
+                                    )
+                                ),
+                                MenuBarItem(
+                                    MenuBarItem.MenuBarItemType.SEARCH,
+                                    SideBarAction(
+                                        SideBarActionType.CHANGE_SIDEBAR,
+                                        sideBarType = SideBarType.SEARCH
+                                    )
+                                ),
+                                MenuBarItem(
+                                    MenuBarItem.MenuBarItemType.SETTING,
+                                    SideBarAction(
+                                        SideBarActionType.CHANGE_SIDEBAR,
+                                        sideBarType = SideBarType.SETTING
+                                    )
+                                ),
+                            )
                         )
                     }
-                    else{
-                        Log.d("loadNextImageList", "_accountState.photoRepository.value is null")
-                    }
-                }
-                else -> {
+                    SideBarType.ALBUM_LIST -> {
+                        if (_accountState.photoRepository.value != null) {
+                            val albumList = _accountState.photoRepository.value!!.getAlbumList()
 
+                            _itemList.emit(
+                                albumList.map { album ->
+                                    MenuBarItem(
+                                        MenuBarItem.MenuBarItemType.ALBUM_ITEM,
+                                        SideBarAction(
+                                            SideBarActionType.ENTER_GRID,
+                                            gridContents = GridContents(
+                                                searchQuery = SearchQuery(
+                                                    SearchQueryRemote(album = album),
+                                                    userName = account?.userName,
+                                                    serviceProviderUrl = account?.serviceProviderUrl
+                                                )
+                                            )
+                                        ),
+                                        album = album
+                                    )
+                                }
+                            )
+                        } else {
+                            Log.d(
+                                "loadNextImageList",
+                                "_accountState.photoRepository.value is null"
+                            )
+                        }
+                    }
+                    else -> {
+
+                    }
                 }
             }
         }

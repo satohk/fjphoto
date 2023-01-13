@@ -55,6 +55,7 @@ class GPApplication : Application() {
         single { VisualInspector( get() ) }
         single { FilteredPhotoList( get() ) }
         viewModel { MainViewModel( get()) }
+        viewModel { ScreenSaverViewModel( get()) }
         viewModel { PhotoGridWithSideBarViewModel() }
         viewModel { PhotoGridViewModel( get(), get() ) }
         viewModel { SettingBarViewModel( get() ) }

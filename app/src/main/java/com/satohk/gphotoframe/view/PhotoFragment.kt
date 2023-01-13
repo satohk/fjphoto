@@ -22,7 +22,7 @@ import com.satohk.gphotoframe.viewmodel.GridContents
 import com.satohk.gphotoframe.viewmodel.PhotoViewModel
 import kotlinx.android.synthetic.main.fragment_photo.*
 import kotlinx.coroutines.launch
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import java.time.format.DateTimeFormatter
 
 
@@ -30,27 +30,21 @@ import java.time.format.DateTimeFormatter
  * Loads a grid of cards with movies to browse.
  */
 class PhotoFragment() : Fragment(R.layout.fragment_photo) {
-    private val _viewModel by viewModel<PhotoViewModel>()
+    private val _viewModel by sharedViewModel<PhotoViewModel>()
     private val _imageViews = mutableListOf<ImageView>()
     private val _videoViews = mutableListOf<StyledPlayerView>()
     private val _videoPlayers = mutableListOf<ExoPlayer>()
     private var _currentMediaView: View? = null
-    private var _slideshowMode: Boolean = true
-    private var _startIndex: Int = 0
-    private var _contents: GridContents? = null  // If null, use the value set in Setting
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("PhotoFragment", "onViewCreated")
 
         if(arguments != null) {
-            _slideshowMode = arguments!!.getBoolean("slideShow")
-            _startIndex = arguments!!.getInt("showIndex")
-            _contents = arguments!!.get("contents") as GridContents?
+            _viewModel.slideShow = arguments!!.getBoolean("slideShow")
+            _viewModel.showIndex = arguments!!.getInt("showIndex")
+            _viewModel.gridContents = arguments!!.get("contents") as GridContents?
         }
-
-        Log.d("PhotoFragment", _slideshowMode.toString())
-        Log.d("PhotoFragment", _startIndex.toString())
-        Log.d("PhotoFragment", _contents.toString())
 
         _imageViews.add(view.findViewById(R.id.imageView1))
         _imageViews.add(view.findViewById(R.id.imageView2))
@@ -121,12 +115,14 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     }
 
     override fun onStart() {
+        Log.d("PhotoFragment", "onStart")
         super.onStart()
         initializeVideoPlayer()
-        _viewModel.onStart(_contents, _slideshowMode, _startIndex)
+        _viewModel.start()
     }
 
     override fun onStop() {
+        Log.d("PhotoFragment", "onStop")
         super.onStop()
         releaseVidePlayer()
         _viewModel.onStop()
@@ -174,7 +170,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     private fun changeMedia(media: PhotoViewModel.Media){
         Log.d("changeMedia", media.toString())
 
-        val fadeDuration = if(_slideshowMode) 1500L else 100 // msec
+        val fadeDuration = if(_viewModel.slideShow) 1500L else 100 // msec
         var nextView: View? = null
 
         if(media.bitmap != null){ // next media is bitmap

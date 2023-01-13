@@ -30,7 +30,7 @@ class PhotoViewModel(
         val videoPlayer: ExoPlayer?
     )
 
-    private lateinit var _videoPlayers: List<ExoPlayer>
+    private var _videoPlayers: List<ExoPlayer> = listOf()
     private val _currentMedia = MutableStateFlow(Media(null, null))
     val currentMedia: StateFlow<Media> get() = _currentMedia
     private var _currentPlayer: ExoPlayer? = null
@@ -39,20 +39,20 @@ class PhotoViewModel(
     var currentPhotoMetadata: PhotoMetadata? = null
         private set
 
-    private var _gridContents: GridContents? = null
-
     private val _filteredPhotoList: FilteredPhotoList by KoinJavaComponent.inject(FilteredPhotoList::class.java)
     private var _photoSelector: PhotoSelector? = null
-    private var _slideShow: Boolean = true
-    private var _showIndex: Int = 0
+
+    var gridContents: GridContents? = null
+    var slideShow: Boolean = true
+    var showIndex: Int = 0
 
     private val _errorMessageId = MutableSharedFlow<Int>()
     val errorMessageId: SharedFlow<Int?> get() = _errorMessageId
 
     init{
         _accountState.photoRepository.onEach {
-            if((it != null) && (_gridContents != null)){
-                initPhotoSelector(it, _gridContents!!, _slideShow, _showIndex)
+            if((it != null) && (gridContents != null)){
+                start()
             }
         }.launchIn(viewModelScope)
     }
@@ -74,26 +74,26 @@ class PhotoViewModel(
         return _videoPlayers[0]  // "This code won't run"
     }
 
-    fun onStart(gridContents: GridContents?, slideShow: Boolean, showIndex: Int){
-        if(_accountState.photoRepository.value != null){
-            if (gridContents != null) {
-                this._gridContents = gridContents
-            }
-            else{
-                this._gridContents = GridContents(
-                    _accountState.settingRepository.setting.value.screensaverSearchQuery
-                )
-            }
-            _slideShow = slideShow
-            _showIndex = showIndex
-            viewModelScope.launch {
-                initPhotoSelector(
-                    _accountState.photoRepository.value!!,
-                    this@PhotoViewModel._gridContents!!,
-                    _slideShow,
-                    _showIndex
-                )
-            }
+    fun start(){
+        Log.d("start", "_accountState.photoRepository.value=${_accountState.photoRepository.value}")
+        Log.d("start", "gridContents=$gridContents")
+        Log.d("start", "_videoPlayers=$_videoPlayers")
+        if(_accountState.photoRepository.value == null) {
+            return
+        }
+        if(gridContents == null) {
+            return
+        }
+        if(_videoPlayers.isEmpty()) {
+            return
+        }
+        viewModelScope.launch {
+            initPhotoSelector(
+                _accountState.photoRepository.value!!,
+                gridContents!!,
+                slideShow,
+                showIndex
+            )
         }
     }
 
@@ -155,7 +155,7 @@ class PhotoViewModel(
                         player.setMediaItem(mediaItem)
                         player.playWhenReady = true
                         player.prepare()
-                        if(!this._slideShow){ // Change media immediately if in manual mode
+                        if(!this.slideShow){ // Change media immediately if in manual mode
                             _currentMedia.value = Media(null, _currentPlayer)
                         }
                     }
@@ -181,7 +181,7 @@ class PhotoViewModel(
     override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
         Log.d("onPlayerStateChanged", "playWhenReady=${playWhenReady}, playbackState=${playbackState}")
         if(playbackState == ExoPlayer.STATE_READY){
-            if(this._slideShow) { // Change media when ready if in slideshow mode
+            if(this.slideShow) { // Change media when ready if in slideshow mode
                 _currentMedia.value = Media(null, _currentPlayer)
             }
         }

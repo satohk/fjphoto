@@ -4,4 +4,5 @@
     <string name="msg_video_load_error">Failed to load video.</string>
     <string name="msg_started_learning">Started learning.</string>
     <string name="msg_finished_learning">Successfully finished learning.</string>
+    <string name="msg_set_to_slideshow">Set this content to slideshow.</string>
 </resources>

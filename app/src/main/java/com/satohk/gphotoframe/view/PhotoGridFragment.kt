@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
+import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -47,7 +48,10 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
         }
 
         val setToSlideshowButton = view.findViewById<Button>(R.id.setToSlideshowButton)
-        setToSlideshowButton.setOnClickListener { _viewModel.onClickSetToSlideshowButton() }
+        setToSlideshowButton.setOnClickListener {
+            Toast.makeText(this.context, this.getText(R.string.msg_set_to_slideshow), Toast.LENGTH_LONG).show()
+            _viewModel.onClickSetToSlideshowButton()
+        }
 
         val slideShowButton = view.findViewById<Button>(R.id.playButton)
         slideShowButton.setOnClickListener{ _viewModel.onClickSlideshowButton() }
