@@ -70,6 +70,9 @@ class AccountState(private val _context: Context) {
                         else if(error == CachedPhotoRepository.ErrorType.ERR_TIMEOUT){
                             Toast.makeText(_context, _context.getText(R.string.msg_timeout_error), Toast.LENGTH_LONG).show()
                         }
+                        else if(error == CachedPhotoRepository.ErrorType.ERR_DISCONNECTED){
+                            Toast.makeText(_context, _context.getText(R.string.msg_disconnected), Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }

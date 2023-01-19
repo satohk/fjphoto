@@ -16,6 +16,7 @@ import com.satohk.gphotoframe.repository.data.SearchQueryRemote
 import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepository
 import org.koin.java.KoinJavaComponent
 import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 class CachedPhotoRepository(
     private val _photoRepository: PhotoRepository
@@ -88,6 +89,9 @@ class CachedPhotoRepository(
             catch(e: SocketTimeoutException){
                 setError(ErrorType.ERR_TIMEOUT)
             }
+            catch(e: UnknownHostException){
+                setError(ErrorType.ERR_DISCONNECTED)
+            }
         }
 
         return if((list != null) && (list.size >= offset)){
@@ -114,6 +118,9 @@ class CachedPhotoRepository(
             catch(e: SocketTimeoutException){
                 setError(ErrorType.ERR_TIMEOUT)
             }
+            catch(e: UnknownHostException){
+                setError(ErrorType.ERR_DISCONNECTED)
+            }
         }
         return _albumCache
     }
@@ -138,6 +145,9 @@ class CachedPhotoRepository(
             catch(e: SocketTimeoutException){
                 setError(ErrorType.ERR_TIMEOUT)
             }
+            catch(e: UnknownHostException){
+                setError(ErrorType.ERR_DISCONNECTED)
+            }
         }
         return res
     }
@@ -156,6 +166,9 @@ class CachedPhotoRepository(
             catch(e: SocketTimeoutException){
                 setError(ErrorType.ERR_TIMEOUT)
             }
+            catch(e: UnknownHostException){
+                setError(ErrorType.ERR_DISCONNECTED)
+            }
         }
         return res
     }
@@ -171,6 +184,7 @@ class CachedPhotoRepository(
     enum class ErrorType{
         ERR_NONE,
         ERR_COMMUNICATION,
-        ERR_TIMEOUT
+        ERR_TIMEOUT,
+        ERR_DISCONNECTED,
     }
 }

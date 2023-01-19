@@ -10,6 +10,7 @@ import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.findNavController
 import com.satohk.gphotoframe.databinding.FragmentSettingBarBinding
 import com.satohk.gphotoframe.viewmodel.SettingBarViewModel
 import kotlinx.coroutines.launch
@@ -57,12 +58,8 @@ class SettingBarFragment() : Fragment(), SideBarFragmentInterface {
 
         // set key listener
         val keyHandleView: List<View> = listOf(
-            binding.spinnerSlideshowInterval,
-            binding.buttonOK
+            binding.spinnerSlideshowInterval
         )
-        keyHandleView.forEach{v: View ->
-            v.setOnKeyListener(onKey)
-        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -76,7 +73,10 @@ class SettingBarFragment() : Fragment(), SideBarFragmentInterface {
             }
         }
 
-        binding.buttonOK.setOnClickListener{_viewModel.enterToGrid()}
+        binding.buttonOSS.setOnClickListener {
+            val action = PhotoGridWithSideBarFragmentDirections.actionPhotoGridWithSidebarFragmentToOssListFragment()
+            view.findNavController().navigate(action)
+        }
     }
 
     override fun onFocus(){

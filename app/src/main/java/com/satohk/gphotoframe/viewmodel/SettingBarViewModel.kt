@@ -30,6 +30,8 @@ class SettingBarViewModel(
     ))
     val columnNumList: StateFlow<List<String>> get() = _columnNumList
 
+    val slideshowModeIndex: MutableStateFlow<Int> = MutableStateFlow(0)
+
     private val _displayMessageId = MutableSharedFlow<Int>()
     val displayMessageId: SharedFlow<Int?> get() = _displayMessageId
 

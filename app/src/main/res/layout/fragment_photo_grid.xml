@@ -29,7 +29,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/button_round"
-                android:text="Play"
+                android:text="@string/button_play"
                 android:textAllCaps="true"
                 android:textColor="@color/menu_bar_button_text" />
 
@@ -41,7 +41,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/button_round"
-                android:text="Set Slideshow"
+                android:text="@string/button_set_slideshow"
                 android:textColor="@color/menu_bar_button_text" />
 
             <ToggleButton
@@ -52,10 +52,10 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_round"
                 android:checked="false"
-                android:text="select"
+                android:text="@string/button_select"
                 android:textColor="@color/menu_bar_button_text"
-                android:textOff="select"
-                android:textOn="select" />
+                android:textOff="@string/button_select"
+                android:textOn="@string/button_select" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

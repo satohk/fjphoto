@@ -14,7 +14,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/menu_bar_button"
-            android:contentDescription="@string/row_title_search"
             android:paddingLeft="@dimen/menu_button_padding_left"
             android:textAlignment="textStart"
             android:textAllCaps="false"

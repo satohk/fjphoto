@@ -1,29 +1,47 @@
 <resources>
     <string name="app_name">FJPhoto</string>
-    <string name="row_title_main">Main</string>
-    <string name="row_title_album">Album</string>
-    <string name="row_title_year">Year</string>
-    <string name="row_title_search">Search</string>
 
-    <string name="menu_item_title_all">All</string>
-    <string name="menu_item_title_photo">Photo</string>
-    <string name="menu_item_title_movie">Movie</string>
-    <string name="menu_item_title_favorite">Favorite</string>
-    <string name="menu_item_title_search">Search</string>
-    <string name="menu_item_title_setting">Setting</string>
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
+    <string name="menu_item_all">All</string>
+    <string name="menu_item_photo">Photo</string>
+    <string name="menu_item_movie">Movie</string>
+    <string name="menu_item_album">Album</string>
+    <string name="menu_item_favorite">Favorite</string>
+    <string name="menu_item_search">Search</string>
+    <string name="menu_item_setting">Setting</string>
 
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
+    <string name="search_group_type">Type</string>
+    <string name="search_group_date_range">Date Range</string>
+    <string name="search_group_ai_filter">AI Filter</string>
+    <string name="search_item_media_type">Media Type</string>
+    <string name="search_item_content_type">Content Type</string>
+    <string name="search_item_date_from">From</string>
+    <string name="search_item_date_to">To</string>
+    <string name="search_item_filter_enabled">Enable</string>
+    <string name="search_item_filter_threshold">Threshold</string>
 
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="setting_group_slideshow">Slideshow</string>
+    <string name="setting_group_grid">Grid</string>
+    <string name="setting_group_info">info</string>
+    <string name="setting_item_slideshow_interval">Interval [sec]</string>
+    <string name="setting_item_slideshow_order">Order</string>
+    <string name="setting_item_slideshow_order_sequential">Sequential</string>
+    <string name="setting_item_slideshow_order_random">Random</string>
+    <string name="setting_item_slideshow_mute">Mute</string>
+    <string name="setting_item_column_num">Column Num</string>
+    <string name="setting_item_oss">OSS List</string>
+    <string name="setting_item_homepage">Homepage</string>
+
+    <string-array name="setting_item_order_entries">
+        <item>Sequential</item>
+        <item>Random</item>
+    </string-array>
+
+    <string name="button_ok">OK</string>
+    <string name="button_play">Play</string>
+    <string name="button_set_slideshow">Set slideshow</string>
+    <string name="button_select">Select</string>
+
     <string name="ai_icon_content_description">ai icon</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -1,29 +1,43 @@
 <resources>
     <string name="app_name">FJPhoto</string>
-    <string name="row_title_main">メイン</string>
-    <string name="row_title_album">アルバム</string>
-    <string name="row_title_year">年</string>
-    <string name="row_title_search">検索</string>
 
-    <string name="menu_item_title_all">すべて</string>
-    <string name="menu_item_title_photo">写真</string>
-    <string name="menu_item_title_movie">動画</string>
-    <string name="menu_item_title_favorite">お気に入り</string>
-    <string name="menu_item_title_search">検索</string>
-    <string name="menu_item_title_setting">設定</string>
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
+    <string name="menu_item_all">すべて</string>
+    <string name="menu_item_photo">写真</string>
+    <string name="menu_item_movie">動画</string>
+    <string name="menu_item_album">アルバム</string>
+    <string name="menu_item_favorite">お気に入り</string>
+    <string name="menu_item_search">検索</string>
+    <string name="menu_item_setting">設定</string>
 
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
+    <string name="search_group_type">Type</string>
+    <string name="search_group_date_range">日付範囲</string>
+    <string name="search_group_ai_filter">AIフィルタ</string>
+    <string name="search_item_media_type">メディア</string>
+    <string name="search_item_content_type">コンテンツ</string>
+    <string name="search_item_date_from">From</string>
+    <string name="search_item_date_to">To</string>
+    <string name="search_item_filter_enabled">有効</string>
+    <string name="search_item_filter_threshold">フィルタ閾値</string>
 
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="setting_group_slideshow">Slideshow</string>
+    <string name="setting_group_grid">Grid</string>
+    <string name="setting_group_info">Info</string>
+    <string name="setting_item_slideshow_interval">表示間隔 [秒]</string>
+    <string name="setting_item_slideshow_order">表示順序</string>
+    <string name="setting_item_slideshow_mute">ミュート</string>
+    <string name="setting_item_column_num">表示列数</string>
+    <string name="setting_item_oss">使用OSS</string>
+    <string name="setting_item_homepage">ホームページ</string>
+
+    <string-array name="setting_item_order_entries">
+        <item>降順</item>
+        <item>ランダム</item>
+    </string-array>
+
+    <string name="button_ok">OK</string>
+    <string name="button_play">再生</string>
+    <string name="button_set_slideshow">スライドショーに設定</string>
+    <string name="button_select">選択</string>
+
     <string name="ai_icon_content_description">ai icon</string>
 </resources>

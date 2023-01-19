@@ -26,6 +26,9 @@
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/action_photoGridWithSidebarFragment_to_ossListFragment"
+            app:destination="@id/ossListFragment" />
     </fragment>
 
     <fragment
@@ -50,6 +53,16 @@
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim"
             app:popUpTo="@id/photoFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/ossListFragment"
+        android:name="com.satohk.gphotoframe.view.OssListFragment"
+        android:label="OssListFragment" >
+        <action
+            android:id="@+id/action_ossListFragment_pop"
+            app:popUpTo="@id/ossListFragment"
             app:popUpToInclusive="true" />
     </fragment>
 </navigation>

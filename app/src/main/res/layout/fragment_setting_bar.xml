@@ -26,10 +26,24 @@
                             android:padding="@dimen/menu_button_padding_left">
 
                                 <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/setting_group_slideshow"
+                                    android:textColor="@color/menu_bar_group_text"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="@dimen/menu_button_padding_left">
+
+                                <TextView
                                     android:id="@+id/textView"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Show interval [sec]"
+                                    android:text="@string/setting_item_slideshow_interval"
                                     android:textColor="@color/menu_bar_button_text"
                                     android:textStyle="bold" />
 
@@ -52,10 +66,69 @@
                             android:padding="@dimen/menu_button_padding_left">
 
                                 <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/setting_item_slideshow_order"
+                                    android:textColor="@color/menu_bar_button_text"
+                                    android:textStyle="bold" />
+
+                                <Spinner
+                                    android:id="@+id/spinnerSlideshowMode"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:entries="@array/setting_item_order_entries"
+                                    android:focusable="true"
+                                    android:focusableInTouchMode="true"
+                                    android:selectedItemPosition="@={view_model.slideshowModeIndex}">
+
+                                        <requestFocus />
+                                </Spinner>
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="@dimen/menu_button_padding_left">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/setting_item_slideshow_mute"
+                                    android:textColor="@color/menu_bar_button_text"
+                                    android:textStyle="bold" />
+                                <Switch
+                                    android:id="@+id/switchMuteSlideshow"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="left"
+                                    android:checked="false"
+                                    android:textStyle="bold" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="@dimen/menu_button_padding_left">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/setting_group_grid"
+                                    android:textColor="@color/menu_bar_group_text"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="@dimen/menu_button_padding_left">
+
+                                <TextView
                                     android:id="@+id/textView2"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Column num"
+                                    android:text="@string/setting_item_column_num"
                                     android:textColor="@color/menu_bar_button_text"
                                     android:textStyle="bold" />
 
@@ -70,20 +143,50 @@
 
                                         <requestFocus />
                                 </Spinner>
-
                         </TableRow>
 
                         <TableRow
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginBottom="@dimen/search_bar_group_margin">
+                            android:padding="@dimen/menu_button_padding_left">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/setting_group_info"
+                                    android:textColor="@color/menu_bar_group_text"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="@dimen/search_bar_group_margin"
+                            android:paddingLeft="@dimen/menu_button_padding_left">
 
                                 <Button
-                                    android:id="@+id/buttonOK"
+                                    android:id="@+id/buttonOSS"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:background="@color/menu_bar_button_background"
-                                    android:text="OK" />
+                                    android:gravity="center_vertical"
+                                    android:text="@string/setting_item_oss" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="@dimen/search_bar_group_margin"
+                            android:paddingLeft="@dimen/menu_button_padding_left">
+
+                                <Button
+                                    android:id="@+id/buttonHomepage"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:background="@color/menu_bar_button_background"
+                                    android:gravity="center_vertical"
+                                    android:text="@string/setting_item_homepage" />
                         </TableRow>
                 </TableLayout>
         </LinearLayout>

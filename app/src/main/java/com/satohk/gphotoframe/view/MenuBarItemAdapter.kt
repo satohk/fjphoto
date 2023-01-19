@@ -52,12 +52,12 @@ class MenuBarItemAdapter:
             MenuBarItem.MenuBarItemType.ALBUM_ITEM -> R.drawable.all_media_icon
         }
         val captionId = when(item.itemType){
-            MenuBarItem.MenuBarItemType.SHOW_ALL -> R.string.menu_item_title_all
-            MenuBarItem.MenuBarItemType.SHOW_PHOTO -> R.string.menu_item_title_photo
-            MenuBarItem.MenuBarItemType.SHOW_MOVIE -> R.string.menu_item_title_movie
-            MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> R.string.row_title_album
-            MenuBarItem.MenuBarItemType.SEARCH -> R.string.menu_item_title_search
-            MenuBarItem.MenuBarItemType.SETTING-> R.string.menu_item_title_setting
+            MenuBarItem.MenuBarItemType.SHOW_ALL -> R.string.menu_item_all
+            MenuBarItem.MenuBarItemType.SHOW_PHOTO -> R.string.menu_item_photo
+            MenuBarItem.MenuBarItemType.SHOW_MOVIE -> R.string.menu_item_movie
+            MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> R.string.menu_item_album
+            MenuBarItem.MenuBarItemType.SEARCH -> R.string.menu_item_search
+            MenuBarItem.MenuBarItemType.SETTING-> R.string.menu_item_setting
             MenuBarItem.MenuBarItemType.ALBUM_ITEM -> 0
         }
         val context = holder.binding.root.context
