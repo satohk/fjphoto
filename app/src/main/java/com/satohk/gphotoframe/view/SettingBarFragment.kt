@@ -11,6 +11,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
+import com.satohk.gphotoframe.BuildConfig
 import com.satohk.gphotoframe.databinding.FragmentSettingBarBinding
 import com.satohk.gphotoframe.viewmodel.SettingBarViewModel
 import kotlinx.coroutines.launch
@@ -77,6 +78,8 @@ class SettingBarFragment() : Fragment(), SideBarFragmentInterface {
             val action = PhotoGridWithSideBarFragmentDirections.actionPhotoGridWithSidebarFragmentToOssListFragment()
             view.findNavController().navigate(action)
         }
+
+        binding.textVersion.text = BuildConfig.VERSION_NAME
     }
 
     override fun onFocus(){

@@ -28,8 +28,8 @@
     <string name="setting_item_slideshow_order_random">Random</string>
     <string name="setting_item_slideshow_mute">Mute</string>
     <string name="setting_item_column_num">Column Num</string>
+    <string name="setting_item_verion">Version</string>
     <string name="setting_item_oss">OSS List</string>
-    <string name="setting_item_homepage">Homepage</string>
 
     <string-array name="setting_item_order_entries">
         <item>Sequential</item>

@@ -26,8 +26,8 @@
     <string name="setting_item_slideshow_order">表示順序</string>
     <string name="setting_item_slideshow_mute">ミュート</string>
     <string name="setting_item_column_num">表示列数</string>
+    <string name="setting_item_verion">バージョン</string>
     <string name="setting_item_oss">使用OSS</string>
-    <string name="setting_item_homepage">ホームページ</string>
 
     <string-array name="setting_item_order_entries">
         <item>降順</item>

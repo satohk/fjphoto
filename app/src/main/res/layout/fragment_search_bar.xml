@@ -227,7 +227,7 @@
                                 <Button
                                     android:id="@+id/buttonOK"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
+                                    android:layout_height="@dimen/menu_ok_button_height"
                                     android:background="@color/menu_bar_button_background"
                                     android:gravity="center_vertical"
                                     android:text="@string/button_ok" />
