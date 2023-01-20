@@ -25,6 +25,7 @@
     <string name="setting_item_slideshow_interval">表示間隔 [秒]</string>
     <string name="setting_item_slideshow_order">表示順序</string>
     <string name="setting_item_slideshow_mute">ミュート</string>
+    <string name="setting_item_slideshow_cut_play_video">動画切取り再生</string>
     <string name="setting_item_column_num">表示列数</string>
     <string name="setting_item_verion">バージョン</string>
     <string name="setting_item_oss">使用OSS</string>

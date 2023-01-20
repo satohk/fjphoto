@@ -27,6 +27,7 @@
     <string name="setting_item_slideshow_order_sequential">Sequential</string>
     <string name="setting_item_slideshow_order_random">Random</string>
     <string name="setting_item_slideshow_mute">Mute</string>
+    <string name="setting_item_slideshow_cut_play_video">Cut Play Movie</string>
     <string name="setting_item_column_num">Column Num</string>
     <string name="setting_item_verion">Version</string>
     <string name="setting_item_oss">OSS List</string>

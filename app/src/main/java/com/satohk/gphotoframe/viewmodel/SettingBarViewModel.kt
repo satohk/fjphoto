@@ -16,6 +16,10 @@ class SettingBarViewModel(
         ))
     val slideshowIntervalList: StateFlow<List<String>> get() = _slideshowIntervalList
 
+    val slideshowOrderIndex: MutableStateFlow<Int> = MutableStateFlow(0)
+    val slideshowMute: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val slideshowCutPlay: MutableStateFlow<Boolean> = MutableStateFlow(true)
+
     val columnNumIndex: MutableStateFlow<Int> = MutableStateFlow(2)
     private val _columnNumList: MutableStateFlow<List<String>>
             = MutableStateFlow(listOf(
@@ -30,8 +34,6 @@ class SettingBarViewModel(
     ))
     val columnNumList: StateFlow<List<String>> get() = _columnNumList
 
-    val slideshowModeIndex: MutableStateFlow<Int> = MutableStateFlow(0)
-
     private val _displayMessageId = MutableSharedFlow<Int>()
     val displayMessageId: SharedFlow<Int?> get() = _displayMessageId
 
@@ -39,38 +41,29 @@ class SettingBarViewModel(
         slideshowIntervalIndex.onEach {
             Utils.spinnerIndex2str(it, _slideshowIntervalList.value)?.let { strVal ->
                 strVal.toIntOrNull()?.let { intVal ->
-                    _accountState.settingRepository.setSlideShowInterval(intVal)
+                    _accountState.settingRepository.set(slideShowInterval=intVal)
                 }
             }
         }.launchIn(viewModelScope)
 
+        slideshowOrderIndex.onEach { _accountState.settingRepository.set(slideShowOrderIndex=it) }.launchIn(viewModelScope)
+        slideshowMute.onEach { _accountState.settingRepository.set(slideShowMute=it) }.launchIn(viewModelScope)
+        slideshowCutPlay.onEach { _accountState.settingRepository.set(slideShowCutPlay=it) }.launchIn(viewModelScope)
+
         columnNumIndex.onEach {
             Utils.spinnerIndex2str(it, _columnNumList.value)?.let { strVal ->
                 strVal.toIntOrNull()?.let { intVal ->
-                    _accountState.settingRepository.setNumPhotoGridColumns(intVal)
+                    _accountState.settingRepository.set(numPhotoGridColumns = intVal)
                 }
             }
         }.launchIn(viewModelScope)
 
         _accountState.settingRepository.setting.onEach{
             slideshowIntervalIndex.value = _slideshowIntervalList.value.indexOf(it.slideShowInterval.toString())
+            slideshowOrderIndex.value = it.slideShowOrder
+            slideshowMute.value = it.slideShowMute
+            slideshowCutPlay.value = it.slideShowCutPlay
             columnNumIndex.value = _columnNumList.value.indexOf(it.numPhotoGridColumns.toString())
         }.launchIn(viewModelScope)
-    }
-
-    fun enterToGrid() {
-        val action = SideBarAction(
-            SideBarActionType.ENTER_GRID,
-            gridContents = null
-        )
-        publishAction(action)
-    }
-
-    fun goBack(){
-        val action = SideBarAction(
-            SideBarActionType.BACK,
-            gridContents = null
-        )
-        publishAction(action)
     }
 }

@@ -177,7 +177,7 @@ class PhotoGridViewModel(
     fun onClickSetToSlideshowButton(){
         _gridContents?.let{
             viewModelScope.launch {
-                _accountState.settingRepository.setScreensaverSearchQuery(it.searchQuery)
+                _accountState.settingRepository.set(screensaverSearchQuery = it.searchQuery)
             }
         }
     }

@@ -6,6 +6,9 @@ import androidx.room.*
 data class SettingEntity(
     @PrimaryKey @ColumnInfo(name = "id") val id: String,
     @ColumnInfo(name = "slide_show_interval") val slideShowInterval: Int,
+    @ColumnInfo(name = "slide_show_order") val slideShowOrder: Int,
+    @ColumnInfo(name = "slide_show_mute") val slideShowMute: Boolean,
+    @ColumnInfo(name = "slide_show_cut_play") val slideShowCutPlay: Boolean,
     @ColumnInfo(name = "num_photoGrid_columns") val numPhotoGridColumns: Int,
     @ColumnInfo(name = "screensaver_search_query") val screensaverSearchQuery: String
     )

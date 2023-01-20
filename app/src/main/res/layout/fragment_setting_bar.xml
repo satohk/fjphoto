@@ -73,13 +73,13 @@
                                     android:textStyle="bold" />
 
                                 <Spinner
-                                    android:id="@+id/spinnerSlideshowMode"
+                                    android:id="@+id/spinnerSlideshowOrder"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:entries="@array/setting_item_order_entries"
                                     android:focusable="true"
                                     android:focusableInTouchMode="true"
-                                    android:selectedItemPosition="@={view_model.slideshowModeIndex}">
+                                    android:selectedItemPosition="@={view_model.slideshowOrderIndex}">
 
                                         <requestFocus />
                                 </Spinner>
@@ -101,7 +101,28 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="left"
-                                    android:checked="false"
+                                    android:checked="@={view_model.slideshowMute}"
+                                    android:textStyle="bold" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="@dimen/menu_button_padding_left">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/setting_item_slideshow_cut_play_video"
+                                    android:textColor="@color/menu_bar_button_text"
+                                    android:textStyle="bold" />
+
+                                <Switch
+                                    android:id="@+id/switchCutPlay"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="left"
+                                    android:checked="@={view_model.slideshowCutPlay}"
                                     android:textStyle="bold" />
                         </TableRow>
 

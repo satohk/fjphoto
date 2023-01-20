@@ -44,23 +44,7 @@ class SettingBarFragment() : Fragment(), SideBarFragmentInterface {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val onKey = fun(_: View, _: Int, keyEvent: KeyEvent): Boolean {
-            if(keyEvent.action == KeyEvent.ACTION_DOWN) {
-                if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                    _viewModel.enterToGrid()
-                } else if (keyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                    _viewModel.goBack()
-                }
-            }
-            return false
-        }
-
         Utils.initUITable(binding.table, this)
-
-        // set key listener
-        val keyHandleView: List<View> = listOf(
-            binding.spinnerSlideshowInterval
-        )
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {

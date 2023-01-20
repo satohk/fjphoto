@@ -19,16 +19,21 @@ class SettingRepository(private val db: AppDatabase) {
     val setting: StateFlow<Setting> get() = _setting
     private val _id = "1"
 
-    suspend fun setSlideShowInterval(value:Int){
-        val newSetting = Setting(value, setting.value.numPhotoGridColumns, setting.value.screensaverSearchQuery)
-        save(newSetting)
-    }
-    suspend fun setNumPhotoGridColumns(value:Int){
-        val newSetting = Setting(setting.value.slideShowInterval, value, setting.value.screensaverSearchQuery)
-        save(newSetting)
-    }
-    suspend fun setScreensaverSearchQuery(value:SearchQuery){
-        val newSetting = Setting(setting.value.slideShowInterval, setting.value.numPhotoGridColumns, value)
+    suspend fun set(
+        slideShowInterval:Int?=null,
+        slideShowOrderIndex:Int?=null,
+        slideShowMute:Boolean?=null,
+        slideShowCutPlay:Boolean?=null,
+        numPhotoGridColumns:Int?=null,
+        screensaverSearchQuery:SearchQuery?=null
+    ){
+        val newSetting = Setting(
+            slideShowInterval ?: setting.value.slideShowInterval,
+            slideShowOrderIndex ?: setting.value.slideShowOrder,
+            slideShowMute ?: setting.value.slideShowMute,
+            slideShowCutPlay ?: setting.value.slideShowCutPlay,
+            numPhotoGridColumns ?: setting.value.numPhotoGridColumns,
+            screensaverSearchQuery ?: setting.value.screensaverSearchQuery)
         save(newSetting)
     }
 
@@ -44,6 +49,9 @@ class SettingRepository(private val db: AppDatabase) {
             val searchQuery = jsonDec.decodeFromString<SearchQuery>(settingEntity.screensaverSearchQuery)
             _setting.value = Setting(
                 settingEntity.slideShowInterval,
+                settingEntity.slideShowOrder,
+                settingEntity.slideShowMute,
+                settingEntity.slideShowCutPlay,
                 settingEntity.numPhotoGridColumns,
                 searchQuery)
         }
@@ -56,6 +64,9 @@ class SettingRepository(private val db: AppDatabase) {
         val settingEntity = SettingEntity(
             _id,
             newSetting.slideShowInterval,
+            newSetting.slideShowOrder,
+            newSetting.slideShowMute,
+            newSetting.slideShowCutPlay,
             newSetting.numPhotoGridColumns,
             screensaverSearchQueryStr
         )
