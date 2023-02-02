@@ -15,8 +15,8 @@ import kotlinx.coroutines.sync.withLock
 class FilteredPhotoList(
     private val _visualInspector: VisualInspector
 ){
-    private lateinit var _repository: CachedPhotoRepository
-    private lateinit var _query: SearchQuery
+    private var _repository: CachedPhotoRepository? = null
+    private var _query: SearchQuery? = null
     private var _parameterChanged: Boolean = false
     private val _filteredPhotoMetadataList = mutableListOf<PhotoMetadata>()
     private var _repositoryOffset = 0
@@ -32,6 +32,10 @@ class FilteredPhotoList(
     val size: Int get() = this._filteredPhotoMetadataList.size
 
     suspend fun setParameter(repository: CachedPhotoRepository, query: SearchQuery){
+        if(repository == _repository && query == _query){
+            return
+        }
+
         _cancelLoad = true
 
         _loadingMutex.withLock {
@@ -40,7 +44,7 @@ class FilteredPhotoList(
             _filteredPhotoMetadataList.clear()
             _repositoryOffset = 0
             _preloadRepositoryOffset = 0
-            _scoreCache.setParameter(_repository)
+            _scoreCache.setParameter(_repository!!)
 
             _parameterChanged = true
             _cancelLoad = false
@@ -54,74 +58,86 @@ class FilteredPhotoList(
         _filteredPhotoMetadataList[i] = value
     }
 
-    suspend fun loadNext(size:Int): Boolean {
+    suspend fun loadNext(size:Int, withLock:Boolean): Boolean {
         Log.d("loadNext", "start")
-        var remain = size
 
         if(allLoaded) {
             return false
         }
         Log.d("loadNext", "_mutex.isLocked == ${_loadingMutex.isLocked}")
-        if(_loadingMutex.tryLock()){
-            Log.d("loadNext", " in lock")
-            withContext(Dispatchers.Default){
-                if(_parameterChanged) {
-                    _parameterChanged = false
-                    if(_query.queryLocal.aiFilterEnabled) {
-                        _scoreCache.setAnchorImages(_query.queryLocal.aiFilterReferenceDataIdList)
-                    }
-                }
-
-                while(remain > 0 && !_cancelLoad){
-                    // bulkLoadSizeごとにあらかじめCacheにロードしておく
-                    if(_repositoryOffset >= _preloadRepositoryOffset) {
-                        val preloadMetadataList = _repository.getPhotoMetadataList(
-                            _preloadRepositoryOffset,
-                            _bulkLoadSize,
-                            _query.queryRemote
-                        )
-                        if (preloadMetadataList.isEmpty()) {
-                            break
-                        }
-                        _preloadRepositoryOffset += preloadMetadataList.size
-                    }
-
-                    // Cacheから指定数ロード
-                    val metadataList = _repository.getPhotoMetadataList(
-                        _repositoryOffset,
-                        remain,
-                        _query.queryRemote
-                    )
-
-                    if(metadataList.isEmpty() && _repository.photoMetadataListAllLoaded(_query.queryRemote)){
-                        allLoaded = true
-                    }
-                    else {
-                        // load bmp async
-                        val filteredList = if(_query.queryLocal.aiFilterEnabled){
-                            val scoreList = metadataList.map{_scoreCache.get(it.metadataRemote)}
-                            metadataList
-                                .zip(scoreList)
-                                .filter{it.second > _query.queryLocal.aiFilterThreshold}
-                                .map{ it.first.setTemp(PhotoMetadataTemp(it.second))
-                            }
-                        }
-                        else{
-                            metadataList.map{it.setTemp(null)}
-                        }
-
-                        _filteredPhotoMetadataList.addAll(filteredList)
-                        remain -= filteredList.size
-                        _repositoryOffset += metadataList.size
-                    }
-                }
+        if(withLock){
+            _loadingMutex.withLock{
+                loadNextSub(size)
             }
+            Log.d("loadNext withlock", " end lock _mutex.isLocked == ${_loadingMutex.isLocked}")
+            return true
+        }
+        else if(_loadingMutex.tryLock()){
+            loadNextSub(size)
             _loadingMutex.unlock()
             Log.d("loadNext", " end lock _mutex.isLocked == ${_loadingMutex.isLocked}")
             return true
         }
         else{
             return false
+        }
+    }
+
+    private suspend fun loadNextSub(size: Int){
+        var remain = size
+
+        Log.d("loadNext", " in lock")
+        withContext(Dispatchers.Default){
+            if(_parameterChanged) {
+                _parameterChanged = false
+                if(_query!!.queryLocal.aiFilterEnabled) {
+                    _scoreCache.setAnchorImages(_query!!.queryLocal.aiFilterReferenceDataIdList)
+                }
+            }
+
+            while(remain > 0 && !_cancelLoad){
+                // bulkLoadSizeごとにあらかじめCacheにロードしておく
+                if(_repositoryOffset >= _preloadRepositoryOffset) {
+                    val preloadMetadataList = _repository!!.getPhotoMetadataList(
+                        _preloadRepositoryOffset,
+                        _bulkLoadSize,
+                        _query!!.queryRemote
+                    )
+                    if (preloadMetadataList.isEmpty()) {
+                        break
+                    }
+                    _preloadRepositoryOffset += preloadMetadataList.size
+                }
+
+                // Cacheから指定数ロード
+                val metadataList = _repository!!.getPhotoMetadataList(
+                    _repositoryOffset,
+                    remain,
+                    _query!!.queryRemote
+                )
+
+                if(metadataList.isEmpty() && _repository!!.photoMetadataListAllLoaded(_query!!.queryRemote)){
+                    allLoaded = true
+                }
+                else {
+                    // load bmp async
+                    val filteredList = if(_query!!.queryLocal.aiFilterEnabled){
+                        val scoreList = metadataList.map{_scoreCache.get(it.metadataRemote)}
+                        metadataList
+                            .zip(scoreList)
+                            .filter{it.second > _query!!.queryLocal.aiFilterThreshold}
+                            .map{ it.first.setTemp(PhotoMetadataTemp(it.second))
+                            }
+                    }
+                    else{
+                        metadataList.map{it.setTemp(null)}
+                    }
+
+                    _filteredPhotoMetadataList.addAll(filteredList)
+                    remain -= filteredList.size
+                    _repositoryOffset += metadataList.size
+                }
+            }
         }
     }
 

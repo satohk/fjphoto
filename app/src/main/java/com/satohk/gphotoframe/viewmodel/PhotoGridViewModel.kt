@@ -8,12 +8,10 @@ import com.satohk.gphotoframe.repository.data.PhotoMetadata
 import com.satohk.gphotoframe.repository.data.PhotoMetadataLocal
 import com.satohk.gphotoframe.repository.localrepository.PhotoMetadataLocalRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent
-import java.util.logging.Filter
 
 
 typealias PhotoGridItem = PhotoMetadata
@@ -70,7 +68,7 @@ class PhotoGridViewModel(
 
 
     fun setGridContents(gridContents: GridContents){
-        Log.d("setGridContents", gridContents.toString())
+        Log.d("PhotoGridViewModel", "setGridContents gridContents=$gridContents _gridContents=$_gridContents photoRepository=${_accountState.photoRepository.value}")
         if(_accountState.photoRepository.value != null) {
             if(gridContents == _gridContents){
                 return
@@ -199,7 +197,7 @@ class PhotoGridViewModel(
         suspend fun loadNext(count:Int): Boolean{
             var res = false
             _filteredPhotoList?.let {
-                res = it.loadNext(count)
+                res = it.loadNext(count, false)
                 size = it.size
             }
             return res
