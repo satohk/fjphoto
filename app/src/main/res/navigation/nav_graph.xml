@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/photoGridWithSidebarFragment"
-        android:name="com.satohk.gphotoframe.view.PhotoGridWithSideBarFragment"
+        android:name="com.satohk.fjphoto.view.PhotoGridWithSideBarFragment"
         android:label="PhotoGridWithSideBarFragment" >
         <action
             android:id="@+id/action_photoGridWithSidebarFragment_self"
@@ -17,7 +17,7 @@
             app:popExitAnim="@android:anim/fade_out" />
         <argument
             android:name="sideBarType"
-            app:argType="com.satohk.gphotoframe.viewmodel.SideBarType"
+            app:argType="com.satohk.fjphoto.viewmodel.SideBarType"
             android:defaultValue="TOP" />
         <action
             android:id="@+id/action_photoGridWithSidebarFragment_to_photoFragment"
@@ -33,11 +33,11 @@
 
     <fragment
         android:id="@+id/photoFragment"
-        android:name="com.satohk.gphotoframe.view.PhotoFragment"
+        android:name="com.satohk.fjphoto.view.PhotoFragment"
         android:label="PhotoFragment" >
         <argument
             android:name="contents"
-            app:argType="com.satohk.gphotoframe.viewmodel.GridContents" />
+            app:argType="com.satohk.fjphoto.viewmodel.GridContents" />
         <argument
             android:name="slideShow"
             app:argType="boolean"
@@ -58,7 +58,7 @@
 
     <fragment
         android:id="@+id/ossListFragment"
-        android:name="com.satohk.gphotoframe.view.OssListFragment"
+        android:name="com.satohk.fjphoto.view.OssListFragment"
         android:label="OssListFragment" >
         <action
             android:id="@+id/action_ossListFragment_pop"

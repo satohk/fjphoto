@@ -24,7 +24,7 @@ android {
     compileSdkVersion 32
 
     defaultConfig {
-        applicationId "com.satohk.gphotoframe"
+        applicationId "com.satohk.fjphoto"
         minSdkVersion 26
         targetSdkVersion 32
         versionCode 1

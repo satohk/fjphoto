@@ -5,7 +5,7 @@
     android:background="@color/menu_bar_background">
 
         <data>
-                <variable name="view_model" type="com.satohk.gphotoframe.viewmodel.SettingBarViewModel" />
+                <variable name="view_model" type="com.satohk.fjphoto.viewmodel.SettingBarViewModel" />
         </data>
 
         <LinearLayout
@@ -220,12 +220,6 @@
 
                 </TableLayout>
 
-                <ImageView
-                    android:id="@+id/imageView3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@mipmap/ic_banner" />
         </LinearLayout>
 
 </layout>

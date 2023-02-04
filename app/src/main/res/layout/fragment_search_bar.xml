@@ -7,7 +7,7 @@
         <data>
                 <variable
                     name="view_model"
-                    type="com.satohk.gphotoframe.viewmodel.SearchBarViewModel" />
+                    type="com.satohk.fjphoto.viewmodel.SearchBarViewModel" />
         </data>
 
         <LinearLayout

@@ -12,7 +12,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainerViewSreenSaver"
-        android:name="com.satohk.gphotoframe.view.PhotoFragment"
+        android:name="com.satohk.fjphoto.view.PhotoFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </FrameLayout>
