@@ -21,6 +21,7 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
     var onFocus: ((view:View?, position:Int) -> Unit)? = null
     var loadThumbnail: ((photoGridItem: PhotoGridItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit)->Unit)? = null
     private var _lastSize = 0
+    private var _nextSize = 0
 
     // inflates the cell layout from xml when needed
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
@@ -37,20 +38,31 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
     }
 
     override fun getItemCount(): Int {
-        return _list.size
+        return _nextSize
     }
 
     fun notifyDataChange(){
-        if (_list.size == 0) {
+        // _list.size may change in other thread, use the saved value while updating the view
+        _nextSize = _list.size
+        if (_nextSize == 0) {
             Log.d("notifyItemRangeRemoved",
                 "count:${_lastSize}")
             this.notifyItemRangeRemoved(0, _lastSize)
-        } else {
-            Log.d("notifyItemRangeInserted",
-                "positionStart:${_lastSize}, itemCount:${_list.size - _lastSize}")
-            notifyItemRangeInserted(_lastSize, _list.size - _lastSize)
         }
-        _lastSize = _list.size
+        else if(_nextSize < _lastSize){
+            Log.d("notifyItemRangeRemoved",
+                "count:${_lastSize}")
+            this.notifyItemRangeRemoved(0, _lastSize)
+            Log.d("notifyItemRangeInserted",
+                "positionStart:0, itemCount:${_nextSize}")
+            this.notifyItemRangeInserted(0, _nextSize)
+        }
+        else {
+            Log.d("notifyItemRangeInserted",
+                "positionStart:${_lastSize}, itemCount:${_nextSize - _lastSize}")
+            notifyItemRangeInserted(_lastSize, _nextSize - _lastSize)
+        }
+        _lastSize = _nextSize
     }
 
     // stores and recycles views as they are scrolled off screen

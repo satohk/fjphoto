@@ -21,6 +21,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelector
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.exoplayer2.upstream.DefaultAllocator
 import com.satohk.fjphoto.R
+import com.satohk.fjphoto.domain.PhotoSelector
 import com.satohk.fjphoto.viewmodel.GridContents
 import com.satohk.fjphoto.viewmodel.PhotoViewModel
 import kotlinx.android.synthetic.main.fragment_photo.*
@@ -38,6 +39,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     private val _videoViews = mutableListOf<StyledPlayerView>()
     private val _videoPlayers = mutableListOf<ExoPlayer>()
     private var _currentMediaView: View? = null
+    private var _videoPlayerListener = mutableListOf<VideoPlayerListener>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -50,8 +52,10 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         }
 
         val progressBar = view.findViewById<ProgressBar>(R.id.progress)
+        _imageViews.clear()
         _imageViews.add(view.findViewById(R.id.imageView1))
         _imageViews.add(view.findViewById(R.id.imageView2))
+        _videoViews.clear()
         _videoViews.add(view.findViewById(R.id.videoView1))
         _videoViews.add(view.findViewById(R.id.videoView2))
         for(imageView in _imageViews){
@@ -101,25 +105,24 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
                 }
             }
         }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    _viewModel.currentMedia.collect {
+                launch{
+                    _viewModel.loadMedia.collect {
+                        Log.d("PhotoFragment", "_viewModel.prepareVideo.collect ${it?.mediaId}")
+                        prepareVideo(it)
+                    }
+                }
+                launch{
+                    _viewModel.fadeInMedia.collect {
+                        Log.d("PhotoFragment", "_viewModel.swapMediaView.collect ${it?.mediaId}")
                         changeMedia(it)
                     }
                 }
                 launch {
-                    _viewModel.preparingMedia.collect {
-                        changePreparingMedia(it)
-                    }
-                }
-                launch{
-                    _viewModel.reprepareMedia.collect {
-                        changePreparingMedia(_viewModel.preparingMedia.value)
-                    }
-                }
-                launch {
                     _viewModel.errorMessageId.collect {
+                        Log.d("PhotoFragment", "_viewModel.errorMessageId.collect $it")
                         it?.let { messageId ->
                             Toast.makeText(context, getText(messageId), Toast.LENGTH_LONG).show()
                         }
@@ -127,6 +130,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
                 }
                 launch {
                     _viewModel.showProgressBar.collect {
+                        Log.d("PhotoFragment", "_viewModel.showProgressBar.collect $it")
                         progressBar.visibility = if(it) View.VISIBLE else View.INVISIBLE
                     }
                 }
@@ -137,13 +141,14 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     override fun onStart() {
         Log.d("PhotoFragment", "onStart")
         super.onStart()
+        setPhotoSize()
         _viewModel.start()
     }
 
     override fun onStop() {
         Log.d("PhotoFragment", "onStop")
         super.onStop()
-        releaseVidePlayer()
+        releaseVidePlayers()
         _viewModel.stop()
     }
 
@@ -153,6 +158,8 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         val minPlaybackStartBuffer = 100 //Min Video you want to buffer before start Playing it
         val minPlaybackResumeBuffer = 2000   //Min video You want to buffer when user resumes video
 
+        _videoPlayers.clear()
+        _videoPlayerListener.clear()
         for(videoView in _videoViews) {
             val loadControl: LoadControl = DefaultLoadControl.Builder()
                 .setAllocator(DefaultAllocator(true, 16))
@@ -174,30 +181,37 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
                 .also { exoPlayer ->
                     videoView.player = exoPlayer
                 }
-            player.addListener(_viewModel.videoPlayerEventListener)
+            val eventListener = VideoPlayerListener(_viewModel)
+            _videoPlayerListener.add(eventListener)
+            player.addListener(eventListener)
             player.volume = if(_viewModel.muteVideoPlayer) 0.0f else 1.0f
             _videoPlayers.add(player)
         }
     }
 
-    private fun releaseVidePlayer() {
+    private fun releaseVidePlayers() {
+        Log.d("PhotoFragment", "releaseVideoPlayers")
         for(player in _videoPlayers) {
             player.release()
         }
-        _videoPlayers.clear()
     }
 
-    private fun changePreparingMedia(media: PhotoViewModel.Media?) {
+    private fun prepareVideo(media: PhotoSelector.Media?) {
+        Log.d("PhotoFragment", "prepareVideo media=${media?.mediaId} player=${media?.viewIndex}")
         if(media?.videoUrl != null) {
-            val mediaItem = MediaItem.fromUri(media.videoUrl)
+            val mediaItem = MediaItem.fromUri(media.videoUrl!!)
             val player = _videoPlayers[media.viewIndex]
+            if(player.isPlaying) {
+                player.stop()
+            }
             player.setMediaItem(mediaItem)
-            player.playWhenReady = true
+            player.playWhenReady = false
+            _videoPlayerListener[media.viewIndex].media = media
             player.prepare()
         }
     }
 
-    private fun changeMedia(media: PhotoViewModel.Media?){
+    private fun changeMedia(media: PhotoSelector.Media?){
         Log.d("PhotoView", "changeMedia media.viewIndex=${media?.viewIndex}")
 
         val fadeDuration = if(_viewModel.isSlideShow) 1000L else 100 // msec
@@ -205,6 +219,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
             _imageViews[media.viewIndex].setImageBitmap(media.bitmap)
             _imageViews[media.viewIndex]
         } else if(media?.videoUrl != null){ // next media is video
+            _videoPlayers[media.viewIndex].play()
             _videoViews[media.viewIndex]
         } else { // next media is blank
             _imageViews[0].setImageResource(R.drawable.blank_image)
@@ -213,7 +228,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
 
         for(i in _videoViews.indices){
             _videoViews[i].focusable =
-                if((media?.videoUrl != null) && (media?.viewIndex == i)) View.FOCUSABLE
+                if((media?.videoUrl != null) && (media.viewIndex == i)) View.FOCUSABLE
                 else View.NOT_FOCUSABLE
         }
 
@@ -231,10 +246,11 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
                 override fun onAnimationEnd(animation: Animator) {
                     prevView?.visibility = View.INVISIBLE
                     val playerIndex = (currentViewIndex + 1) % 2
-                    Log.d("PhotoFragment", "onAnimationEnd stop videoPlayer $playerIndex")
-                    if(_videoPlayers[playerIndex].isPlaying) {
+                    if((_videoPlayers.size > playerIndex) && _videoPlayers[playerIndex].isPlaying) {
+                        Log.d("PhotoFragment", "onAnimationEnd stop videoPlayer $playerIndex")
                         _videoPlayers[playerIndex].stop()
                     }
+                    media?.let { _viewModel.onFadedIn(it) }
                 }
             })
             duration = fadeDuration
@@ -253,5 +269,18 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         _viewModel.photoWidth = _imageViews[0].width
         _viewModel.photoHeight = _imageViews[0].height
         Log.d("PhotoFragment", "setPhotoSize w:${_viewModel.photoWidth} h:${_viewModel.photoHeight}")
+    }
+
+    private class VideoPlayerListener(private val _viewModel:PhotoViewModel) : Player.Listener{
+        var media: PhotoSelector.Media? = null
+
+        override fun onPlayerError(error: PlaybackException) {
+            Log.d("PhotoFragment", "onPlayerError error=$error media=${media?.mediaId}")
+            _viewModel.onPlayerError(error, media!!)
+        }
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            Log.d("PhotoFragment", "onPlaybackStateChanged playbackState=$playbackState media=${media?.mediaId}")
+            _viewModel.onPlaybackStateChanged(playbackState, media!!)
+        }
     }
 }

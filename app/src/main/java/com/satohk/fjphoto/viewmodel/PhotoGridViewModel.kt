@@ -203,8 +203,16 @@ class PhotoGridViewModel(
             return res
         }
 
-        operator fun get(i:Int):PhotoGridItem{
-            return _filteredPhotoList!![i]
+        operator fun get(i:Int):PhotoGridItem?{
+            val res: PhotoGridItem? = try {
+                _filteredPhotoList!![i]
+            }
+            catch(e: java.lang.IndexOutOfBoundsException){
+                // Depending on the fragment switching timing, _photoList may have been cleared
+                // so IndexOutOfBoundsException may occur.
+                null
+            }
+            return res
         }
         var size:Int = 0
             private set
