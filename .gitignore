@@ -34,3 +34,5 @@ google-services.json
 
 *.tar
 .ipynb_checkpoints
+app/debug
+app/release
