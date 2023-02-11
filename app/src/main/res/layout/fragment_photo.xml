@@ -17,18 +17,10 @@
             app:srcCompat="@drawable/photo_icon" />
 
         <com.google.android.exoplayer2.ui.StyledPlayerView
-            android:id="@+id/videoView1"
+            android:id="@+id/videoView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:animateLayoutChanges="true"
-            app:surface_type="texture_view" />
-
-        <com.google.android.exoplayer2.ui.StyledPlayerView
-            android:id="@+id/videoView2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:animateLayoutChanges="true"
-            app:animation_enabled="true"
             app:surface_type="texture_view" />
 
         <TextView

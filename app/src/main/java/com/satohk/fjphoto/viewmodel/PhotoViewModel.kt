@@ -1,5 +1,6 @@
 package com.satohk.fjphoto.viewmodel
 
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,23 +11,32 @@ import com.satohk.fjphoto.repository.remoterepository.CachedPhotoRepository
 import kotlinx.coroutines.launch
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
-import com.satohk.fjphoto.repository.remoterepository.Photo
+import com.satohk.fjphoto.repository.data.PhotoMetadata
 import kotlinx.coroutines.flow.*
 import org.koin.java.KoinJavaComponent
+import java.time.format.DateTimeFormatter
 
 
 class PhotoViewModel(
     private val _accountState: AccountState
 ) : ViewModel() {
 
+    data class Media(
+        val photo: Bitmap? = null,
+        val videoUrl: String? = null,
+        val index: Int = 0,
+        val info: String = "",
+        val fadeInDuration: Int
+    )
+
     private val _errorMessageId = MutableSharedFlow<Int>()
     val errorMessageId: SharedFlow<Int?> get() = _errorMessageId
     private val _showProgressBar = MutableStateFlow(false)
     val showProgressBar: StateFlow<Boolean> get() = _showProgressBar
-    private val _fadeInMedia = MutableSharedFlow<PhotoSelector.Media?>(1)
-    val fadeInMedia = _fadeInMedia.asSharedFlow()
-    private val _loadMedia = MutableSharedFlow<PhotoSelector.Media?>(1)
-    val loadMedia = _loadMedia.asSharedFlow()
+    private val _currentMedia = MutableStateFlow(Media(fadeInDuration = 0))
+    val currentMedia: StateFlow<Media> get() = _currentMedia
+    private val _prepareMedia = MutableStateFlow(Media(fadeInDuration = 0))
+    val prepareMedia: StateFlow<Media> get() = _prepareMedia
 
     var photoWidth: Int = 1024
     var photoHeight: Int = 768
@@ -75,11 +85,13 @@ class PhotoViewModel(
         Log.d("PhotoViewModel", "stop()")
         _photoSelector?.stop()
         _photoSelector = null
+        _currentMedia.value = Media(fadeInDuration = 0)
+        _prepareMedia.value = Media(fadeInDuration = 0)
     }
 
-    fun goNext(waitTime: Long = 0){
+    fun goNext(){
         viewModelScope.launch {
-            _photoSelector?.goNext(waitTime)
+            _photoSelector?.goNext()
         }
     }
 
@@ -89,35 +101,43 @@ class PhotoViewModel(
         }
     }
 
-    private fun prepareMedia(media: PhotoSelector.Media?) {
-        Log.d("PhotoViewModel", "prepareMedia:${media?.photoMetadata?.metadataRemote?.id}")
+    private fun metadataInfoText(metadata: PhotoMetadata?): String{
+        return if(metadata != null) {
+            metadata.metadataRemote.timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE)
+        } else{
+            ""
+        }
+    }
 
-        if(media?.photoMetadata != null) {
-            if (media.photoMetadata.metadataRemote.mimeType.startsWith("image")) {
-                Log.d("PhotoViewModel", "prepareMedia bitmap")
+    private suspend fun prepareMedia(mediaMetadata: PhotoSelector.MediaMetadata) {
+        when(mediaMetadata.mediaType) {
+            PhotoSelector.MediaType.PHOTO -> {
+                Log.d("PhotoViewModel", "prepareMedia bitmap mediaIndex=${mediaMetadata.index}")
                 viewModelScope.launch {
                     val bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
-                        media.photoMetadata.metadataRemote,
+                        mediaMetadata.metadata!!.metadataRemote,
                         photoWidth,
                         photoHeight,
                         false
                     )
-                    media.bitmap = bmp
-                    media.state = PhotoSelector.Media.State.LOADED
-                    _photoSelector?.onMediaStateChanged()
-                }
-            } else if (media.photoMetadata.metadataRemote.mimeType.startsWith("video")) {
-                Log.d("PhotoViewModel", "prepareMedia video")
-                val tmp =
-                    _accountState.photoRepository.value!!.getMediaAccessHeaderAndUrl(media.photoMetadata.metadataRemote)
-
-                media.videoUrl = tmp.second
-                viewModelScope.launch {
-                    Log.d("PhotoViewModel", "prepareMedia video _loadMedia=${media.mediaId}")
-                    _loadMedia.emit(media)
+                    val media = Media(bmp, null, mediaMetadata.index,
+                        metadataInfoText(mediaMetadata.metadata), fadeInDuration = mediaMetadata.fadeinDuration)
+                    _currentMedia.emit(media)
                 }
             }
-            media.state = PhotoSelector.Media.State.LOADING
+            PhotoSelector.MediaType.VIDEO -> {
+                Log.d("PhotoViewModel", "prepareMedia video mediaIndex=${mediaMetadata.index}")
+                val tmp =
+                    _accountState.photoRepository.value!!.getMediaAccessHeaderAndUrl(mediaMetadata.metadata!!.metadataRemote)
+                val media = Media(null, tmp.second, mediaMetadata.index,
+                    metadataInfoText(mediaMetadata.metadata), fadeInDuration = mediaMetadata.fadeinDuration)
+                _prepareMedia.emit(media)
+            }
+            PhotoSelector.MediaType.BLANK -> {
+                Log.d("PhotoViewModel", "prepareMedia Blank mediaIndex=${mediaMetadata.index}")
+                _currentMedia.emit(Media(null, null, mediaMetadata.index,
+                    metadataInfoText(mediaMetadata.metadata), fadeInDuration = mediaMetadata.fadeinDuration))
+            }
         }
     }
 
@@ -138,60 +158,64 @@ class PhotoViewModel(
             _accountState.settingRepository.setting.value.slideShowInterval.toLong() * 1000
         )
 
-        _photoSelector!!.prepareMedia.onEach { it ->
-            Log.d("PhotoViewModel", "_photoSelector!!.prepareMedia.onEach it:(${it?.photoMetadata?.metadataRemote?.id})")
+        _photoSelector!!.currentMedia.onEach {
+            Log.d("PhotoViewModel", "_photoSelector!!.currentMedia.onEach mediaIndex=${it.index}")
             prepareMedia(it)
         }.launchIn(viewModelScope)
-        _photoSelector!!.showMedia.onEach { it ->
-            Log.d("PhotoViewModel", "_photoSelector!!.showMedia.onEach it:(${it?.photoMetadata?.metadataRemote?.id})")
-            it?.let{ media ->
-                media.state = PhotoSelector.Media.State.FADE_IN
-                _fadeInMedia.emit(media)
+
+        _photoSelector!!.isLoading.onEach {
+            if(!isSlideShow) {
+                this._showProgressBar.value = it
+            }
+            else{
+                this._showProgressBar.value = false
             }
         }.launchIn(viewModelScope)
-        _photoSelector!!.preparingCurrentMedia.onEach {
-            Log.d("PhotoViewModel", "_photoSelector!!.preparingCurrentMedia it:$it)")
-            _showProgressBar.value = it && (!isSlideShow)
-        }.launchIn(viewModelScope)
 
-        this.goNext()
+        viewModelScope.launch{
+            _photoSelector?.startSlideshow()
+        }
         viewModelScope.launch {
             _photoSelector?.loadAllMetadata()
         }
     }
 
-    fun onFadedIn(media: PhotoSelector.Media){
-        media.state = PhotoSelector.Media.State.SHOWING
-        viewModelScope.launch { _photoSelector?.onMediaStateChanged() }
+    fun onMediaStarted(mediaIndex: Int){
+        Log.d(
+            "PhotoViewModel",
+            "onMediaStarted mediaIndex=$mediaIndex"
+        )
+        viewModelScope.launch {
+            _photoSelector?.onMediaStarted(mediaIndex)
+        }
     }
 
     // VideoPlayer Event Listener
-    fun onPlayerError(error: PlaybackException, media: PhotoSelector.Media) {
+    fun onPlayerError(error: PlaybackException, mediaIndex: Int) {
         Log.d(
             "PhotoViewModel",
-            "onPlayerStateChanged $error, ${error.cause.toString()} media=${media.mediaId}"
+            "onPlayerStateChanged mediaIndex=$mediaIndex, $error, ${error.cause.toString()}"
         )
-        media.state = PhotoSelector.Media.State.ERROR
-        viewModelScope.launch { _photoSelector?.onMediaStateChanged() }
+        viewModelScope.launch { _photoSelector?.onMediaError(mediaIndex) }
     }
 
-    fun onPlaybackStateChanged(playbackState: Int, media: PhotoSelector.Media) {
+    fun onPlaybackStateChanged(playbackState: Int,  mediaIndex: Int) {
         Log.d(
             "PhotoViewModel",
-            "onPlayerStateChanged playbackState=$playbackState media=${media.mediaId}"
+            "onPlayerStateChanged mediaIndex=$mediaIndex, playbackState=$playbackState (IDLE=1, BUFFERING=2, READY=3, ENDED=4)"
         )
         when(playbackState){
             Player.STATE_READY -> {
-                media.state = PhotoSelector.Media.State.LOADED
-                viewModelScope.launch { _photoSelector?.onMediaStateChanged() }
+                if(mediaIndex == _photoSelector?.currentMedia?.value?.index) {
+                    viewModelScope.launch {
+                        _currentMedia.emit(_prepareMedia.value)
+                    }
+                }
             }
             Player.STATE_ENDED -> {
-                media.state = PhotoSelector.Media.State.ENDED
-                viewModelScope.launch { _photoSelector?.onMediaStateChanged() }
+                viewModelScope.launch { _photoSelector?.onMediaEnded(mediaIndex) }
             }
             Player.STATE_IDLE -> {
-                media.state = PhotoSelector.Media.State.BEFORE_LOAD
-                viewModelScope.launch { _photoSelector?.onMediaStateChanged() }
             }
         }
     }

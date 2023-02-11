@@ -12,10 +12,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.common.AccountPicker
 import com.satohk.fjphoto.R
-import kotlinx.coroutines.launch
-
 import com.satohk.fjphoto.viewmodel.MainViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+
 
 /**
  * Loads [PhotoGridFragment].

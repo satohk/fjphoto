@@ -42,6 +42,7 @@ class FilteredPhotoList(
             _query = query
             _repository = repository
             _filteredPhotoMetadataList.clear()
+            allLoaded = false
             _repositoryOffset = 0
             _preloadRepositoryOffset = 0
             _scoreCache.setParameter(_repository!!)
