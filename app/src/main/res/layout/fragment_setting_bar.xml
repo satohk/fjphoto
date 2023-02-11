@@ -210,11 +210,42 @@
                             android:padding="@dimen/menu_button_padding_left">
 
                                 <Button
+                                    android:id="@+id/buttonTermsAndConditions"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="@dimen/menu_ok_button_height"
+                                    android:background="@color/menu_bar_button_background"
+                                    android:gravity="center_vertical"
+                                    android:textAllCaps="false"
+                                    android:text="@string/setting_item_terms_and_conditions" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="@dimen/menu_button_padding_left">
+
+                                <Button
+                                    android:id="@+id/buttonPrivacyPolicy"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="@dimen/menu_ok_button_height"
+                                    android:background="@color/menu_bar_button_background"
+                                    android:gravity="center_vertical"
+                                    android:textAllCaps="false"
+                                    android:text="@string/setting_item_privacy_policy" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="@dimen/menu_button_padding_left">
+
+                                <Button
                                     android:id="@+id/buttonOSS"
                                     android:layout_width="wrap_content"
                                     android:layout_height="@dimen/menu_ok_button_height"
                                     android:background="@color/menu_bar_button_background"
                                     android:gravity="center_vertical"
+                                    android:textAllCaps="false"
                                     android:text="@string/setting_item_oss" />
                         </TableRow>
 

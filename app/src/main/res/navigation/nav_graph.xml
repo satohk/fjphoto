@@ -28,7 +28,7 @@
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <action
             android:id="@+id/action_photoGridWithSidebarFragment_to_ossListFragment"
-            app:destination="@id/ossListFragment" />
+            app:destination="@id/webFragment" />
     </fragment>
 
     <fragment
@@ -57,12 +57,16 @@
     </fragment>
 
     <fragment
-        android:id="@+id/ossListFragment"
-        android:name="com.satohk.fjphoto.view.OssListFragment"
+        android:id="@+id/webFragment"
+        android:name="com.satohk.fjphoto.view.WebFragment"
         android:label="OssListFragment" >
+        <argument
+            android:name="url"
+            app:argType="string"
+            android:defaultValue="" />
         <action
             android:id="@+id/action_ossListFragment_pop"
-            app:popUpTo="@id/ossListFragment"
+            app:popUpTo="@id/webFragment"
             app:popUpToInclusive="true" />
     </fragment>
 </navigation>

@@ -24,14 +24,18 @@
     <string name="setting_group_info">Info</string>
     <string name="setting_item_slideshow_interval">表示間隔 [秒]</string>
     <string name="setting_item_slideshow_order">表示順序</string>
+    <string name="setting_item_slideshow_order_sequential">新着順</string>
+    <string name="setting_item_slideshow_order_random">ランダム</string>
     <string name="setting_item_slideshow_mute">ミュート</string>
     <string name="setting_item_slideshow_cut_play_video">動画切取り再生</string>
     <string name="setting_item_column_num">表示列数</string>
     <string name="setting_item_verion">バージョン</string>
     <string name="setting_item_oss">使用OSS</string>
+    <string name="setting_item_privacy_policy">プライバシーポリシー</string>
+    <string name="setting_item_terms_and_conditions">利用規約</string>
 
     <string-array name="setting_item_order_entries">
-        <item>降順</item>
+        <item>新着順</item>
         <item>ランダム</item>
     </string-array>
 

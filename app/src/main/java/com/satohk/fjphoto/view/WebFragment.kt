@@ -1,16 +1,19 @@
 package com.satohk.fjphoto.view
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.webkit.WebView
 import com.satohk.fjphoto.R
 
-class OssListFragment : Fragment(R.layout.fragment_oss_list) {
+class WebFragment : Fragment(R.layout.fragment_web) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val webView:WebView = view.findViewById(R.id.webView);
-        webView.loadUrl("file:///android_asset/licenses.html")
+        val url = requireArguments().getString("url")
+        Log.d("WebFragment", "onViewCreated url=$url")
+        url?.let {
+            webView.loadUrl(url)
+        }
     }
 }

@@ -31,6 +31,8 @@
     <string name="setting_item_column_num">Column Num</string>
     <string name="setting_item_verion">Version</string>
     <string name="setting_item_oss">OSS List</string>
+    <string name="setting_item_privacy_policy">Privacy Policy</string>
+    <string name="setting_item_terms_and_conditions">Terms &amp; Conditions</string>
 
     <string-array name="setting_item_order_entries">
         <item>Sequential</item>

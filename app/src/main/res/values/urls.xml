@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="url_oss_list" translatable="false">file:///android_asset/licenses.html</string>
+    <string name="url_terms_and_conditions" translatable="false">https://satohk.github.io/fjphoto/terms_and_conditions</string>
+    <string name="url_privacy_policy" translatable="false">https://satohk.github.io/fjphoto/privacy_policy</string>
+</resources>

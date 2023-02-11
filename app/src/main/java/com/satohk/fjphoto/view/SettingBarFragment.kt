@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import com.satohk.fjphoto.BuildConfig
+import com.satohk.fjphoto.R
 import com.satohk.fjphoto.databinding.FragmentSettingBarBinding
 import com.satohk.fjphoto.viewmodel.SettingBarViewModel
 import kotlinx.coroutines.launch
@@ -58,8 +59,24 @@ class SettingBarFragment() : Fragment(), SideBarFragmentInterface {
             }
         }
 
+        binding.buttonTermsAndConditions.setOnClickListener {
+            val action = PhotoGridWithSideBarFragmentDirections.actionPhotoGridWithSidebarFragmentToOssListFragment(
+                getString(R.string.url_terms_and_conditions)
+            )
+            view.findNavController().navigate(action)
+        }
+
+        binding.buttonPrivacyPolicy.setOnClickListener {
+            val action = PhotoGridWithSideBarFragmentDirections.actionPhotoGridWithSidebarFragmentToOssListFragment(
+                getString(R.string.url_privacy_policy)
+            )
+            view.findNavController().navigate(action)
+        }
+
         binding.buttonOSS.setOnClickListener {
-            val action = PhotoGridWithSideBarFragmentDirections.actionPhotoGridWithSidebarFragmentToOssListFragment()
+            val action = PhotoGridWithSideBarFragmentDirections.actionPhotoGridWithSidebarFragmentToOssListFragment(
+                getString(R.string.url_oss_list)
+            )
             view.findNavController().navigate(action)
         }
 
