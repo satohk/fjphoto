@@ -2,7 +2,7 @@
 
 fjphoto is a simple photo frame app for android devices such as tablets and TVs.
 
-![screenshot](https://satohk.github.io/fjphoto/screenshot_list_resized.png)
+![screenshot](./screenshot_list_resized.png)
 
 ## Features
 - Displays photos and videos from google photos.
@@ -16,8 +16,8 @@ fjphoto is a simple photo frame app for android devices such as tablets and TVs.
 
 ## License
 - [Licene](https://github.com/satohk/fjphoto/blob/main/LICENSE)
-- [Privacy policy](https://satohk.github.io/fjphoto/privacy_policy)
-- [Terms & Conditions](https://satohk.github.io/fjphoto/terms_and_conditions)
+- [Privacy policy](./privacy_policy)
+- [Terms & Conditions](./terms_and_conditions)
 
 ## Contact Us
 
