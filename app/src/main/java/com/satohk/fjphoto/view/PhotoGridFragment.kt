@@ -34,6 +34,7 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("PhotoGridFragment", "onViewCreated")
 
         initRecyclerView(view)
 

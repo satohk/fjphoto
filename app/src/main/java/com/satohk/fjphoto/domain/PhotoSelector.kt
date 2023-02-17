@@ -102,6 +102,7 @@ class PhotoSelector(
     private suspend fun nextStep(step: Int, waitMillisec: Long) {
         if(!_mediaLoadingMutex.isLocked) {
             _mediaLoadingMutex.lock()
+            Log.d("PhotoSelector", "netStep _mediaLoadingMutex locked")
             _isLoading.value = true
             val nextPoint = calcNextPointIndex(_currentPoint, step)
             val nextMetadata = try {
@@ -179,6 +180,8 @@ class PhotoSelector(
             return
         }
         _mediaLoadingMutex.unlock()
+        Log.d("PhotoSelector", "onMediaStarted _mediaLoadingMutex unlocked")
+
         _isLoading.value = false
         if(_currentMedia.value.mediaType == MediaType.BLANK){
             // Blank screen is inserted when transitioning from video to video

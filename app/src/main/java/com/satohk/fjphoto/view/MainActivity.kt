@@ -23,6 +23,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class MainActivity : FragmentActivity() {
 
     private val _viewModel by viewModel<MainViewModel>()
+    private var _accountChoosing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +33,7 @@ class MainActivity : FragmentActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch{
                     _viewModel.activeUserName.collect { it ->
+                        Log.d("MainActivity", "activeUserName = $it")
                         if(it == null){
                             Log.d("MainActivity", "activeUserName is null. call choseAccount")
                             chooseAccount()
@@ -43,19 +45,27 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun chooseAccount(){
-        val accountTypes = listOf(_viewModel.serviceProviderUrl)
-        val intent = AccountPicker.newChooseAccountIntent(
-            AccountPicker.AccountChooserOptions.Builder().setAllowableAccountsTypes(accountTypes).build()
-        )
-        _resultLauncher.launch(intent)
+        if(!_accountChoosing) {
+            _accountChoosing = true
+            val accountTypes = listOf(_viewModel.serviceProviderUrl)
+            val intent = AccountPicker.newChooseAccountIntent(
+                AccountPicker.AccountChooserOptions.Builder()
+                    .setAllowableAccountsTypes(accountTypes)
+                    .setAlwaysShowAccountPicker(true)
+                    .build()
+            )
+            _resultLauncher.launch(intent)
+        }
     }
 
     private val _resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        _accountChoosing = false
         if (result.resultCode == Activity.RESULT_OK) {
             // There are no request codes
             val data: Intent? = result.data
             val name = data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!
             val type = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE)!!
+            Log.d("MainActivity", "registerForActivityResult name=$name")
             _viewModel.setAccount(type, name, this)
         }
     }

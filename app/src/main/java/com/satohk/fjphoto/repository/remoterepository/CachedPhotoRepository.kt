@@ -136,7 +136,7 @@ class CachedPhotoRepository(
             try {
                 res = _photoRepository.getPhotoBitmap(photo, width, height, cropFlag)
                 if(res != null) {
-                    _photoBitmapCache.put(key, res)
+                    //_photoBitmapCache.put(key, res)
                 }
             }
             catch(e: NetworkErrorException){
