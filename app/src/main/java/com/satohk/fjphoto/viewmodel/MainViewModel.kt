@@ -4,30 +4,22 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.satohk.fjphoto.domain.AccountState
-import com.satohk.fjphoto.domain.ServiceProvider
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.koin.java.KoinJavaComponent.inject
 
 
 class MainViewModel(private val _accountState: AccountState) : ViewModel() {
-    private val _activeUserName = MutableStateFlow<String?>(null)
-    val activeUserName: StateFlow<String?> get() = _activeUserName
-    private var _serviceProvider: ServiceProvider = ServiceProvider.GOOGLE
-    val serviceProviderUrl = _serviceProvider.url
+    private val _requestedAccountChange = MutableSharedFlow<Boolean>(replay=1)
+    val requestedAccountChange: SharedFlow<Boolean> get() = _requestedAccountChange
 
     init{
         viewModelScope.launch{
-            _accountState.activeAccount.collect { account ->
-                if(account != null) {
-                    _activeUserName.value = account.userName
-                }
-                else{
-                    _activeUserName.value = null
-                }
+            _accountState.requestedAccountChange.collect {
+                _requestedAccountChange.emit(true)
             }
+        }
+        viewModelScope.launch {
+            _requestedAccountChange.emit(true)
         }
     }
 

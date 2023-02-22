@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">FJPhoto</string>
 
+    <string name="menu_item_sign_in">Sign in</string>
     <string name="menu_item_all">All</string>
     <string name="menu_item_photo">Photo</string>
     <string name="menu_item_movie">Movie</string>
@@ -45,6 +46,8 @@
     <string name="button_select">Select</string>
 
     <string name="ai_icon_content_description">ai icon</string>
-    <!-- TODO: Remove or change this placeholder text -->
+
+    <string name="caption_select_login_method">Select sign in method</string>
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

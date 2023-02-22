@@ -19,7 +19,7 @@
                     android:background="@drawable/menu_bar_button"
                     android:drawableLeft="@drawable/account_icon"
                     android:padding="@dimen/menu_button_padding_left"
-                    android:text="account name"
+                    android:text="@string/menu_item_sign_in"
                     android:textAlignment="textStart"
                     android:textAllCaps="false"
                     android:textColor="@color/menu_bar_button_text" />

@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.common.AccountPicker
 import com.satohk.fjphoto.R
+import com.satohk.fjphoto.domain.ServiceProvider
 import com.satohk.fjphoto.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -23,7 +24,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class MainActivity : FragmentActivity() {
 
     private val _viewModel by viewModel<MainViewModel>()
-    private var _accountChoosing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,34 +32,37 @@ class MainActivity : FragmentActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch{
-                    _viewModel.activeUserName.collect { it ->
-                        Log.d("MainActivity", "activeUserName = $it")
-                        if(it == null){
-                            Log.d("MainActivity", "activeUserName is null. call choseAccount")
-                            chooseAccount()
-                        }
+                    _viewModel.requestedAccountChange.collect {
+                        showSelectAccountDialog()
                     }
                 }
             }
         }
     }
 
-    private fun chooseAccount(){
-        if(!_accountChoosing) {
-            _accountChoosing = true
-            val accountTypes = listOf(_viewModel.serviceProviderUrl)
-            val intent = AccountPicker.newChooseAccountIntent(
-                AccountPicker.AccountChooserOptions.Builder()
-                    .setAllowableAccountsTypes(accountTypes)
-                    .setAlwaysShowAccountPicker(true)
-                    .build()
-            )
-            _resultLauncher.launch(intent)
+    private fun showSelectAccountDialog(){
+        Log.d("MainActivity", "requestAccountChange")
+        Log.d("MainActivity", "activeUserName is null. call choseAccount")
+        val dialogFragment = SelectAccountTypeDialogFragment()
+        dialogFragment.show(supportFragmentManager, "dialog")
+        dialogFragment.onSelected = fun(accountType: ServiceProvider){
+            chooseAccount(accountType)
+            dialogFragment.dismiss()
         }
     }
 
+    private fun chooseAccount(accountType: ServiceProvider){
+        val accountTypes = listOf(accountType.url)
+        val intent = AccountPicker.newChooseAccountIntent(
+            AccountPicker.AccountChooserOptions.Builder()
+                .setAllowableAccountsTypes(accountTypes)
+                .setAlwaysShowAccountPicker(true)
+                .build()
+        )
+        _resultLauncher.launch(intent)
+    }
+
     private val _resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        _accountChoosing = false
         if (result.resultCode == Activity.RESULT_OK) {
             // There are no request codes
             val data: Intent? = result.data

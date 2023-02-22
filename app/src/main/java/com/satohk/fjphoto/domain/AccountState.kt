@@ -12,13 +12,17 @@ import com.satohk.fjphoto.repository.localrepository.SettingRepository
 import com.satohk.fjphoto.repository.remoterepository.CachedPhotoRepository
 import com.satohk.fjphoto.repository.remoterepository.GooglePhotoRepository
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.java.KoinJavaComponent.inject
 
 class AccountState(private val _context: Context) {
     private val _activeAccount = MutableStateFlow<AccountWithToken?>(null)
     val activeAccount: StateFlow<AccountWithToken?> get() = _activeAccount
+    private val _requestedAccountChange = MutableSharedFlow<Boolean>()
+    val requestedAccountChange: SharedFlow<Boolean> get() = _requestedAccountChange
 
     private val _photoRepository = MutableStateFlow<CachedPhotoRepository?>(null)
     val photoRepository: StateFlow<CachedPhotoRepository?> get() = _photoRepository
@@ -65,6 +69,7 @@ class AccountState(private val _context: Context) {
                             }
                             _activeAccount.value = null
                             _photoRepository.value = null
+                            _requestedAccountChange.emit(true)
                             scope.cancel()
                         }
                         else if(error == CachedPhotoRepository.ErrorType.ERR_TIMEOUT){
@@ -77,7 +82,10 @@ class AccountState(private val _context: Context) {
                 }
             }
         }
+    }
 
+    suspend fun changeAccount(){
+        _requestedAccountChange.emit(true)
     }
 
     private fun makePhotoRepository(account: AccountWithToken?): CachedPhotoRepository? {

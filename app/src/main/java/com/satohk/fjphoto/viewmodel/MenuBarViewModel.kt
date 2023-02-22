@@ -208,6 +208,8 @@ class MenuBarViewModel(
     }
 
     fun changeAccount(){
-        _accountState.setAccount(null)
+        viewModelScope.launch{
+            _accountState.changeAccount()
+        }
     }
 }
