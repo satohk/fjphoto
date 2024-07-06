@@ -152,21 +152,21 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     }
 
     private fun initializeVideoPlayer() {
-        val minBufferDuration = 2000      //Minimum Video you want to buffer while Playing
-        val maxBufferDuration = 10000     //Max Video you want to buffer during PlayBack
-        val minPlaybackStartBuffer = 100 //Min Video you want to buffer before start Playing it
-        val minPlaybackResumeBuffer = 2000   //Min video You want to buffer when user resumes video
+        val minBufferDuration = 100000 //5 * 60 * 1000  //2000      //Minimum Video you want to buffer while Playing
+        val maxBufferDuration = 200000 //10 * 60 * 1000  // 10000     //Max Video you want to buffer during PlayBack
+        val minPlaybackStartBuffer = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS //Min Video you want to buffer before start Playing it
+        val minPlaybackResumeBuffer = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS   //Min video You want to buffer when user resumes video
 
         val loadControl: LoadControl = DefaultLoadControl.Builder()
-            .setAllocator(DefaultAllocator(true, 16))
+            .setAllocator(DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE))
             .setBufferDurationsMs(
                 minBufferDuration,
                 maxBufferDuration,
                 minPlaybackStartBuffer,
                 minPlaybackResumeBuffer
             )
-            .setTargetBufferBytes(-1)
-            .setPrioritizeTimeOverSizeThresholds(true).createDefaultLoadControl()
+            .setTargetBufferBytes(DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES)
+            .setPrioritizeTimeOverSizeThresholds(true).build()
 
         val trackSelector: TrackSelector = DefaultTrackSelector(this.requireContext())
 
@@ -264,7 +264,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
             }
 
             if (_currentMediaView != null) {
-                ObjectAnimator.ofFloat(prevView, "alpha", 0.0f).apply {
+                ObjectAnimator.ofFloat(prevView!!, "alpha", 0.0f).apply {
                     addListener(object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
                             Log.d("PhotoView", "fadedOut PrevView")
