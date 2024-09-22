@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicInteger
 
 
 typealias PhotoGridItem = PhotoMetadata
@@ -44,6 +46,12 @@ class PhotoGridViewModel(
     val numColumns: StateFlow<Int> get() = _numColumns
     private val _changedItemIndex = MutableSharedFlow<Int>()
     val changedItemIndex = _changedItemIndex.asSharedFlow()
+    private val _launchBitmapLoadJob = MutableSharedFlow<Boolean>()
+
+    private var _numThumbnailLoadingJobs: AtomicInteger = AtomicInteger(0)
+    private val _thumbnailLoadWaitJobs = ConcurrentLinkedQueue<ThumbnailLoadJob>()
+    val THUMBNAIL_LOADING_JOBS_MAX = 10
+    val THUMBNAIL_LOAD_WAIT_JOBS_MAX = 50
 
     var isSelectMode: Boolean = false
 
@@ -52,7 +60,7 @@ class PhotoGridViewModel(
     val gridItemList = PhotoGridItemList()
 
     init{
-        _accountState.photoRepository.onEach {
+        _accountState.photoLoader.onEach {
             if(it !== null){
                 if(_gridContents !== null){
                     val tmp:GridContents = _gridContents!!
@@ -64,19 +72,51 @@ class PhotoGridViewModel(
         _accountState.settingRepository.setting.onEach {
             this._numColumns.value = it.numPhotoGridColumns
         }.launchIn(viewModelScope)
+
+        _launchBitmapLoadJob.onEach {
+            Log.d("_launchBitmapLoadJob.onEach", "_numThumbnailLoadingJobs=${_numThumbnailLoadingJobs.get()}")
+            var loadWaitJobs = "";
+            for(param in _thumbnailLoadWaitJobs){
+                loadWaitJobs += param.position.toString() + ","
+            }
+            Log.d("_launchBitmapLoadJob.onEach", "_thumbnailLoadWaitJobs=${loadWaitJobs}")
+            if(_numThumbnailLoadingJobs.get() < THUMBNAIL_LOADING_JOBS_MAX){
+                val loadParam = _thumbnailLoadWaitJobs.poll()
+                if(loadParam != null){
+                    viewModelScope.launch{
+                        _numThumbnailLoadingJobs.incrementAndGet()
+                        Log.d("loadThumbnail", "job#${_numThumbnailLoadingJobs.get()} load ${loadParam.position}")
+                        val bmp: Bitmap? = withContext(Dispatchers.IO) {
+                            _accountState.photoLoader.value?.getPhotoBitmap(
+                                loadParam.photoMetadata.metadataRemote,
+                                loadParam.width,
+                                loadParam.height,
+                                true
+                            )
+                        }
+                        bmp?.let {
+                            loadParam.callback.invoke(it)
+                        }
+                        _numThumbnailLoadingJobs.decrementAndGet()
+                        _launchBitmapLoadJob.emit(true)
+                        Log.d("loadThumbnail", "exit job#${_numThumbnailLoadingJobs.get()} load ${loadParam.position}")
+                    }
+                }
+            }
+        }.launchIn(viewModelScope)
     }
 
 
     fun setGridContents(gridContents: GridContents){
-        Log.d("PhotoGridViewModel", "setGridContents gridContents=$gridContents _gridContents=$_gridContents photoRepository=${_accountState.photoRepository.value}")
-        if(_accountState.photoRepository.value != null) {
+        Log.d("PhotoGridViewModel", "setGridContents gridContents=$gridContents _gridContents=$_gridContents photoRepository=${_accountState.photoLoader.value}")
+        if(_accountState.photoLoader.value != null) {
             if(gridContents == _gridContents){
                 return
             }
 
             viewModelScope.launch {
                 _gridContents = gridContents
-                _filteredPhotoList.setParameter(_accountState.photoRepository.value!!, gridContents.searchQuery)
+                _filteredPhotoList.setParameter(_accountState.photoLoader.value!!, gridContents.searchQuery)
                 gridItemList._filteredPhotoList = _filteredPhotoList
                 _dataSize.emit(0)
                 _loading.emit(false)
@@ -92,7 +132,7 @@ class PhotoGridViewModel(
 
     private fun loadNextImageList() {
         Log.i("loadNextImageList", "Thread  = %s(%d)".format(Thread.currentThread().name, Thread.currentThread().id))
-        if((_accountState.photoRepository.value != null) && (_gridContents != null) && (gridItemList._filteredPhotoList != null)){
+        if((_accountState.photoLoader.value != null) && (_gridContents != null) && (gridItemList._filteredPhotoList != null)){
             viewModelScope.launch {
                 val readNum = if(_gridContents!!.searchQuery.queryLocal.aiFilterEnabled) _readNumWhenAiFilterEnabled
                                 else _readNum
@@ -117,20 +157,24 @@ class PhotoGridViewModel(
         }
     }
 
-    fun loadThumbnail(photoMetadata: PhotoMetadata, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit) {
-        if(_accountState.photoRepository.value != null) {
+    fun loadThumbnail(photoMetadata: PhotoMetadata, width:Int?, height:Int?, position:Int, callback:(bmp:Bitmap?)->Unit) {
+        Log.d("loadThumbnail", "enter   position $position")
+        if (_accountState.photoLoader.value != null) {
+            while(_thumbnailLoadWaitJobs.size >= THUMBNAIL_LOAD_WAIT_JOBS_MAX){
+                val removedJob = _thumbnailLoadWaitJobs.poll()
+                Log.d("loadThumbnailJob", "remove   position=${removedJob.position}")
+            }
+            _thumbnailLoadWaitJobs.add(
+                ThumbnailLoadJob(
+                    photoMetadata,
+                    width,
+                    height,
+                    position,
+                    callback
+                )
+            )
             viewModelScope.launch {
-                val bmp: Bitmap? = withContext(Dispatchers.IO) {
-                    _accountState.photoRepository.value!!.getPhotoBitmap(
-                        photoMetadata.metadataRemote,
-                        width,
-                        height,
-                        true
-                    )
-                }
-                bmp?.let {
-                    callback.invoke(it)
-                }
+                _launchBitmapLoadJob.emit(true)
             }
         }
     }
@@ -179,6 +223,14 @@ class PhotoGridViewModel(
             }
         }
     }
+
+    class ThumbnailLoadJob (
+        internal val photoMetadata: PhotoMetadata,
+        internal val width:Int?,
+        internal val height:Int?,
+        internal val position:Int,
+        internal val callback:(bmp:Bitmap?)->Unit
+    ){}
 
     class PhotoGridItemList{
         // If the list is changed in another thread and the size of the list changes before the RecyclerView is updated,

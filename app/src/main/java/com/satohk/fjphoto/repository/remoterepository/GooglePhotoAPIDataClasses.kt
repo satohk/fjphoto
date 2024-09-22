@@ -132,7 +132,8 @@ internal data class SearchParam(
     val albumId: String? = null,
     val pageSize: Int,
     val pageToken: String? = null,
-    val filters: ParamFilters? = null
+    val filters: ParamFilters? = null,
+    val orderBy: String? = null
 )
 
 // mediaItems response

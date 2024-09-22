@@ -36,7 +36,7 @@ class SearchBarViewModel(
         get() = MediaType.values().map{ v -> v.toString()}
 
     init{
-        _accountState.photoRepository.onEach {
+        _accountState.photoLoader.onEach {
             if(it !== null){
                 _contentTypes.value = it.getCategoryList()
             }

@@ -11,12 +11,21 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <com.google.android.gms.common.SignInButton
-            android:id="@+id/google_button"
+        <Button
+            android:id="@+id/google_photo_button"
+            android:text="Connect to Google Photos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            app:colorScheme="dark" />
+            android:textAllCaps="false"
+            android:drawableLeft="@drawable/google_photo_button" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/dialog_message_background"
+            android:text="@string/google_photo_limited_use_policy" />
     </LinearLayout>
 
 </FrameLayout>

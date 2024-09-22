@@ -29,4 +29,7 @@
     <color name="menu_bar_button_background_selected">#88888888</color>
 
     <color name="ai_icon_background">#66000000</color>
+
+    <color name="google_photo_button_foreground">#FFFFFFFF</color>
+    <color name="dialog_message_background">#00000000</color>
 </resources>

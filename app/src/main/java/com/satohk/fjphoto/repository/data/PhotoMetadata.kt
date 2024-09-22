@@ -16,8 +16,8 @@ data class PhotoMetadataRemote(
     @Serializable(with = ZonedDateTimeSerializer::class)
     val timestamp: ZonedDateTime,
     val id: String,
-    val url: String,
-    val productUrl: String,
+    val url: String?,
+    val productUrl: String?,
     val mimeType: String
 )
 

@@ -6,4 +6,7 @@
     <string name="msg_started_learning">Started learning.</string>
     <string name="msg_finished_learning">Successfully finished learning.</string>
     <string name="msg_set_to_slideshow">Set this content to slideshow.</string>
+    <string name="msg_synced">Media list synchronization completed.</string>
+
+    <string name="google_photo_limited_use_policy">FJPhoto use and transfer of information received from Google APIs to any other app will adhere to Google API Services User Data Policy, including the Limited Use requirements.</string>
 </resources>

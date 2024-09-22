@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -23,7 +24,6 @@ import com.google.android.exoplayer2.upstream.DefaultAllocator
 import com.satohk.fjphoto.R
 import com.satohk.fjphoto.viewmodel.GridContents
 import com.satohk.fjphoto.viewmodel.PhotoViewModel
-import kotlinx.android.synthetic.main.fragment_photo.*
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
@@ -35,6 +35,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     private val _viewModel by sharedViewModel<PhotoViewModel>()
     private val _imageViews = mutableListOf<ImageView>()
     private lateinit var _videoView: StyledPlayerView
+    private lateinit var _photoInfo: TextView
     private var _videoPlayer: ExoPlayer? = null
     private var _videoPlayerListener: VideoPlayerListener? = null
     private var _currentMediaView: View? = null
@@ -54,6 +55,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         _imageViews.add(view.findViewById(R.id.imageView1))
         _imageViews.add(view.findViewById(R.id.imageView2))
         _videoView = view.findViewById(R.id.videoView)
+        _photoInfo = view.findViewById(R.id.photoInfo)
         for(imageView in _imageViews){
             imageView.setImageResource(R.drawable.blank_image)
             imageView.visibility = View.INVISIBLE
@@ -175,7 +177,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
             .setLoadControl(loadControl)
             .build()
             .also { exoPlayer ->
-                videoView.player = exoPlayer
+                _videoView.player = exoPlayer
             }
         _videoPlayerListener = VideoPlayerListener(_viewModel)
         _videoPlayerListener!!.ownerPlayer = _videoPlayer
@@ -278,7 +280,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         }
 
         media.let {
-            photoInfo.text = media.info
+            _photoInfo.text = media.info
         }
 
         _currentMediaView = nextView

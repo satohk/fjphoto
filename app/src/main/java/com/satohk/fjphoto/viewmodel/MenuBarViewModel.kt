@@ -128,8 +128,8 @@ class MenuBarViewModel(
                         )
                     }
                     SideBarType.ALBUM_LIST -> {
-                        if (_accountState.photoRepository.value != null) {
-                            val albumList = _accountState.photoRepository.value!!.getAlbumList()
+                        if (_accountState.photoLoader.value != null) {
+                            val albumList = _accountState.photoLoader.value!!.getAlbumList()
 
                             _itemList.emit(
                                 albumList.map { album ->
@@ -192,10 +192,10 @@ class MenuBarViewModel(
     }
 
     fun loadIcon(menuBarItem: MenuBarItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit) {
-        if(_accountState.photoRepository.value != null) {
+        if(_accountState.photoLoader.value != null) {
             viewModelScope.launch {
-                if (_accountState.photoRepository.value != null && menuBarItem.album != null) {
-                    val bmp = _accountState.photoRepository.value!!.getAlbumCoverPhoto(
+                if (_accountState.photoLoader.value != null && menuBarItem.album != null) {
+                    val bmp = _accountState.photoLoader.value!!.getAlbumCoverPhoto(
                         menuBarItem.album,
                         width,
                         height,

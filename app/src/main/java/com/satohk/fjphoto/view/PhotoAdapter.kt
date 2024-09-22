@@ -10,8 +10,12 @@ import com.satohk.fjphoto.R
 import com.satohk.fjphoto.databinding.GridItemBinding
 import android.util.Log
 import android.view.KeyEvent
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.satohk.fjphoto.viewmodel.PhotoGridItem
 import com.satohk.fjphoto.viewmodel.PhotoGridViewModel
+import kotlinx.coroutines.launch
+import java.util.concurrent.locks.Condition
 
 class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.PhotoGridItemList):
     RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
@@ -19,19 +23,22 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
     var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
     var onClick: ((view:View?, position:Int) -> Unit)? = null
     var onFocus: ((view:View?, position:Int) -> Unit)? = null
-    var loadThumbnail: ((photoGridItem: PhotoGridItem, width:Int?, height:Int?, callback:(bmp:Bitmap?)->Unit)->Unit)? = null
+    var loadThumbnail: ((photoGridItem: PhotoGridItem, width:Int?, height:Int?, position:Int, callback:(bmp:Bitmap?)->Unit)->Unit)? = null
     private var _lastSize = 0
     private var _nextSize = 0
+    private var _holderCount = 0
 
     // inflates the cell layout from xml when needed
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
+        Log.d("PhotoAdapter", "onCreateViewHolder  ct=$_holderCount")
+        _holderCount++
         val view = GridItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return PhotoViewHolder(view)
     }
 
     // binds the data
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
-        Log.d("onBindViewHolder", "position=$position")
+        Log.d("onBindViewHolder", "new pos=$position  holder.position=${holder.position} bindingPos=${holder.bindingAdapterPosition} absPos=${holder.absoluteAdapterPosition}")
         holder.position = position
         holder.binding.imageView.setImageResource(R.drawable.default_background)
         holder.photoGridItem = _list[position]
@@ -74,13 +81,21 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
         internal val binding: GridItemBinding get() = _binding
         private val _adapter: PhotoAdapter?
             get(){ return if( this.bindingAdapter!=null ) this.bindingAdapter as PhotoAdapter else null}
+        internal var loadState: LoadState = LoadState.BEFORE_LOAD
+        enum class LoadState {
+            BEFORE_LOAD,
+            LOADING,
+            LOADED,
+        }
 
         var photoGridItem: PhotoGridItem? = null
             set(value){
                 Log.d("photoGridItem", "position=${position}, photoGridItem=${value?.metadataRemote?.url}")
                 value?.let {
-                    _adapter?.loadThumbnail?.invoke(value, 256, 256) {
+                    loadState = LoadState.LOADING
+                    _adapter?.loadThumbnail?.invoke(value, 256, 256, position) {
                         setImage(it)
+                        loadState = LoadState.LOADED
                     }
                     binding.aiIcon.visibility =
                         if (value.metadataLocal.favorite)
@@ -95,6 +110,10 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
                     else{
                         binding.textItemInfo.visibility = View.INVISIBLE
                     }
+
+                    //test
+                    binding.textItemInfo.text = "pos=$position"
+                    binding.textItemInfo.visibility = View.VISIBLE
                 }
                 field = value
             }
@@ -105,15 +124,21 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
             }
             itemView.setOnFocusChangeListener { view, b ->
                 if(b) {
-                    view.setBackgroundColor(Color.WHITE)
-                    Log.d("setonfocuschange", position.toString())
-                    _adapter?.onFocus?.invoke(view, position)
+                    itemView.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
+                    //    view.setBackgroundColor(Color.WHITE)
+                        _adapter?.onFocus?.invoke(view, position)
+                    }
+                    Log.d("PhotoViewHolder", "setonfocuschange ${position.toString()}")
                 }
                 else{
-                    view.setBackgroundResource(R.color.default_background)
+                    Log.d("PhotoViewHolder", "setonfocuschange reset ${position.toString()}")
+                    //itemView.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
+                    //    view.setBackgroundResource(R.color.default_background)
+                    //}
                 }
             }
             itemView.setOnKeyListener { view: View, _: Int, keyEvent: KeyEvent ->
+                Log.d("PhotoViewHolder", "keylistener ${position.toString()}")
                 if(keyEvent.action == KeyEvent.ACTION_DOWN) {
                     return@setOnKeyListener _adapter?.onKeyDown?.invoke(
                         view,

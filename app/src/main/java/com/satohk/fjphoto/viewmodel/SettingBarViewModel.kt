@@ -1,8 +1,11 @@
 package com.satohk.fjphoto.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.satohk.fjphoto.domain.AccountState
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import java.time.ZonedDateTime
 
 class SettingBarViewModel(
     private val _accountState: AccountState
@@ -37,6 +40,9 @@ class SettingBarViewModel(
     private val _displayMessageId = MutableSharedFlow<Int>()
     val displayMessageId: SharedFlow<Int?> get() = _displayMessageId
 
+    private val _syncedPhotoLastDate = MutableStateFlow<ZonedDateTime?>(null)
+    val syncedPhotoLastDate: StateFlow<ZonedDateTime?> get() = _syncedPhotoLastDate
+
     init{
         slideshowIntervalIndex.onEach {
             Utils.spinnerIndex2str(it, _slideshowIntervalList.value)?.let { strVal ->
@@ -65,5 +71,15 @@ class SettingBarViewModel(
             slideshowCutPlay.value = it.slideShowCutPlay
             columnNumIndex.value = _columnNumList.value.indexOf(it.numPhotoGridColumns.toString())
         }.launchIn(viewModelScope)
+    }
+
+    fun updateInfo(){
+        viewModelScope.launch{
+            Log.d("SettingBarViewModel", "updateInfo")
+            if(_accountState?.activeAccount?.value?.accountId != null) {
+                _syncedPhotoLastDate.value =
+                    _accountState.photoMetadataRemoteCacheRepository.getLast(_accountState!!.activeAccount!!.value!!.accountId)?.timestamp
+            }
+        }
     }
 }

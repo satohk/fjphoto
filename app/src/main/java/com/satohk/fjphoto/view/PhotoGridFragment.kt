@@ -94,8 +94,8 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
             return false
         }
 
-        adapter.loadThumbnail = fun(photoGridItem: PhotoGridItem, width:Int?, height:Int?, callback:(bmp: Bitmap?)->Unit) {
-            _viewModel.loadThumbnail(photoGridItem, width, height, callback)
+        adapter.loadThumbnail = fun(photoGridItem: PhotoGridItem, width:Int?, height:Int?, position:Int, callback:(bmp: Bitmap?)->Unit) {
+            _viewModel.loadThumbnail(photoGridItem, width, height, position, callback)
         }
 
         _recyclerView.adapter = adapter

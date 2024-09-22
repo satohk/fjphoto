@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.satohk.fjphoto.domain.AccountState
 import com.satohk.fjphoto.domain.FilteredPhotoList
 import com.satohk.fjphoto.domain.PhotoSelector
-import com.satohk.fjphoto.repository.remoterepository.CachedPhotoRepository
+import com.satohk.fjphoto.domain.CachedPhotoLoader
 import kotlinx.coroutines.launch
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
@@ -52,7 +52,7 @@ class PhotoViewModel(
         get() = isSlideShow && _accountState.settingRepository.setting.value.slideShowMute
 
     init{
-        _accountState.photoRepository.onEach {
+        _accountState.photoLoader.onEach {
             if((it != null) && (gridContents != null)){
                 start()
             }
@@ -61,11 +61,11 @@ class PhotoViewModel(
 
     fun start(){
         Log.d("PhotoViewModel", "" +
-                "start() _accountState.photoRepository.value=${_accountState.photoRepository.value}"
+                "start() _accountState.photoRepository.value=${_accountState.photoLoader.value}"
                 + " gridContents=$gridContents")
         stop()
 
-        if(_accountState.photoRepository.value == null) {
+        if(_accountState.photoLoader.value == null) {
             return
         }
         if(gridContents == null) {
@@ -74,7 +74,7 @@ class PhotoViewModel(
 
         viewModelScope.launch {
             initPhotoSelector(
-                _accountState.photoRepository.value!!,
+                _accountState.photoLoader.value!!,
                 gridContents!!,
                 showIndex
             )
@@ -114,7 +114,7 @@ class PhotoViewModel(
             PhotoSelector.MediaType.PHOTO -> {
                 Log.d("PhotoViewModel", "prepareMedia bitmap mediaIndex=${mediaMetadata.index}")
                 viewModelScope.launch {
-                    val bmp = _accountState.photoRepository.value!!.getPhotoBitmap(
+                    val bmp = _accountState.photoLoader.value!!.getPhotoBitmap(
                         mediaMetadata.metadata!!.metadataRemote,
                         photoWidth,
                         photoHeight,
@@ -127,11 +127,18 @@ class PhotoViewModel(
             }
             PhotoSelector.MediaType.VIDEO -> {
                 Log.d("PhotoViewModel", "prepareMedia video mediaIndex=${mediaMetadata.index}")
-                val tmp =
-                    _accountState.photoRepository.value!!.getMediaAccessHeaderAndUrl(mediaMetadata.metadata!!.metadataRemote)
-                val media = Media(null, tmp.second, mediaMetadata.index,
-                    metadataInfoText(mediaMetadata.metadata), fadeInDuration = mediaMetadata.fadeinDuration)
-                _prepareMedia.emit(media)
+                viewModelScope.launch {
+                    val tmp =
+                        _accountState.photoLoader.value!!.getMediaAccessHeaderAndUrl(mediaMetadata.metadata!!.metadataRemote)
+                    val media = Media(
+                        null,
+                        tmp.second,
+                        mediaMetadata.index,
+                        metadataInfoText(mediaMetadata.metadata),
+                        fadeInDuration = mediaMetadata.fadeinDuration
+                    )
+                    _prepareMedia.emit(media)
+                }
             }
             PhotoSelector.MediaType.BLANK -> {
                 Log.d("PhotoViewModel", "prepareMedia Blank mediaIndex=${mediaMetadata.index}")
@@ -141,7 +148,7 @@ class PhotoViewModel(
         }
     }
 
-    private suspend fun initPhotoSelector(repo: CachedPhotoRepository, contents:GridContents, showIndex: Int){
+    private suspend fun initPhotoSelector(repo: CachedPhotoLoader, contents:GridContents, showIndex: Int){
         Log.d("PhotoViewModel", "initPhotoSelector() repo=$repo, contents=$contents, showIndex=$showIndex")
 
         _filteredPhotoList.setParameter(repo, contents.searchQuery)

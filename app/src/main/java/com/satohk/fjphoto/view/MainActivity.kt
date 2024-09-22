@@ -24,6 +24,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class MainActivity : FragmentActivity() {
 
     private val _viewModel by viewModel<MainViewModel>()
+    private var _dialogFragment: SelectAccountTypeDialogFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +34,7 @@ class MainActivity : FragmentActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch{
                     _viewModel.requestedAccountChange.collect {
+                        Log.d("MainActivity", "_viewModel.requestedAccountChange.collect")
                         showSelectAccountDialog()
                     }
                 }
@@ -43,11 +45,22 @@ class MainActivity : FragmentActivity() {
     private fun showSelectAccountDialog(){
         Log.d("MainActivity", "requestAccountChange")
         Log.d("MainActivity", "activeUserName is null. call choseAccount")
-        val dialogFragment = SelectAccountTypeDialogFragment()
-        dialogFragment.show(supportFragmentManager, "dialog")
-        dialogFragment.onSelected = fun(accountType: ServiceProvider){
-            chooseAccount(accountType)
-            dialogFragment.dismiss()
+        _dialogFragment = SelectAccountTypeDialogFragment()
+        _dialogFragment?.let {
+            it.show(supportFragmentManager, "dialog")
+            it.onSelected = fun(accountType: ServiceProvider) {
+                _dialogFragment = null
+                it.dismiss()
+                chooseAccount(accountType)
+            }
+        }
+    }
+
+    override fun onPause(){
+        super.onPause()
+        _dialogFragment?.let{
+            _dialogFragment = null
+            it.dismiss()
         }
     }
 

@@ -45,7 +45,7 @@ class TestPhotoRepository(
         if(sampleBitmap == null){
             sampleBitmap = super.getPhotoBitmap(photo, width, height, cropFlag)
         }
-        return sampleBitmap?.copy(sampleBitmap?.config, true)
+        return sampleBitmap!!.copy(sampleBitmap!!.config, true)
     }
 
     override suspend fun getAlbumCoverPhoto(album: Album, width:Int?, height:Int?, cropFlag:Boolean?): Bitmap? {

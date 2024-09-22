@@ -56,8 +56,8 @@
                                     android:layout_weight="1"
                                     android:entries="@{view_model.mediaTypes}"
                                     android:focusable="true"
-                                    android:focusableInTouchMode="true"
-                                    android:selectedItemPosition="@={view_model.mediaTypeIndex}">
+                                    android:focusableInTouchMode="true">
+<!--                                    android:selectedItemPosition="@={view_model.mediaTypeIndex}">-->
 
                                         <requestFocus />
                                 </Spinner>

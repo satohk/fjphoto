@@ -11,6 +11,7 @@ import org.koin.dsl.module
 
 import com.satohk.fjphoto.repository.localrepository.AppDatabase
 import com.satohk.fjphoto.repository.localrepository.PhotoMetadataLocalRepository
+import com.satohk.fjphoto.repository.localrepository.PhotoMetadataRemoteCacheRepository
 import com.satohk.fjphoto.repository.localrepository.SettingRepository
 import com.satohk.fjphoto.viewmodel.*
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +51,7 @@ class FJPhotoApplication : Application() {
         single { Room.databaseBuilder(applicationContext, AppDatabase::class.java, "fjphoto").build() }
         single { SettingRepository( get() ) }
         single { PhotoMetadataLocalRepository( get() ) }
+        single { PhotoMetadataRemoteCacheRepository( get() ) }
         single { InferenceModelLoader(applicationContext) }
         single { InferenceModel( get() ) }
         single { VisualInspector( get() ) }

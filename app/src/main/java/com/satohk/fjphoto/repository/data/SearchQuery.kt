@@ -1,5 +1,6 @@
 package com.satohk.fjphoto.repository.data
 
+import androidx.room.Index
 import com.satohk.fjphoto.domain.ZonedDateTimeSerializer
 import kotlinx.serialization.Serializable
 import java.time.ZonedDateTime
@@ -10,6 +11,12 @@ enum class MediaType{
     ALL,
     PHOTO,
     VIDEO
+}
+
+@Serializable
+enum class OrderBy{
+    CREATION_TIME_ASC,  // oldest first
+    CREATION_TIME_DESC  // newest first
 }
 
 @Serializable
@@ -28,6 +35,7 @@ data class SearchQueryRemote (
     @Serializable(with = ZonedDateTimeSerializer::class)
     val endDate: ZonedDateTime? = null,
     val mediaType: MediaType = MediaType.ALL,
+    val orderBy: OrderBy = OrderBy.CREATION_TIME_DESC
 )
 
 @Serializable

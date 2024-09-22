@@ -3,7 +3,6 @@ package com.satohk.fjphoto.domain
 import android.graphics.Bitmap
 import android.util.Log
 import android.util.LruCache
-import com.satohk.fjphoto.repository.remoterepository.CachedPhotoRepository
 import com.satohk.fjphoto.repository.data.PhotoMetadata
 import com.satohk.fjphoto.repository.data.PhotoMetadataRemote
 import com.satohk.fjphoto.repository.data.PhotoMetadataTemp
@@ -15,7 +14,7 @@ import kotlinx.coroutines.sync.withLock
 class FilteredPhotoList(
     private val _visualInspector: VisualInspector
 ){
-    private var _repository: CachedPhotoRepository? = null
+    private var _photoLoader: CachedPhotoLoader? = null
     private var _query: SearchQuery? = null
     private var _parameterChanged: Boolean = false
     private val _filteredPhotoMetadataList = mutableListOf<PhotoMetadata>()
@@ -31,8 +30,8 @@ class FilteredPhotoList(
 
     val size: Int get() = this._filteredPhotoMetadataList.size
 
-    suspend fun setParameter(repository: CachedPhotoRepository, query: SearchQuery){
-        if(repository == _repository && query == _query){
+    suspend fun setParameter(photoLoader: CachedPhotoLoader, query: SearchQuery){
+        if(photoLoader == _photoLoader && query == _query){
             return
         }
 
@@ -40,12 +39,12 @@ class FilteredPhotoList(
 
         _loadingMutex.withLock {
             _query = query
-            _repository = repository
+            _photoLoader = photoLoader
             _filteredPhotoMetadataList.clear()
             allLoaded = false
             _repositoryOffset = 0
             _preloadRepositoryOffset = 0
-            _scoreCache.setParameter(_repository!!)
+            _scoreCache.setParameter(_photoLoader!!)
 
             _parameterChanged = true
             _cancelLoad = false
@@ -99,7 +98,7 @@ class FilteredPhotoList(
             while(remain > 0 && !_cancelLoad){
                 // bulkLoadSizeごとにあらかじめCacheにロードしておく
                 if(_repositoryOffset >= _preloadRepositoryOffset) {
-                    val preloadMetadataList = _repository!!.getPhotoMetadataList(
+                    val preloadMetadataList = _photoLoader!!.getPhotoMetadataList(
                         _preloadRepositoryOffset,
                         _bulkLoadSize,
                         _query!!.queryRemote
@@ -111,13 +110,13 @@ class FilteredPhotoList(
                 }
 
                 // Cacheから指定数ロード
-                val metadataList = _repository!!.getPhotoMetadataList(
+                val metadataList = _photoLoader!!.getPhotoMetadataList(
                     _repositoryOffset,
                     remain,
                     _query!!.queryRemote
                 )
 
-                if(metadataList.isEmpty() && _repository!!.photoMetadataListAllLoaded(_query!!.queryRemote)){
+                if(metadataList.isEmpty() && _photoLoader!!.photoMetadataListAllLoaded(_query!!.queryRemote)){
                     allLoaded = true
                 }
                 else {
@@ -143,18 +142,18 @@ class FilteredPhotoList(
     }
 
     class ScoreCache(private val _visualInspector: VisualInspector) {
-        private lateinit var _repository: CachedPhotoRepository
+        private lateinit var _photoLoader: CachedPhotoLoader
         private val _cache = LruCache<String, Float>(1024*1024)
         private var _anchorIdList: List<String>? = null
 
-        fun setParameter(repository: CachedPhotoRepository){
-            _repository = repository
+        fun setParameter(photoLoader: CachedPhotoLoader){
+            _photoLoader = photoLoader
         }
 
         suspend fun setAnchorImages(idList:List<String>){
             val images = mutableListOf<Bitmap>()
             for(photoId in idList){
-                val metadata = _repository.getPhotoMetadata(photoId)
+                val metadata = _photoLoader.getPhotoMetadata(photoId)
                 Log.d("initVisualInspectorAnchor", metadata.toString())
                 val image = loadBmp(metadata)
                 image?.let{ images.add(it) }
@@ -183,7 +182,7 @@ class FilteredPhotoList(
         }
 
         private suspend fun loadBmp(metadata: PhotoMetadataRemote): Bitmap?{
-            return _repository.getPhotoBitmap(
+            return _photoLoader.getPhotoBitmap(
                 metadata,
                 _visualInspector.inputImageSize.width,
                 _visualInspector.inputImageSize.height,

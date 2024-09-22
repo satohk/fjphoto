@@ -16,6 +16,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.ConnectException
 import com.satohk.fjphoto.repository.data.Album
 import com.satohk.fjphoto.repository.data.MediaType
+import com.satohk.fjphoto.repository.data.OrderBy
 import com.satohk.fjphoto.repository.data.SearchQueryRemote
 import com.satohk.fjphoto.repository.data.PhotoMetadataRemote
 
@@ -64,22 +65,22 @@ open class GooglePhotoRepository(
     override suspend fun getNextPhotoMetadataList(pageSize:Int, pageToken:String?, searchQuery: SearchQueryRemote?)
             : Pair<List<PhotoMetadataRemote>,String?>{
         val dateFilter =
-            if(searchQuery?.startDate != null && searchQuery.endDate != null)
                 ParamDateFilter(
                     ranges=listOf(
                         ParamDateRange(
-                        startDate= ParamDate(searchQuery.startDate),
-                        endDate= ParamDate(searchQuery.endDate)
+                        startDate= if(searchQuery?.startDate != null) ParamDate(searchQuery.startDate)
+                                    else ParamDate(1900, 1, 1),
+                        endDate= if(searchQuery?.endDate != null) ParamDate(searchQuery.endDate)
+                                    else ParamDate(9999, 1, 1)
                     )
                     ))
-            else null
         val contentFilter =
             if(searchQuery?.photoCategory !== null)
                 ParamContentFilter(includedContentCategories=searchQuery.photoCategory.map{v -> ParamContentCategory.valueOf(v)})
             else null
         val mediaTypeFilter: ParamMediaTypeFilter? =
             when(searchQuery?.mediaType){
-                MediaType.ALL -> ParamMediaTypeFilter(ParamMediaType.ALL_MEDIA)
+                MediaType.ALL -> null  // ParamMediaTypeFilter(ParamMediaType.ALL_MEDIA)
                 MediaType.PHOTO -> ParamMediaTypeFilter(ParamMediaType.PHOTO)
                 MediaType.VIDEO -> ParamMediaTypeFilter(ParamMediaType.VIDEO)
                 else -> null
@@ -89,16 +90,25 @@ open class GooglePhotoRepository(
             if(searchQuery?.album == null && (dateFilter !== null || contentFilter !== null || mediaTypeFilter !== null))
                 ParamFilters(dateFilter=dateFilter, contentFilter=contentFilter, mediaTypeFilter=mediaTypeFilter)
             else null
+        val orderBy = if((contentFilter != null) or (mediaTypeFilter != null))
+                            null  // orderByはdateFilter以外のフィルタを指定すると使用できない
+                        else if(searchQuery?.orderBy == OrderBy.CREATION_TIME_ASC)
+                            "MediaMetadata.creation_time"
+                        else
+                            "MediaMetadata.creation_time desc"
         val searchParam = SearchParam(
             albumId=searchQuery?.album?.id,
             pageSize=pageSize,
             pageToken=pageToken,
-            filters=filters
+            filters=filters,
+            orderBy=orderBy
         )
 
         val format = Json { encodeDefaults = false }
         val requestBody = format.encodeToString(searchParam)
         val url = "https://photoslibrary.googleapis.com/v1/mediaItems:search"
+
+        Log.d("getNextPhotoMetadataList", requestBody)
 
         val response = httpPost(url, requestBody)
         val responseBodyStr = response.body?.string()!!
@@ -107,7 +117,7 @@ open class GooglePhotoRepository(
         Log.d("getNextPhotoMetadataList", responseDecoded.mediaItems?.get(0).toString())
         val result: List<PhotoMetadataRemote> = responseDecoded.mediaItems?.map{
             PhotoMetadataRemote(
-                ZonedDateTime.parse(it.mediaMetadata!!.creationTime),
+                ZonedDateTime.parse(it.mediaMetadata!!.creationTime),  // example "2014-10-02T15:01:23.045123456Z"
                 it.id,
                 it.baseUrl,
                 it.productUrl,
@@ -140,7 +150,7 @@ open class GooglePhotoRepository(
         cropFlag: Boolean?
     ): Bitmap? {
         return try {
-            val res = httpGet(makeImageUrl(photo.url, width, height, cropFlag))
+            val res = httpGet(makeImageUrl(photo.url!!, width, height, cropFlag))
             val body = res.body?.bytes()!!
             val bmp = BitmapFactory.decodeByteArray(body, 0, body.size)
             res.body?.close()

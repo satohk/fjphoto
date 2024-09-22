@@ -56,6 +56,17 @@ class SettingBarFragment() : Fragment(), SideBarFragmentInterface {
                         }
                     }
                 }
+                launch {
+                    _viewModel.syncedPhotoLastDate.collect { it ->
+                        val txt = view.findViewById<TextView>(R.id.textSyncedPhotoLastDate)
+                        if(it == null){
+                            txt.text = ""
+                        }
+                        else{
+                            txt.text = it.toString()
+                        }
+                    }
+                }
             }
         }
 
@@ -81,6 +92,11 @@ class SettingBarFragment() : Fragment(), SideBarFragmentInterface {
         }
 
         binding.textVersion.text = BuildConfig.VERSION_NAME
+    }
+
+    override fun onResume() {
+        super.onResume()
+        _viewModel.updateInfo()
     }
 
     override fun onFocus(){
