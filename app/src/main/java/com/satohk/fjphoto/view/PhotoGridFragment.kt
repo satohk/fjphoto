@@ -6,7 +6,7 @@ import android.util.Log
 import android.view.KeyEvent
 import com.satohk.fjphoto.*
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.leanback.widget.VerticalGridView
 import androidx.fragment.app.Fragment
 
 import android.view.View
@@ -18,6 +18,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.satohk.fjphoto.viewmodel.GridContents
 import com.satohk.fjphoto.viewmodel.PhotoGridItem
 import com.satohk.fjphoto.viewmodel.PhotoGridViewModel
@@ -30,7 +31,7 @@ import org.koin.androidx.viewmodel.ext.android.sharedViewModel
  */
 class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
     private val _viewModel by sharedViewModel<PhotoGridViewModel>()
-    private lateinit var _recyclerView: RecyclerView
+    private lateinit var _verticalGridView: VerticalGridView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -62,10 +63,10 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
         _viewModel.isSelectMode = selectModeToggleButton.isChecked
     }
 
-    private fun initRecyclerView(view: View){
+    private fun initRecyclerView(view: View) {
         // set up the RecyclerView
-        _recyclerView = view.findViewById(R.id.photo_grid)
-        _recyclerView.layoutManager = GridLayoutManager(requireContext(), _viewModel.numColumns.value)
+        _verticalGridView = view.findViewById(R.id.photo_grid)
+        _verticalGridView.layoutManager = GridLayoutManager(requireContext(), _viewModel.numColumns.value)
         val adapter = PhotoAdapter(_viewModel.gridItemList)
         adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
 
@@ -77,8 +78,8 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
             _viewModel.focusIndex = position
             Log.d("menu onFocus",  "position:${position.toString()} vislbleItemPos:${_viewModel.firstVisibleItemIndex}")
         }
-        _recyclerView.setOnScrollChangeListener {_, _, _, _, _ ->
-            _viewModel.firstVisibleItemIndex = (_recyclerView.layoutManager as GridLayoutManager).findFirstCompletelyVisibleItemPosition()
+        _verticalGridView.setOnScrollChangeListener { _, _, _, _, _ ->
+            _viewModel.firstVisibleItemIndex = (_verticalGridView.layoutManager as GridLayoutManager).findFirstCompletelyVisibleItemPosition()
             Log.d("menu onscroll",  "vislbleItemPos:${_viewModel.firstVisibleItemIndex}")
         }
         adapter.onKeyDown = fun(view:View?, position:Int, keyEvent: KeyEvent):Boolean{
@@ -94,11 +95,11 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
             return false
         }
 
-        adapter.loadThumbnail = fun(photoGridItem: PhotoGridItem, width:Int?, height:Int?, position:Int, callback:(bmp: Bitmap?)->Unit) {
+        adapter.loadThumbnail = fun(photoGridItem: PhotoGridItem, width:Int?, height:Int?, position:Int, callback:(position:Int, bmp:Bitmap?)->Unit) {
             _viewModel.loadThumbnail(photoGridItem, width, height, position, callback)
         }
 
-        _recyclerView.adapter = adapter
+        _verticalGridView.adapter = adapter
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -114,12 +115,12 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
                 }
                 launch{
                     _viewModel.numColumns.collect{
-                        _recyclerView.layoutManager = GridLayoutManager(requireContext(), it)
+                        _verticalGridView.layoutManager = GridLayoutManager(requireContext(), it)
                     }
                 }
                 launch{
                     _viewModel.changedItemIndex.collect{
-                        val holder = _recyclerView.findViewHolderForAdapterPosition(_viewModel.focusIndex)
+                        val holder = _verticalGridView.findViewHolderForAdapterPosition(_viewModel.focusIndex)
                             as PhotoAdapter.PhotoViewHolder?
                         holder?.photoGridItem = _viewModel.gridItemList[it]
                     }
@@ -135,6 +136,6 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
     }
 
     private fun setGridItemFocus(){
-        _recyclerView.scrollToPosition(_viewModel.firstVisibleItemIndex)
+        _verticalGridView.scrollToPosition(_viewModel.firstVisibleItemIndex)
     }
 }

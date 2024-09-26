@@ -95,7 +95,7 @@ class PhotoGridViewModel(
                             )
                         }
                         bmp?.let {
-                            loadParam.callback.invoke(it)
+                            loadParam.callback.invoke(loadParam.position, it)
                         }
                         _numThumbnailLoadingJobs.decrementAndGet()
                         _launchBitmapLoadJob.emit(true)
@@ -157,7 +157,7 @@ class PhotoGridViewModel(
         }
     }
 
-    fun loadThumbnail(photoMetadata: PhotoMetadata, width:Int?, height:Int?, position:Int, callback:(bmp:Bitmap?)->Unit) {
+    fun loadThumbnail(photoMetadata: PhotoMetadata, width:Int?, height:Int?, position:Int, callback:(position:Int, bmp:Bitmap?)->Unit) {
         Log.d("loadThumbnail", "enter   position $position")
         if (_accountState.photoLoader.value != null) {
             while(_thumbnailLoadWaitJobs.size >= THUMBNAIL_LOAD_WAIT_JOBS_MAX){
@@ -229,7 +229,7 @@ class PhotoGridViewModel(
         internal val width:Int?,
         internal val height:Int?,
         internal val position:Int,
-        internal val callback:(bmp:Bitmap?)->Unit
+        internal val callback:(position:Int, bmp:Bitmap?)->Unit
     ){}
 
     class PhotoGridItemList{

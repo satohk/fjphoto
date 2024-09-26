@@ -58,8 +58,9 @@
                 android:textOn="@string/button_select" />
         </LinearLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
+        <androidx.leanback.widget.VerticalGridView
             android:id="@+id/photo_grid"
+            android:descendantFocusability="afterDescendants"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </LinearLayout>

@@ -23,7 +23,7 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
     var onKeyDown: ((view:View?, position:Int, keyEvent: KeyEvent) -> Boolean)? = null
     var onClick: ((view:View?, position:Int) -> Unit)? = null
     var onFocus: ((view:View?, position:Int) -> Unit)? = null
-    var loadThumbnail: ((photoGridItem: PhotoGridItem, width:Int?, height:Int?, position:Int, callback:(bmp:Bitmap?)->Unit)->Unit)? = null
+    var loadThumbnail: ((photoGridItem: PhotoGridItem, width:Int?, height:Int?, position:Int, callback:(position:Int, bmp:Bitmap?)->Unit)->Unit)? = null
     private var _lastSize = 0
     private var _nextSize = 0
     private var _holderCount = 0
@@ -39,7 +39,6 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
     // binds the data
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
         Log.d("onBindViewHolder", "new pos=$position  holder.position=${holder.position} bindingPos=${holder.bindingAdapterPosition} absPos=${holder.absoluteAdapterPosition}")
-        holder.position = position
         holder.binding.imageView.setImageResource(R.drawable.default_background)
         holder.photoGridItem = _list[position]
     }
@@ -76,7 +75,6 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
     class PhotoViewHolder internal constructor(binding: GridItemBinding)
         : RecyclerView.ViewHolder(binding.root) {
 
-        internal var position: Int = 0
         private val _binding: GridItemBinding
         internal val binding: GridItemBinding get() = _binding
         private val _adapter: PhotoAdapter?
@@ -90,12 +88,15 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
 
         var photoGridItem: PhotoGridItem? = null
             set(value){
-                Log.d("photoGridItem", "position=${position}, photoGridItem=${value?.metadataRemote?.url}")
+                Log.d("photoGridItem", "position=${bindingAdapterPosition}, photoGridItem=${value?.metadataRemote?.url}")
                 value?.let {
                     loadState = LoadState.LOADING
-                    _adapter?.loadThumbnail?.invoke(value, 256, 256, position) {
-                        setImage(it)
-                        loadState = LoadState.LOADED
+                    _adapter?.loadThumbnail?.invoke(value, 256, 256, bindingAdapterPosition) { position:Int, bmp:Bitmap? ->
+                        // loadThumbnail実行時とPositionが変わっていない場合のみ画像を適用
+                        if(position == bindingAdapterPosition) {
+                            setImage(bmp)
+                            loadState = LoadState.LOADED
+                        }
                     }
                     binding.aiIcon.visibility =
                         if (value.metadataLocal.favorite)
@@ -125,7 +126,7 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
             itemView.setOnFocusChangeListener { view, b ->
                 if(b) {
                     itemView.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
-                    //    view.setBackgroundColor(Color.WHITE)
+                        view.setBackgroundColor(Color.WHITE)
                         _adapter?.onFocus?.invoke(view, position)
                     }
                     Log.d("PhotoViewHolder", "setonfocuschange ${position.toString()}")
@@ -133,7 +134,7 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
                 else{
                     Log.d("PhotoViewHolder", "setonfocuschange reset ${position.toString()}")
                     //itemView.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
-                    //    view.setBackgroundResource(R.color.default_background)
+                    view.setBackgroundResource(R.color.default_background)
                     //}
                 }
             }
