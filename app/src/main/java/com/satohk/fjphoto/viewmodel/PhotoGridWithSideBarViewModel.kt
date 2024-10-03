@@ -43,7 +43,11 @@ class PhotoGridWithSideBarViewModel : ViewModel() {
                 }
             }
             SideBarActionType.CHANGE_GRID -> {
-                _gridContents.value = action.gridContents!!
+                val newGridContent = if(action.orderByAction == GridContentsOrderByAction.INHERIT)
+                        GridContents(SearchQuery(action.gridContents!!.searchQuery, _gridContents.value.searchQuery.queryRemote.orderBy))
+                    else
+                        GridContents(action.gridContents!!.searchQuery)
+                _gridContents.value = newGridContent
             }
             SideBarActionType.ENTER_GRID -> {
                 //_gridContents.emit(it.gridContents!!)

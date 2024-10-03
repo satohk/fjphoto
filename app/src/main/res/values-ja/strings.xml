@@ -44,6 +44,7 @@
     <string name="button_play">再生</string>
     <string name="button_set_slideshow">スライドショーに設定</string>
     <string name="button_select">選択</string>
+    <string name="button_asc">古い順で表示</string>
 
     <string name="ai_icon_content_description">ai icon</string>
 

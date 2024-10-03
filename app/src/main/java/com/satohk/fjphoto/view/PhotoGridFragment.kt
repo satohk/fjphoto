@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import com.satohk.fjphoto.repository.data.OrderBy
 import com.satohk.fjphoto.viewmodel.GridContents
 import com.satohk.fjphoto.viewmodel.PhotoGridItem
 import com.satohk.fjphoto.viewmodel.PhotoGridViewModel
@@ -61,6 +62,10 @@ class PhotoGridFragment() : Fragment(R.layout.fragment_photo_grid) {
         val selectModeToggleButton = view.findViewById<ToggleButton>(R.id.selectModeToggleButton)
         selectModeToggleButton.setOnCheckedChangeListener { _, isChecked -> _viewModel.isSelectMode = isChecked }
         _viewModel.isSelectMode = selectModeToggleButton.isChecked
+
+        val ascToggleButton = view.findViewById<ToggleButton>(R.id.ascToggleButton)
+        ascToggleButton.isChecked = _viewModel.gridContents?.searchQuery?.queryRemote?.orderBy == OrderBy.CREATION_TIME_ASC
+        ascToggleButton.setOnCheckedChangeListener { _, isChecked -> _viewModel.toggleOrder() }
     }
 
     private fun initRecyclerView(view: View) {

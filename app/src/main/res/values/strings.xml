@@ -44,6 +44,7 @@
     <string name="button_play">Play</string>
     <string name="button_set_slideshow">Set slideshow</string>
     <string name="button_select">Select</string>
+    <string name="button_asc">Asc</string>
 
     <string name="ai_icon_content_description">ai icon</string>
 

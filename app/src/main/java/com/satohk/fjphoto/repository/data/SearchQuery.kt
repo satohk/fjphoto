@@ -51,4 +51,18 @@ data class SearchQuery (
     val queryLocal: SearchQueryLocal = SearchQueryLocal(),
     val serviceProviderUrl: String? = null,
     val userName: String? = null
-)
+){
+    constructor(copyFrom: SearchQuery, orderBy: OrderBy) : this(
+        SearchQueryRemote(
+            album = copyFrom.queryRemote.album,
+            photoCategory = copyFrom.queryRemote.photoCategory,
+            startDate = copyFrom.queryRemote.startDate,
+            endDate = copyFrom.queryRemote.endDate,
+            mediaType = copyFrom.queryRemote.mediaType,
+            orderBy = orderBy
+        ),
+        copyFrom.queryLocal,
+        copyFrom.serviceProviderUrl,
+        copyFrom.userName
+    )
+}

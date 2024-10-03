@@ -3,9 +3,13 @@ package com.satohk.fjphoto.viewmodel
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy.FallbackSelection
 import com.satohk.fjphoto.domain.*
+import com.satohk.fjphoto.repository.data.OrderBy
 import com.satohk.fjphoto.repository.data.PhotoMetadata
 import com.satohk.fjphoto.repository.data.PhotoMetadataLocal
+import com.satohk.fjphoto.repository.data.SearchQuery
+import com.satohk.fjphoto.repository.data.SearchQueryRemote
 import com.satohk.fjphoto.repository.localrepository.PhotoMetadataLocalRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -107,6 +111,25 @@ class PhotoGridViewModel(
     }
 
 
+    fun toggleOrder(){
+        Log.d("toggleOrder", "toggleOrder")
+        if(gridContents !== null) {
+            val orderBy = if (gridContents!!.searchQuery.queryRemote.orderBy == OrderBy.CREATION_TIME_DESC) OrderBy.CREATION_TIME_ASC
+                            else OrderBy.CREATION_TIME_DESC
+            val newGridContents = GridContents(
+                searchQuery = SearchQuery(copyFrom=gridContents!!.searchQuery, orderBy = orderBy)
+            )
+            publishAction(
+                SideBarAction(
+                    SideBarActionType.CHANGE_GRID,
+                    gridContents = newGridContents,
+                    orderByAction = GridContentsOrderByAction.OVERWRITE
+                )
+            )
+        }
+    }
+
+
     fun setGridContents(gridContents: GridContents){
         Log.d("PhotoGridViewModel", "setGridContents gridContents=$gridContents _gridContents=$_gridContents photoRepository=${_accountState.photoLoader.value}")
         if(_accountState.photoLoader.value != null) {
@@ -205,6 +228,7 @@ class PhotoGridViewModel(
         }
         else {
             _gridContents?.run {
+                Log.d("PhotoGridViewModel.onClickItem", this.toString())
                 onChangeToPhotoViewListener?.invoke(this, false, position)
             }
         }

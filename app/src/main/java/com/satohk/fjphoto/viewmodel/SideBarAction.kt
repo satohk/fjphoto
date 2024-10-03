@@ -4,8 +4,13 @@ package com.satohk.fjphoto.viewmodel
 data class SideBarAction(
     val actionType: SideBarActionType,
     val sideBarType: SideBarType? = null,
-    val gridContents: GridContents? = null
-){
+    val gridContents: GridContents? = null,
+    val orderByAction: GridContentsOrderByAction = GridContentsOrderByAction.INHERIT,
+)
+
+enum class GridContentsOrderByAction{
+    INHERIT,
+    OVERWRITE
 }
 
 enum class SideBarActionType{
