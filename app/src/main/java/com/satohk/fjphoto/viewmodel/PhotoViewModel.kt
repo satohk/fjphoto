@@ -9,8 +9,8 @@ import com.satohk.fjphoto.domain.FilteredPhotoList
 import com.satohk.fjphoto.domain.PhotoSelector
 import com.satohk.fjphoto.domain.CachedPhotoLoader
 import kotlinx.coroutines.launch
-import com.google.android.exoplayer2.PlaybackException
-import com.google.android.exoplayer2.Player
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import com.satohk.fjphoto.repository.data.PhotoMetadata
 import kotlinx.coroutines.flow.*
 import org.koin.java.KoinJavaComponent

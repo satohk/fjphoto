@@ -16,11 +16,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.android.exoplayer2.*
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.trackselection.TrackSelector
-import com.google.android.exoplayer2.ui.StyledPlayerView
-import com.google.android.exoplayer2.upstream.DefaultAllocator
+import androidx.media3.ui.PlayerView
+import androidx.media3.exoplayer.*
+import androidx.media3.common.*
 import com.satohk.fjphoto.R
 import com.satohk.fjphoto.viewmodel.GridContents
 import com.satohk.fjphoto.viewmodel.PhotoViewModel
@@ -34,7 +32,7 @@ import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     private val _viewModel by sharedViewModel<PhotoViewModel>()
     private val _imageViews = mutableListOf<ImageView>()
-    private lateinit var _videoView: StyledPlayerView
+    private lateinit var _videoView: PlayerView
     private lateinit var _photoInfo: TextView
     private var _videoPlayer: ExoPlayer? = null
     private var _videoPlayerListener: VideoPlayerListener? = null
@@ -70,9 +68,9 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         dummyButton.setOnKeyListener { _: View, _: Int, keyEvent: KeyEvent ->
             Log.d("PhotoFragment", "KeyEvent " + keyEvent.toString())
             if(keyEvent.action == KeyEvent.ACTION_DOWN) {
-                if(_currentMediaView is StyledPlayerView){
+                if(_currentMediaView is PlayerView){
                     when (keyEvent.keyCode) {
-                        KeyEvent.KEYCODE_DPAD_DOWN -> (_currentMediaView as StyledPlayerView).showController()
+                        KeyEvent.KEYCODE_DPAD_DOWN -> (_currentMediaView as PlayerView).showController()
                         KeyEvent.KEYCODE_DPAD_LEFT -> _viewModel.goPrev()
                         KeyEvent.KEYCODE_DPAD_RIGHT -> _viewModel.goNext()
                         else -> return@setOnKeyListener false
@@ -95,8 +93,8 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         dummyButton.setOnFocusChangeListener { _, b ->
             Log.d("PhotoFragment", "dummyButton focus $b")
             if(b) {
-                if(_currentMediaView is StyledPlayerView){
-                    (_currentMediaView as StyledPlayerView).hideController()
+                if(_currentMediaView is PlayerView){
+                    (_currentMediaView as PlayerView).hideController()
                 }
             }
         }
@@ -154,27 +152,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     }
 
     private fun initializeVideoPlayer() {
-        val minBufferDuration = 100000 //5 * 60 * 1000  //2000      //Minimum Video you want to buffer while Playing
-        val maxBufferDuration = 200000 //10 * 60 * 1000  // 10000     //Max Video you want to buffer during PlayBack
-        val minPlaybackStartBuffer = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS //Min Video you want to buffer before start Playing it
-        val minPlaybackResumeBuffer = DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS   //Min video You want to buffer when user resumes video
-
-        val loadControl: LoadControl = DefaultLoadControl.Builder()
-            .setAllocator(DefaultAllocator(true, C.DEFAULT_BUFFER_SEGMENT_SIZE))
-            .setBufferDurationsMs(
-                minBufferDuration,
-                maxBufferDuration,
-                minPlaybackStartBuffer,
-                minPlaybackResumeBuffer
-            )
-            .setTargetBufferBytes(DefaultLoadControl.DEFAULT_TARGET_BUFFER_BYTES)
-            .setPrioritizeTimeOverSizeThresholds(true).build()
-
-        val trackSelector: TrackSelector = DefaultTrackSelector(this.requireContext())
-
         _videoPlayer = ExoPlayer.Builder(this.requireContext())
-            .setTrackSelector(trackSelector)
-            .setLoadControl(loadControl)
             .build()
             .also { exoPlayer ->
                 _videoView.player = exoPlayer

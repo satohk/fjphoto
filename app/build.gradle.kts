@@ -73,10 +73,11 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite:2.11.0")
     implementation("org.tensorflow:tensorflow-lite-gpu:2.11.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.3")
-    val exoplayer_version = "2.19.1"
-    implementation("com.google.android.exoplayer:exoplayer-core:$exoplayer_version")
-    implementation("com.google.android.exoplayer:exoplayer-dash:$exoplayer_version")
-    implementation("com.google.android.exoplayer:exoplayer-ui:$exoplayer_version")
+
+    val media3_version = "1.4.1"
+    implementation("androidx.media3:media3-session:$media3_version")
+    implementation("androidx.media3:media3-exoplayer:$media3_version")
+    implementation("androidx.media3:media3-ui:$media3_version")
 
     val room_version = "2.6.1"
     implementation("androidx.room:room-runtime:$room_version")
