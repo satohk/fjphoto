@@ -90,7 +90,7 @@ open class GooglePhotoRepository(
             if(searchQuery?.album == null && (dateFilter !== null || contentFilter !== null || mediaTypeFilter !== null))
                 ParamFilters(dateFilter=dateFilter, contentFilter=contentFilter, mediaTypeFilter=mediaTypeFilter)
             else null
-        val orderBy = if((contentFilter != null) or (mediaTypeFilter != null))
+        val orderBy = if((searchQuery?.album != null) or (contentFilter != null) or (mediaTypeFilter != null))
                             null  // orderByはdateFilter以外のフィルタを指定すると使用できない
                         else if(searchQuery?.orderBy == OrderBy.CREATION_TIME_ASC)
                             "MediaMetadata.creation_time"

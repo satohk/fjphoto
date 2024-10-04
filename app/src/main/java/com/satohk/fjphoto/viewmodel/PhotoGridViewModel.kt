@@ -132,6 +132,8 @@ class PhotoGridViewModel(
 
     fun setGridContents(gridContents: GridContents){
         Log.d("PhotoGridViewModel", "setGridContents gridContents=$gridContents _gridContents=$_gridContents photoRepository=${_accountState.photoLoader.value}")
+        _thumbnailLoadWaitJobs.clear()
+
         if(_accountState.photoLoader.value != null) {
             if(gridContents == _gridContents){
                 return
