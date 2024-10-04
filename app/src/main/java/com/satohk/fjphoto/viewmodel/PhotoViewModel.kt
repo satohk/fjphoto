@@ -26,7 +26,8 @@ class PhotoViewModel(
         val videoUrl: String? = null,
         val index: Int = 0,
         val info: String = "",
-        val fadeInDuration: Int
+        val mediaId: String? = null,
+        val fadeInDuration: Int,
     )
 
     private val _errorMessageId = MutableSharedFlow<Int>()
@@ -121,7 +122,8 @@ class PhotoViewModel(
                         false
                     )
                     val media = Media(bmp, null, mediaMetadata.index,
-                        metadataInfoText(mediaMetadata.metadata), fadeInDuration = mediaMetadata.fadeinDuration)
+                        metadataInfoText(mediaMetadata.metadata), mediaMetadata.metadata.metadataRemote.id,
+                        fadeInDuration = mediaMetadata.fadeinDuration)
                     _currentMedia.emit(media)
                 }
             }
@@ -135,6 +137,7 @@ class PhotoViewModel(
                         tmp.second,
                         mediaMetadata.index,
                         metadataInfoText(mediaMetadata.metadata),
+                        mediaMetadata.metadata.metadataRemote.id,
                         fadeInDuration = mediaMetadata.fadeinDuration
                     )
                     _prepareMedia.emit(media)
@@ -143,7 +146,7 @@ class PhotoViewModel(
             PhotoSelector.MediaType.BLANK -> {
                 Log.d("PhotoViewModel", "prepareMedia Blank mediaIndex=${mediaMetadata.index}")
                 _currentMedia.emit(Media(null, null, mediaMetadata.index,
-                    metadataInfoText(mediaMetadata.metadata), fadeInDuration = mediaMetadata.fadeinDuration))
+                    metadataInfoText(mediaMetadata.metadata), null, fadeInDuration = mediaMetadata.fadeinDuration))
             }
         }
     }

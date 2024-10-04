@@ -12,6 +12,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.TextView
+import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -19,16 +20,23 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.ui.PlayerView
 import androidx.media3.exoplayer.*
 import androidx.media3.common.*
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSpec
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.satohk.fjphoto.R
 import com.satohk.fjphoto.viewmodel.GridContents
 import com.satohk.fjphoto.viewmodel.PhotoViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.java.KoinJavaComponent
 
 
 /**
  * Loads a grid of cards with movies to browse.
  */
+@UnstableApi
 class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     private val _viewModel by sharedViewModel<PhotoViewModel>()
     private val _imageViews = mutableListOf<ImageView>()
@@ -37,7 +45,9 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     private var _videoPlayer: ExoPlayer? = null
     private var _videoPlayerListener: VideoPlayerListener? = null
     private var _currentMediaView: View? = null
+    private val _mediaCache: VideoCache by KoinJavaComponent.inject(VideoCache::class.java)
 
+    @OptIn(UnstableApi::class)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d("PhotoFragment", "onViewCreated")
@@ -129,6 +139,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
                 }
             }
         }
+        initializeVideoPlayer()
     }
 
     override fun onStart() {
@@ -140,7 +151,6 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         Log.d("PhotoFragment", "onResume")
         super.onResume()
         setPhotoSize()
-        initializeVideoPlayer()
         _viewModel.start()
     }
 
@@ -151,8 +161,18 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         _viewModel.stop()
     }
 
+    @OptIn(UnstableApi::class)
     private fun initializeVideoPlayer() {
+        // init video datasource
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+        val cacheDataSourceFactory =
+            CacheDataSource.Factory()
+                .setCache(_mediaCache.cache)
+                .setUpstreamDataSourceFactory(httpDataSourceFactory)
+
         _videoPlayer = ExoPlayer.Builder(this.requireContext())
+            .setMediaSourceFactory(
+                DefaultMediaSourceFactory(this.requireContext()).setDataSourceFactory(cacheDataSourceFactory))
             .build()
             .also { exoPlayer ->
                 _videoView.player = exoPlayer
@@ -163,6 +183,7 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
         _videoPlayer!!.volume = if(_viewModel.muteVideoPlayer) 0.0f else 1.0f
     }
 
+    @OptIn(UnstableApi::class)
     private fun releaseVidePlayer() {
         Log.d("PhotoFragment", "releaseVideoPlayers videoPlayer=$_videoPlayer")
         _videoPlayer?.let{
@@ -178,9 +199,12 @@ class PhotoFragment() : Fragment(R.layout.fragment_photo) {
     }
 
     private fun prepareVideo(media: PhotoViewModel.Media) {
-        Log.d("PhotoFragment", "prepareVideo media=${media.index}")
+        Log.d("PhotoFragment", "prepareVideo media=${media.index} mediaId=${media.mediaId}")
         if(media.videoUrl != null) {
-            val mediaItem = MediaItem.fromUri(media.videoUrl)
+            val mediaItem = MediaItem.Builder()
+                .setUri(media.videoUrl)
+                .setCustomCacheKey(media.mediaId!!)
+                .build()
             _videoPlayerListener?.mediaIndex = media.index
             _videoPlayer?.let {
                 if (it.isPlaying) {

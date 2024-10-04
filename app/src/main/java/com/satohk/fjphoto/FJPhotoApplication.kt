@@ -2,6 +2,7 @@ package com.satohk.fjphoto
 
 import android.app.Application
 import android.util.Log
+import androidx.media3.common.util.UnstableApi
 import androidx.room.Room
 import com.satohk.fjphoto.domain.*
 import org.koin.android.ext.koin.androidContext
@@ -13,6 +14,7 @@ import com.satohk.fjphoto.repository.localrepository.AppDatabase
 import com.satohk.fjphoto.repository.localrepository.PhotoMetadataLocalRepository
 import com.satohk.fjphoto.repository.localrepository.PhotoMetadataRemoteCacheRepository
 import com.satohk.fjphoto.repository.localrepository.SettingRepository
+import com.satohk.fjphoto.view.VideoCache
 import com.satohk.fjphoto.viewmodel.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +24,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.java.KoinJavaComponent
 
 
+@UnstableApi
 class FJPhotoApplication : Application() {
 
     override fun onCreate() {
@@ -56,6 +59,7 @@ class FJPhotoApplication : Application() {
         single { InferenceModel( get() ) }
         single { VisualInspector( get() ) }
         single { FilteredPhotoList( get() ) }
+        single { VideoCache(applicationContext) }
         viewModel { MainViewModel( get()) }
         viewModel { ScreenSaverViewModel( get()) }
         viewModel { PhotoGridWithSideBarViewModel() }

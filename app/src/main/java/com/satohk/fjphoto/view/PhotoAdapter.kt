@@ -111,10 +111,6 @@ class PhotoAdapter internal constructor(private val _list: PhotoGridViewModel.Ph
                     else{
                         binding.textItemInfo.visibility = View.INVISIBLE
                     }
-
-                    //test
-                    binding.textItemInfo.text = "pos=$position"
-                    binding.textItemInfo.visibility = View.VISIBLE
                 }
                 field = value
             }
