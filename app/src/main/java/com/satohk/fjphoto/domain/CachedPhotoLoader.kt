@@ -73,7 +73,7 @@ class CachedPhotoLoader(
 
     private suspend fun tryRequest(func: suspend () -> Unit) {
         val MAX_RETRY_COUNT = 5
-        val SLEEP_MSEC = 1000L
+        val SLEEP_MSEC = 5000L
         var err: ErrorType = ErrorType.ERR_NONE
 
         for (retryCount in 0..MAX_RETRY_COUNT){
@@ -115,7 +115,8 @@ class CachedPhotoLoader(
                 val bulkLoadSize = 60
                 var addMetadataList: List<PhotoMetadataRemote>? = null
                 var nextPageToken: String? = null
-                if(isCacheUsable(searchQuery) && photoMetadataRemoteCacheRepository != null){
+                //if(isCacheUsable(searchQuery) && photoMetadataRemoteCacheRepository != null){
+                if(false){  // disable remotecache
                     Log.d("getPhotoMetadataList", "use disk cache")
                     addMetadataList = photoMetadataRemoteCacheRepository?.get(
                         _accountId,
@@ -179,8 +180,8 @@ class CachedPhotoLoader(
         var res = _photoBitmapCache.get(key)
         if(res == null){
             tryRequest {
-                val photo2 = getPhotoMetadata(photo.id)  // urlの有効期限が切れていることがあるので、再度メタデータを取得
-                res = _photoRepository.getPhotoBitmap(photo2, width, height, cropFlag)
+                //val photo2 = getPhotoMetadata(photo.id)  // urlの有効期限が切れていることがあるので、再度メタデータを取得 -> cacheを無効化したので、再取得は必要なくなった
+                res = _photoRepository.getPhotoBitmap(photo, width, height, cropFlag)
                 if(res != null) {
                     _photoBitmapCache.put(key, res)
                 }
@@ -202,8 +203,8 @@ class CachedPhotoLoader(
     }
 
     suspend fun getMediaAccessHeaderAndUrl(media: PhotoMetadataRemote): Pair<PhotoRequestHeader, String> {
-        val media2 = getPhotoMetadata(media.id)  // urlの有効期限が切れていることがあるので、再度メタデータを取得
-        return _photoRepository.getMediaAccessHeaderAndUrl(media2)
+        //val media2 = getPhotoMetadata(media.id)  // urlの有効期限が切れていることがあるので、再度メタデータを取得  ->   cacheを無効化したので、再取得は必要なくなった
+        return _photoRepository.getMediaAccessHeaderAndUrl(media)
     }
 
     fun getCategoryList(): List<String>{

@@ -23,11 +23,13 @@ class MainViewModel(private val _accountState: AccountState) : ViewModel() {
         viewModelScope.launch {
             _requestedAccountChange.emit(true)
         }
-        viewModelScope.launch {
-            _accountState.photoMetadataSyncer.collect{
-                it?.syncAll()
-            }
-        }
+
+        //disable remotecache
+//        viewModelScope.launch {
+//            _accountState.photoMetadataSyncer.collect{
+//                it?.syncAll()
+//            }
+//        }
     }
 
     fun setAccount(providerUrl:String, username:String, activity: Activity){

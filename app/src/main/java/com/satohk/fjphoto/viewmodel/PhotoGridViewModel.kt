@@ -54,8 +54,8 @@ class PhotoGridViewModel(
 
     private var _numThumbnailLoadingJobs: AtomicInteger = AtomicInteger(0)
     private val _thumbnailLoadWaitJobs = ConcurrentLinkedQueue<ThumbnailLoadJob>()
-    val THUMBNAIL_LOADING_JOBS_MAX = 10
-    val THUMBNAIL_LOAD_WAIT_JOBS_MAX = 50
+    val THUMBNAIL_LOADING_JOBS_MAX = 5
+    val THUMBNAIL_LOAD_WAIT_JOBS_MAX = 30
 
     var isSelectMode: Boolean = false
 

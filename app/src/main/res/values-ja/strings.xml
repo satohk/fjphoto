@@ -5,6 +5,7 @@
     <string name="menu_item_all">すべて</string>
     <string name="menu_item_photo">写真</string>
     <string name="menu_item_movie">動画</string>
+    <string name="menu_item_year">年ごと</string>
     <string name="menu_item_album">アルバム</string>
     <string name="menu_item_favorite">お気に入り</string>
     <string name="menu_item_search">検索</string>

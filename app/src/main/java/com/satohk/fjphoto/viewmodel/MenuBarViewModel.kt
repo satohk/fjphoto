@@ -10,6 +10,9 @@ import com.satohk.fjphoto.repository.data.SearchQuery
 import com.satohk.fjphoto.repository.data.SearchQueryRemote
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 
 class MenuBarViewModel(
@@ -20,15 +23,18 @@ class MenuBarViewModel(
         val itemType: MenuBarItemType,
         val action: SideBarAction,
         val album: Album? = null,
+        val year: Int? = null
     ) {
         enum class MenuBarItemType{
             SHOW_ALL,
             SHOW_PHOTO,
             SHOW_MOVIE,
             SHOW_ALBUM_LIST,
+            SHOW_YEAR_LIST,
             SEARCH,
             SETTING,
-            ALBUM_ITEM
+            ALBUM_ITEM,
+            YEAR_ITEM,
         }
     }
 
@@ -36,8 +42,7 @@ class MenuBarViewModel(
     val itemList: StateFlow<List<MenuBarItem>> get() = _itemList
 
     private val _lastFocusIndexForSideBarType: MutableMap<SideBarType, Int> = mutableMapOf()
-    var sideBarType: SideBarType = SideBarType.TOP
-        private set
+    private var sideBarType: SideBarType = SideBarType.TOP
     val lastFocusIndex: Int
         get() = _lastFocusIndexForSideBarType[sideBarType]!!
 
@@ -48,6 +53,7 @@ class MenuBarViewModel(
     init {
         _lastFocusIndexForSideBarType[SideBarType.TOP] = 0
         _lastFocusIndexForSideBarType[SideBarType.ALBUM_LIST] = 0
+        _lastFocusIndexForSideBarType[SideBarType.YEAR_LIST] = 0
 
         viewModelScope.launch{
             _accountState.activeAccount.collect { account ->
@@ -104,6 +110,13 @@ class MenuBarViewModel(
                                     )
                                 ),
                                 MenuBarItem(
+                                    MenuBarItem.MenuBarItemType.SHOW_YEAR_LIST,
+                                    SideBarAction(
+                                        SideBarActionType.CHANGE_SIDEBAR,
+                                        sideBarType = SideBarType.YEAR_LIST
+                                    )
+                                ),
+                                MenuBarItem(
                                     MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST,
                                     SideBarAction(
                                         SideBarActionType.CHANGE_SIDEBAR,
@@ -155,6 +168,33 @@ class MenuBarViewModel(
                                 "_accountState.photoRepository.value is null"
                             )
                         }
+                    }
+                    SideBarType.YEAR_LIST -> {
+                        val currentDateTime = LocalDateTime.now()
+                        _itemList.emit(
+                            (2000..currentDateTime.year).reversed().map { year ->
+                                val from = ZonedDateTime.of(
+                                    year,1,1,0,0,0,0,ZoneId.systemDefault()
+                                )
+                                val to = ZonedDateTime.of(
+                                    year,12,31,23,59,59,999999999,ZoneId.systemDefault()
+                                )
+                                MenuBarItem(
+                                    MenuBarItem.MenuBarItemType.YEAR_ITEM,
+                                    SideBarAction(
+                                        SideBarActionType.ENTER_GRID,
+                                        gridContents = GridContents(
+                                            searchQuery = SearchQuery(
+                                                SearchQueryRemote(startDate=from, endDate=to),
+                                                userName = account?.userName,
+                                                serviceProviderUrl = account?.serviceProviderUrl
+                                            )
+                                        )
+                                    ),
+                                    year=year
+                                )
+                            }
+                        )
                     }
                     else -> {
 

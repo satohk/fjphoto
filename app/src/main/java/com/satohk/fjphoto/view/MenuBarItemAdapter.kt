@@ -46,19 +46,23 @@ class MenuBarItemAdapter:
             MenuBarItem.MenuBarItemType.SHOW_ALL -> R.drawable.all_media_icon
             MenuBarItem.MenuBarItemType.SHOW_PHOTO -> R.drawable.photo_icon
             MenuBarItem.MenuBarItemType.SHOW_MOVIE -> R.drawable.movie_icon
+            MenuBarItem.MenuBarItemType.SHOW_YEAR_LIST -> R.drawable.all_media_icon
             MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> R.drawable.all_media_icon
             MenuBarItem.MenuBarItemType.SEARCH -> R.drawable.search_icon
             MenuBarItem.MenuBarItemType.SETTING -> R.drawable.setting_icon
             MenuBarItem.MenuBarItemType.ALBUM_ITEM -> R.drawable.all_media_icon
+            MenuBarItem.MenuBarItemType.YEAR_ITEM -> R.drawable.all_media_icon
         }
         val captionId = when(item.itemType){
             MenuBarItem.MenuBarItemType.SHOW_ALL -> R.string.menu_item_all
             MenuBarItem.MenuBarItemType.SHOW_PHOTO -> R.string.menu_item_photo
             MenuBarItem.MenuBarItemType.SHOW_MOVIE -> R.string.menu_item_movie
+            MenuBarItem.MenuBarItemType.SHOW_YEAR_LIST -> R.string.menu_item_year
             MenuBarItem.MenuBarItemType.SHOW_ALBUM_LIST -> R.string.menu_item_album
             MenuBarItem.MenuBarItemType.SEARCH -> R.string.menu_item_search
             MenuBarItem.MenuBarItemType.SETTING-> R.string.menu_item_setting
             MenuBarItem.MenuBarItemType.ALBUM_ITEM -> 0
+            MenuBarItem.MenuBarItemType.YEAR_ITEM -> 0
         }
         val context = holder.binding.root.context
         val resource = context.resources!!
@@ -75,6 +79,9 @@ class MenuBarItemAdapter:
         }
         else if(_list[position].album != null){
             holder.binding.button.text = _list[position].album?.name
+        }
+        else if(_list[position].year != null){
+            holder.binding.button.text = _list[position].year.toString()
         }
         else{
             holder.binding.button.text = "null"
